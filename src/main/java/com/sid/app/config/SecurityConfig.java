@@ -45,7 +45,8 @@ public class SecurityConfig {
                                 AppConstants.DB_BACKUP_ENDPOINT,
                                 AppConstants.USER_ENDPOINT,
                                 AppConstants.FETCH_ALL_USERS_ENDPOINT,
-                                AppConstants.USER_STATUS_ENDPOINT
+                                AppConstants.USER_STATUS_ENDPOINT,
+                                AppConstants.AUTH_REFRESH_ENDPOINT
                         ).permitAll()
                         .anyRequest().authenticated()
                 )

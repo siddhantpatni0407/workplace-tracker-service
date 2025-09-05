@@ -10,13 +10,17 @@ import com.sid.app.model.ForgotPasswordResetRequest;
 import com.sid.app.model.ResponseDTO;
 import com.sid.app.repository.UserRepository;
 import com.sid.app.utils.AESUtils;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.Random;
@@ -161,6 +165,31 @@ public class AuthService {
         );
     }
 
+    /**
+     * Create and attach a refresh token cookie for the given user's email.
+     *
+     * @param email           user's email (subject for token)
+     * @param servletResponse HttpServletResponse to set cookie header
+     */
+    public void createRefreshCookieForUser(String email, HttpServletResponse servletResponse) {
+        // TTL for refresh token: 7 days (adjust as needed)
+        long refreshTtlMs = 7L * 24L * 60L * 60L * 1000L;
+
+        // Generate refresh token (stateless JWT using JwtUtil generateToken with TTL override)
+        String refreshToken = jwtUtil.generateToken(email, null, refreshTtlMs);
+
+        // Build HttpOnly cookie. Set secure=true in production (requires HTTPS).
+        ResponseCookie cookie = ResponseCookie.from("refreshToken", refreshToken)
+                .httpOnly(true)
+                .secure(false) // <-- set to true in production
+                .path("/")
+                .maxAge(Duration.ofMillis(refreshTtlMs))
+                .sameSite("Lax")
+                .build();
+
+        servletResponse.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+    }
+
     public ResponseEntity<ResponseDTO<Void>> resetPassword(ForgotPasswordResetRequest request) {
         String email = request.getEmail();
         String otp = request.getOtp();
@@ -189,5 +218,78 @@ public class AuthService {
                     .body(new ResponseDTO<>(AppConstants.STATUS_FAILED, "Error resetting password.", null));
         }
     }
+
+    /**
+     * Validate provided refresh token, issue a fresh access token and rotate refresh token.
+     * Returns AuthResponse with new access token in token field.
+     *
+     * @param refreshToken    incoming refresh token (from cookie or header)
+     * @param servletResponse response object to set rotated refresh cookie (if rotation occurs)
+     * @return AuthResponse with new access token or failure status
+     */
+    public AuthResponse refreshToken(String refreshToken, HttpServletResponse servletResponse) {
+        if (refreshToken == null || refreshToken.isBlank()) {
+            return new AuthResponse(null, null, null, null,
+                    AppConstants.STATUS_FAILED, "Missing refresh token.", null, null, null, null);
+        }
+
+        try {
+            // Validate refresh token and extract username (will throw ExpiredJwtException if expired)
+            String username = jwtUtil.extractUsername(refreshToken);
+
+            // Ensure the user still exists and is active
+            Optional<User> optUser = userRepository.findByEmail(username);
+            if (optUser.isEmpty()) {
+                return new AuthResponse(null, null, null, null,
+                        AppConstants.STATUS_FAILED, AppConstants.ERROR_MESSAGE_USER_NOT_FOUND, null, null, null, null);
+            }
+            User user = optUser.get();
+            if (!user.getIsActive()) {
+                return new AuthResponse(null, null, null, null,
+                        AppConstants.STATUS_FAILED, AppConstants.ERROR_MESSAGE_INACTIVE_ACCOUNT, null, null, null, null);
+            }
+
+            // Issue a fresh access token (default TTL via JwtUtil)
+            String newAccessToken = jwtUtil.generateToken(user.getEmail());
+
+            // Rotate refresh token: create a new refresh token with longer TTL (e.g., 7 days)
+            long refreshTtlMs = 7L * 24L * 60L * 60L * 1000L; // 7 days
+            String newRefreshToken = jwtUtil.generateToken(user.getEmail(), null, refreshTtlMs);
+
+            // Build secure HttpOnly cookie for refresh token
+            ResponseCookie cookie = ResponseCookie.from("refreshToken", newRefreshToken)
+                    .httpOnly(true)
+                    .secure(false) // set to true in production (when using HTTPS)
+                    .path("/")
+                    .maxAge(Duration.ofMillis(refreshTtlMs))
+                    .sameSite("Lax")
+                    .build();
+
+            servletResponse.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+
+            // prepare response (reuse your AuthResponse constructor/semantics)
+            return new AuthResponse(
+                    newAccessToken,
+                    user.getRole(),
+                    user.getUserId(),
+                    user.getName(),
+                    AppConstants.STATUS_SUCCESS,
+                    "Token refreshed",
+                    user.getLastLoginTime(),
+                    true,
+                    user.getLoginAttempts(),
+                    user.getAccountLocked()
+            );
+        } catch (io.jsonwebtoken.ExpiredJwtException eje) {
+            log.debug("Refresh token expired: {}", eje.getMessage());
+            return new AuthResponse(null, null, null, null,
+                    AppConstants.STATUS_FAILED, "Refresh token expired.", null, null, null, null);
+        } catch (Exception ex) {
+            log.error("Error during refreshToken: {}", ex.getMessage());
+            return new AuthResponse(null, null, null, null,
+                    AppConstants.STATUS_FAILED, "Invalid refresh token.", null, null, null, null);
+        }
+    }
+
 
 }
