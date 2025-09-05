@@ -3,12 +3,14 @@ package com.sid.app.controller;
 import com.sid.app.constants.AppConstants;
 import com.sid.app.model.ResponseDTO;
 import com.sid.app.model.UserDTO;
+import com.sid.app.model.UserStatusUpdateRequest;
 import com.sid.app.service.UserService;
 import com.sid.app.utils.ApplicationUtils;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -93,6 +95,37 @@ public class UserController {
             log.warn("updateUser() : Validation failed for user ID {}: {}", userId, e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(new ResponseDTO<>("FAILED", e.getMessage(), null));
+        }
+    }
+
+    /**
+     * Update user active / locked status in a single API call.
+     */
+    @PatchMapping(value = AppConstants.USER_STATUS_ENDPOINT, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ResponseDTO<UserDTO>> updateUserStatus(@RequestBody UserStatusUpdateRequest req) {
+        log.info("updateUserStatus() : Received request -> {}", ApplicationUtils.getJSONString(req));
+
+        if (req == null || req.getUserId() == null) {
+            return ResponseEntity.badRequest()
+                    .body(new ResponseDTO<>("FAILED", "userId is required.", null));
+        }
+
+        if (req.getIsActive() == null && req.getIsAccountLocked() == null) {
+            return ResponseEntity.badRequest()
+                    .body(new ResponseDTO<>("FAILED", "Nothing to update. Provide isActive and/or isAccountLocked.", null));
+        }
+
+        try {
+            UserDTO updated = userService.updateUserStatus(req);
+            return ResponseEntity.ok(new ResponseDTO<>("SUCCESS", "User status updated successfully.", updated));
+        } catch (EntityNotFoundException ex) {
+            log.warn("updateUserStatus() : User not found id={}", req.getUserId());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ResponseDTO<>("FAILED", ex.getMessage(), null));
+        } catch (Exception ex) {
+            log.error("updateUserStatus() error: {}", ex.getMessage(), ex);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ResponseDTO<>("FAILED", "Failed to update user status.", null));
         }
     }
 

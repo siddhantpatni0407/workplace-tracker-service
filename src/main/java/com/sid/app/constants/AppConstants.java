@@ -13,6 +13,7 @@ public class AppConstants {
     public static final String DB_BACKUP_ENDPOINT = "/api/v1/workplace-tracker-service/db-backup";
     public static final String FETCH_ALL_USERS_ENDPOINT = "/api/v1/workplace-tracker-service/user/fetch";
     public static final String USER_ENDPOINT = "/api/v1/workplace-tracker-service/user";
+    public static final String USER_STATUS_ENDPOINT = "/api/v1/workplace-tracker-service/user/status";
 
     // Status
     public static final String STATUS_SUCCESS = "SUCCESS";

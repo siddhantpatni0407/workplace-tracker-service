@@ -2,6 +2,7 @@ package com.sid.app.service;
 
 import com.sid.app.entity.User;
 import com.sid.app.model.UserDTO;
+import com.sid.app.model.UserStatusUpdateRequest;
 import com.sid.app.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -64,6 +66,38 @@ public class UserService {
                     log.warn("User with ID {} not found.", userId);
                     return new EntityNotFoundException("User not found with ID: " + userId);
                 });
+    }
+
+    /**
+     * Update user's isActive / isAccountLocked flags (both optional).
+     */
+    @Transactional
+    public UserDTO updateUserStatus(UserStatusUpdateRequest req) {
+        Long userId = req.getUserId();
+        Optional<User> opt = userRepository.findById(userId);
+
+        User user = opt.orElseThrow(() -> new EntityNotFoundException("User not found with ID: " + userId));
+
+        boolean changed = false;
+
+        if (req.getIsActive() != null) {
+            user.setIsActive(req.getIsActive());
+            changed = true;
+        }
+
+        if (req.getIsAccountLocked() != null) {
+            user.setAccountLocked(req.getIsAccountLocked());
+            changed = true;
+        }
+
+        if (changed) {
+            userRepository.save(user);
+            log.info("updateUserStatus() : Updated userId={} isActive={} accountLocked={}", userId, user.getIsActive(), user.getAccountLocked());
+        } else {
+            log.info("updateUserStatus() : No changes requested for userId={}", userId);
+        }
+
+        return convertToDTO(user);
     }
 
     @Transactional

@@ -44,7 +44,8 @@ public class SecurityConfig {
                                 AppConstants.FORGOT_PASSWORD_RESET_ENDPOINT,
                                 AppConstants.DB_BACKUP_ENDPOINT,
                                 AppConstants.USER_ENDPOINT,
-                                AppConstants.FETCH_ALL_USERS_ENDPOINT
+                                AppConstants.FETCH_ALL_USERS_ENDPOINT,
+                                AppConstants.USER_STATUS_ENDPOINT
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
