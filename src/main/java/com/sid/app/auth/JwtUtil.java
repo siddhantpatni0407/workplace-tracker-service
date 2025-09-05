@@ -6,7 +6,6 @@ import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
@@ -29,11 +28,13 @@ public class JwtUtil {
 
     @PostConstruct
     public void init() {
-        if (appProperties.getJwtSecret() == null || appProperties.getJwtSecret().length() < 32) {
-            log.warn("JWT secret appears weak/short (length {}). It's recommended to provide a secure secret of at least 32 characters via configuration (app.jwt.secret).", appProperties.getJwtSecret() == null ? 0 : appProperties.getJwtSecret().length());
+        String secret = appProperties.getJwtSecret();
+        if (secret == null || secret.length() < 32) {
+            log.warn("JWT secret appears weak/short (length {}). It's recommended to provide a secure secret of at least 32 characters via configuration (app.jwt.secret).", secret == null ? 0 : secret.length());
         }
-        this.secretKey = Keys.hmacShaKeyFor(appProperties.getJwtSecret().getBytes(StandardCharsets.UTF_8));
-        log.info("JwtUtil initialized (expirationMs={}, allowedClockSkewSec={})", appProperties.getJwtExpirationMs(), appProperties.getJwtAllowedClockSkewSec());
+        this.secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+        log.info("JwtUtil initialized (expirationMs={}, allowedClockSkewSec={})",
+                appProperties.getJwtExpirationMs(), appProperties.getJwtAllowedClockSkewSec());
     }
 
     /**
@@ -62,16 +63,12 @@ public class JwtUtil {
         return builder.compact();
     }
 
-    /**
-     * Convenience overload with no extra claims and default TTL
-     */
+    /** Convenience overload with no extra claims and default TTL */
     public String generateToken(String subject) {
         return generateToken(subject, null, -1);
     }
 
-    /**
-     * Convenience overload with extra claims and default TTL
-     */
+    /** Convenience overload with extra claims and default TTL */
     public String generateToken(String subject, Map<String, Object> extraClaims) {
         return generateToken(subject, extraClaims, -1);
     }
@@ -138,19 +135,14 @@ public class JwtUtil {
         }
     }
 
-    /**
-     * Check expiration using Claims (already parsed with allowed clock skew).
-     */
+    /** Check expiration using Claims (already parsed with allowed clock skew). */
     private boolean isTokenExpired(Claims claims) {
         Date expiration = claims.getExpiration();
         if (expiration == null) return true;
-        // expiration.before now -> expired
         return expiration.before(new Date());
     }
 
-    /**
-     * Convenience: parse and check expiration (returns true if expired or invalid)
-     */
+    /** Convenience: parse and check expiration (returns true if expired or invalid) */
     private boolean isTokenExpired(String token) {
         Optional<Claims> claimsOpt = parseClaims(token);
         return claimsOpt.map(this::isTokenExpired).orElse(true);
@@ -177,6 +169,9 @@ public class JwtUtil {
     /**
      * Utility to refresh token by issuing a new token with same subject and optional new TTL.
      * Caller should verify refresh policy (e.g., only when token is near expiry or a valid refresh token exists).
+     *
+     * NOTE: This method expects the provided token to be valid (not expired). If token is expired, parseClaims will return empty.
+     * Ideally refresh should be driven by a refresh-token (HTTP-only cookie) rather than by supplying an expired access token.
      */
     public String refreshToken(String token, long newTtlMillis) {
         Optional<Claims> claimsOpt = parseClaims(token);
@@ -185,11 +180,12 @@ public class JwtUtil {
         }
         Claims claims = claimsOpt.get();
         String subject = claims.getSubject();
+
         // copy claims except standard ones (sub/iat/exp)
         claims.remove(Claims.SUBJECT);
         claims.remove(Claims.ISSUED_AT);
         claims.remove(Claims.EXPIRATION);
-        // convert to map for generateToken
+
         return generateToken(subject, claims, newTtlMillis);
     }
 }
