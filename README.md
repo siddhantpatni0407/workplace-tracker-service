@@ -25,6 +25,8 @@ available endpoints, and common operational tasks.
     * [Docker Compose (dev)](#docker-compose-dev)
     * [Build & Push Image (CI / Production)](#build--push-image-ci--production)
     * [Kubernetes Deployment (overview & steps)](#kubernetes-deployment-overview--steps)
+    * [Minikube / Kubernetes Runbook](#minikube--kubernetes-runbook)
+    * [Stopping & Cleanup](#stopping--cleanup)
 * [Troubleshooting](#troubleshooting)
 * [Security Notice](#security-notice)
 * [Contact & Contributing](#contact--contributing)
@@ -103,8 +105,8 @@ Or run the packaged jar:
 
 4. **Access**
 
-    * Default API root: `http://localhost:8010`
-    * Swagger/OpenAPI (if included): `http://localhost:8010/swagger-ui.html` or `/v3/api-docs`
+* Default API root: `http://localhost:8010`
+* Swagger/OpenAPI (if included): `http://localhost:8010/swagger-ui.html` or `/v3/api-docs`
 
 ---
 
@@ -128,60 +130,42 @@ Set via `application.yml` or environment variables.
 > Base path used in the UI is `/api/v1/workplace-tracker-service` (adjustable in `application.yml`).
 
 * `POST /register` — Register new user
-  Request: `{ name, email, mobileNumber, password, role }`
-  Response: `AuthResponse` with `token` on success
-
 * `POST /login` — Login
-  Request: `{ email, password }`
-  Response: `AuthResponse` with `token`, `lastLoginTime`, `userId`, `role`
-
-* `POST /forgot/reset` — Reset password (current flow: accepts `{ email, newPassword }`)
-  Response: success/failure message
-
+* `POST /forgot/reset` — Reset password
 * `GET /user/fetch` — Admin: fetch all users
-  Response:
-  `{ status, message, data: [ { userId, username, email, mobileNumber, role, lastLoginTime, loginAttempts, isAccountLocked, isActive } ] }`
-
 * `GET /user/{id}` — Get user by id
-
-* `PATCH/PUT /user/{id}` — Update user (active/lock/role)
-
-* `POST /attendance/log` — Log attendance (if implemented)
-
-* `GET /attendance/summary` — Attendance summary (if implemented)
-
-* `POST /db-backup` — Trigger DB backup (if implemented)
-
-> See controllers for exact URLs and payloads.
+* `PATCH/PUT /user/{id}` — Update user
+* `POST /attendance/log` — Log attendance
+* `GET /attendance/summary` — Attendance summary
+* `POST /db-backup` — Trigger DB backup
 
 ---
 
 ## Authentication
 
-* JWT tokens are issued on successful login/registration.
-* Token must be included in `Authorization: Bearer <token>` header for protected endpoints.
-* Token expiry by default is one hour. Consider implementing refresh-token flow for seamless re-authentication (note:
-  not enabled by default).
-* Account lockout: backend increments `loginAttempts` and locks account after threshold (e.g., 5).
+* JWT tokens issued on login/registration.
+* Use `Authorization: Bearer <token>` header.
+* Tokens expire (default 1h).
+* Account lockout after multiple failed logins.
 
 ---
 
 ## Database & Migrations
 
-* Use JPA entities & repository patterns.
-* Local development may use embedded H2 (configure `spring.datasource.url`).
-* For production, configure PostgreSQL/MySQL and run migrations.
-* If using Flyway/Liquibase: place scripts in `resources/db/migration`.
+* JPA repositories + Liquibase for migrations.
+* Local: embedded H2 or PostgreSQL.
+* Production: PostgreSQL/MySQL recommended.
 
 ---
 
 ## Testing
 
-* Unit tests: `mvn test`
-* Integration tests: configure test DB and run `mvn verify`
-* Manual API testing: Postman / curl.
+```bash
+mvn test
+mvn verify
+```
 
-Example curl to login:
+Example curl login:
 
 ```bash
 curl -X POST http://localhost:8010/api/v1/workplace-tracker-service/login \
@@ -193,64 +177,30 @@ curl -X POST http://localhost:8010/api/v1/workplace-tracker-service/login \
 
 ## Logging & Monitoring
 
-* Logs via SLF4J / Logback. Configure log level in `application.yml`.
-* Add metrics/Prometheus/Kibana integration for production monitoring.
+* Logs via SLF4J/Logback.
+* `/actuator/health` for liveness/readiness probes.
+* Extend with Prometheus/Grafana in production.
 
 ---
 
 ## Deployment
 
-This project supports both **Docker** (single host / dev) and **Kubernetes** (production) deployments.
-All files referenced below are expected to be in the repository root or `k8s/` folder:
+This project supports both **Docker** (local/dev) and **Kubernetes** (production) deployments.
 
-* `Dockerfile` — build image (multi-stage recommended)
-* `docker-compose.yml` — dev composition (app + Postgres)
-* `.env.example` — sample environment file
-* `k8s/configmap-workplace-tracker.yml` — non-sensitive config
-* `k8s/secret-workplace-tracker.yml` — sensitive values (or create secrets via CLI)
-* `k8s/deployment.yml`, `k8s/service.yml`, `k8s/hpa.yml`, `k8s/ingress.yml` — Kubernetes manifests
-
-Below are **detailed steps** and commands — **file contents are intentionally not included here**; check the indicated
-filenames for the actual manifests.
+* `Dockerfile`
+* `docker-compose.yml`
+* `k8s/configmap-workplace-tracker.yml`
+* `k8s/secret-workplace-tracker.yml`
+* `k8s/deployment.yml`, `k8s/service.yml`
 
 ---
 
 ### Docker Deployment (overview & steps)
 
-#### 1. Prepare `.env`
-
-Copy `.env.example` to `.env` and edit values (DB creds, secrets, ports). **Do not commit** `.env`.
-
 ```bash
 cp .env.example .env
-# edit .env with your editor
-```
-
-#### 2. Build Docker image (local)
-
-From repo root (where `Dockerfile` is located):
-
-```bash
 docker build -t siddhantpatni0407/workplace-tracker-service:latest .
-```
-
-#### 3. Run container (example)
-
-Run the container exposing port 8010 and passing environment variables (you can use the `.env` file):
-
-```bash
-docker run -d \
-  -p 8010:8010 \
-  --name workplace-tracker \
-  --env-file .env \
-  siddhantpatni0407/workplace-tracker-service:latest
-```
-
-#### 4. Verify container is healthy
-
-Check logs and health endpoint:
-
-```bash
+docker run -d -p 8010:8010 --env-file .env --name workplace-tracker siddhantpatni0407/workplace-tracker-service:latest
 docker logs -f workplace-tracker
 curl http://localhost:8010/actuator/health
 ```
@@ -259,214 +209,167 @@ curl http://localhost:8010/actuator/health
 
 ### Docker Compose (dev)
 
-A `docker-compose.yml` is provided (see repository root). It runs Postgres + app and uses healthchecks and a `.env`
-file.
-
-Commands:
-
 ```bash
 cp .env.example .env
 docker-compose up --build
-# or detached:
+# or
 docker-compose up --build -d
 ```
 
-Verify:
+Check:
 
 ```bash
 docker-compose logs -f workplace-tracker
-curl http://localhost:8010/actuator/health
 ```
-
-Notes:
-
-* The compose file uses `depends_on` with healthchecks to wait for Postgres readiness.
-* For development you can create `docker-compose.override.yml` to mount source folders and enable hot-reload (Spring
-  Devtools). Do not mount secrets into containers in shared environments.
 
 ---
 
 ### Build & Push Image (CI / Production)
 
-Recommended approach for production: build in CI, tag using commit or semantic version, scan image, push to Docker Hub,
-and deploy from registry.
-
-Example commands:
-
 ```bash
-# build locally
 docker build -t siddhantpatni0407/workplace-tracker-service:latest .
-
-# login & push
 docker login
 docker push siddhantpatni0407/workplace-tracker-service:latest
 ```
-
-CI tip: in GitHub Actions / GitLab CI, build, run tests, tag image (e.g., `v1.2.3`, or commit SHA), push to registry and
-then trigger Kubernetes deployment.
 
 ---
 
 ### Kubernetes Deployment (overview & steps)
 
-**Pre-reqs:** Kubernetes cluster (Minikube / Kind / cloud), `kubectl` configured for the cluster, optional ingress
-controller (nginx) for Ingress.
-
-**Files (place these under `k8s/`):**
-
-* `k8s/configmap-workplace-tracker.yml`
-* `k8s/secret-workplace-tracker.yml` (or create secrets via CLI)
-* `k8s/deployment.yml`
-* `k8s/service.yml`
-* `k8s/hpa.yml` (optional)
-* `k8s/ingress.yml` (optional)
-
-> The manifests in `k8s/` reference the Docker image `siddhantpatni0407/workplace-tracker-service:latest` by default —
-> change tag for production.
-
-#### 1. Apply ConfigMap (non-sensitive)
-
-Make sure ConfigMap is created before Deployment:
-
 ```bash
-kubectl apply -f k8s/configmap-workplace-tracker.yml
-```
-
-#### 2. Apply Secret (sensitive)
-
-Create secret from manifest or via CLI (recommended):
-
-```bash
-# Option A: from manifest
 kubectl apply -f k8s/secret-workplace-tracker.yml
-
-# Option B: safer - create via CLI (replace values)
-kubectl create secret generic workplace-tracker-secret \
-  --from-literal=DB_USERNAME=postgres \
-  --from-literal=DB_PASSWORD=root \
-  --from-literal=APP_JWT_SECRET='replace-with-long-secret'
-```
-
-#### 3. Deploy application
-
-```bash
-kubectl apply -f k8s/deployment.yml
-```
-
-#### 4. Create Service
-
-```bash
-kubectl apply -f k8s/service.yml
-```
-
-#### 5. (Optional) Create HPA
-
-```bash
-kubectl apply -f k8s/hpa.yml
-```
-
-#### 6. (Optional) Ingress
-
-If you want domain-based access and have an ingress controller:
-
-```bash
-kubectl apply -f k8s/ingress.yml
-```
-
-#### Recommended `kubectl` apply order (one-liner sequence)
-
-```bash
 kubectl apply -f k8s/configmap-workplace-tracker.yml
-kubectl apply -f k8s/secret-workplace-tracker.yml   # or create secret via CLI
 kubectl apply -f k8s/deployment.yml
 kubectl apply -f k8s/service.yml
-kubectl apply -f k8s/hpa.yml     # optional
-kubectl apply -f k8s/ingress.yml # optional
 ```
 
----
-
-### Verification & useful commands
+Verify:
 
 ```bash
-# check resources
-kubectl get configmap,secret,deploy,svc,hpa,ingress -o wide
-
-# watch pods start
-kubectl get pods -l app=workplace-tracker -w
-
-# view pod logs
-kubectl logs -f deploy/workplace-tracker-deployment -c workplace-tracker
-
-# check rollout
-kubectl rollout status deployment/workplace-tracker-deployment
-
-# describe service
-kubectl describe svc workplace-tracker-service
-
-# if ingress: check ingress address
-kubectl get ingress workplace-tracker-ingress
+kubectl get pods
+kubectl logs -f deployment/workplace-tracker-deployment
 ```
 
 ---
 
-### Stopping / Cleaning up Kubernetes resources
+## Minikube / Kubernetes Runbook
 
-If you’ve applied the manifests and want to stop the app, delete them in reverse order:
+### 1. Build Image
+
+Option A — local & push to Docker Hub:
+
+```bash
+docker build -t siddhantpatni0407/workplace-tracker-service:latest .
+docker push siddhantpatni0407/workplace-tracker-service:latest
+```
+
+Option B — build directly inside Minikube:
+
+```bash
+minikube start --driver=docker
+eval $(minikube -p minikube docker-env)
+docker build -t siddhantpatni0407/workplace-tracker-service:latest .
+eval $(minikube -p minikube docker-env --unset)
+```
+
+### 2. Start Minikube & dashboard
+
+```bash
+minikube start --driver=docker
+minikube dashboard --url
+```
+
+### 3. Apply manifests
+
+```bash
+kubectl apply -f k8s/secret-workplace-tracker.yml
+kubectl apply -f k8s/configmap-workplace-tracker.yml
+kubectl apply -f k8s/deployment.yml
+kubectl apply -f k8s/service.yml
+```
+
+### 4. Verify
+
+```bash
+kubectl get pods
+kubectl get svc
+kubectl logs -f deployment/workplace-tracker-deployment
+```
+
+Access service:
+
+```bash
+minikube service workplace-tracker-service --url
+# or
+http://localhost:30080
+```
+
+---
+
+## Stopping & Cleanup
+
+### Stop Minikube
+
+```bash
+minikube stop
+```
+
+### Delete Minikube cluster
+
+```bash
+minikube delete
+```
+
+### Delete Kubernetes resources
 
 ```bash
 kubectl delete -f k8s/ingress.yml   --ignore-not-found
 kubectl delete -f k8s/hpa.yml       --ignore-not-found
 kubectl delete -f k8s/service.yml   --ignore-not-found
 kubectl delete -f k8s/deployment.yml --ignore-not-found
-kubectl delete -f k8s/secret-workplace-tracker.yml --ignore-not-found
 kubectl delete -f k8s/configmap-workplace-tracker.yml --ignore-not-found
+kubectl delete -f k8s/secret-workplace-tracker.yml --ignore-not-found
+kubectl delete pvc postgres-pvc --ignore-not-found
 ```
 
-Then verify:
+### Docker cleanup
 
 ```bash
-kubectl get all -l app=workplace-tracker
-kubectl get configmap workplace-tracker-config --ignore-not-found
-kubectl get secret workplace-tracker-secret --ignore-not-found
+docker stop workplace-tracker || true
+docker rm workplace-tracker || true
+docker rmi siddhantpatni0407/workplace-tracker-service:latest || true
+docker system prune -af
 ```
-
-Nothing should remain if cleanup was successful.
 
 ---
 
 ## Troubleshooting
 
-* **401/403 responses after token expiry** — token expired. Either re-login or implement refresh token flow.
-* **DB connection errors** — verify `SPRING_DATASOURCE_URL`, credentials, and DB server availability.
-* **Password encryption errors** — check AES key configuration and `EncryptionKeyService`.
-* **Account locked** — unlock in DB or use admin endpoint (if available) to reset `accountLocked` and `loginAttempts`.
-* **Pods crashlooping** — check `kubectl logs` for DB/secret issues.
-* **Readiness/Liveness probe failing** — ensure `/actuator/health` is accessible.
-* **Ingress not working** — confirm ingress controller is installed (e.g., `nginx-ingress`).
-* **Docker Compose container not starting** — check `docker-compose logs` and ensure `.env` values are correct.
+* **401/403** → Token expired.
+* **DB errors** → Check `SPRING_DATASOURCE_URL`, DB service.
+* **Probes failing** → Confirm `/actuator/health` exposed.
+* **Pods crashloop** → Check secrets/config.
+* **Ingress not working** → Ensure ingress controller installed.
 
 ---
 
 ## Security Notice
 
-* Current `forgot/reset` endpoint resets password without OTP — this is insecure. Add a verification step (email token)
-  before using in production.
-* Keep `JWT_SECRET` and encryption keys safe.
-* Use HTTPS in production.
+* `forgot/reset` is insecure without OTP/email verification.
+* Keep secrets in Kubernetes Secrets or vault, not git.
+* Always use HTTPS in production.
 
 ---
 
 ## Contact & Contributing
 
-* Maintainer: **Siddhant Patni** (or project owner)
-* Contributions: open PRs, follow repository contribution guidelines.
-* Issues: open GitHub issues for bugs/feature requests.
+* Maintainer: **Siddhant Patni**
+* Issues/PRs welcome.
 
 ---
 
 ## License
 
-Specify your license in the repository root (e.g., MIT, Apache-2.0).
+Specify license in repository root (MIT/Apache-2.0).
 
 ---

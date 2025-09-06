@@ -1,4 +1,79 @@
-# k8s/deployment.yml
+# ------------------------
+# PersistentVolumeClaim for Postgres (in-cluster storage)
+# ------------------------
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-pvc
+  labels:
+    app: workplace-postgres
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+  # storageClassName: ""   # Optional: set to your cluster's storage class if required
+
+---
+# ------------------------
+# Postgres Deployment (in-cluster database)
+# ------------------------
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: workplace-postgres
+  labels:
+    app: workplace-postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: workplace-postgres
+  template:
+    metadata:
+      labels:
+        app: workplace-postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:15-alpine
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: workplace-tracker-secret
+                  key: DB_USERNAME
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: workplace-tracker-secret
+                  key: DB_PASSWORD
+            - name: POSTGRES_DB
+              value: workplace_tracker_db
+          ports:
+            - containerPort: 5432
+          volumeMounts:
+            - name: pgdata
+              mountPath: /var/lib/postgresql/data
+          readinessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - pg_isready -U "${POSTGRES_USER}"
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+      volumes:
+        - name: pgdata
+          persistentVolumeClaim:
+            claimName: postgres-pvc
+
+---
+# ------------------------
+# Workplace Tracker Deployment (your app) - updated
+# ------------------------
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -22,27 +97,45 @@ spec:
           ports:
             - containerPort: 8010
               name: http
+          # bring in configmap + secret
           envFrom:
             - configMapRef:
                 name: workplace-tracker-config
             - secretRef:
                 name: workplace-tracker-secret
+          # Explicit Spring datasource env mappings (ensure Spring picks them up)
+          env:
+            - name: SPRING_DATASOURCE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: workplace-tracker-config
+                  key: SPRING_DATASOURCE_URL
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: workplace-tracker-secret
+                  key: DB_USERNAME
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: workplace-tracker-secret
+                  key: DB_PASSWORD
           readinessProbe:
             httpGet:
               path: /actuator/health
               port: http
             initialDelaySeconds: 10
             periodSeconds: 10
-            failureThreshold: 3
             timeoutSeconds: 5
+            failureThreshold: 3
           livenessProbe:
             httpGet:
               path: /actuator/health
               port: http
             initialDelaySeconds: 20
             periodSeconds: 20
-            failureThreshold: 3
             timeoutSeconds: 5
+            failureThreshold: 3
           resources:
             requests:
               memory: "512Mi"

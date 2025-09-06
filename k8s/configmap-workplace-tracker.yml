@@ -1,4 +1,3 @@
-# k8s/configmap-workplace-tracker.yml
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -6,18 +5,10 @@ metadata:
   labels:
     app: workplace-tracker
 data:
-  # Application related config
+  # Point Spring to the in-cluster Postgres service
+  SPRING_DATASOURCE_URL: "jdbc:postgresql://workplace-postgres:5432/workplace_tracker_db"
   SERVER_PORT: "8010"
-  UI_HOST: "http://localhost,http://127.0.0.1,http://192.168.1.11"
+  UI_HOST: "http://localhost"
   UI_PORT: "3010"
-
-  # Database (non-sensitive)
-  DB_HOST: "localhost"
-  DB_PORT: "5432"
-  DB_NAME: "workplace_tracker_db"
-
-  # JPA & Hibernate schema
   JPA_DEFAULT_SCHEMA: "dev"
-
-  # Encryption (non-sensitive part)
   AES_ALGORITHM: "AES"

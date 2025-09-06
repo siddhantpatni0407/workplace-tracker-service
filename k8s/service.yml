@@ -1,4 +1,25 @@
-# k8s/service.yml
+# ------------------------
+# Postgres Service (ClusterIP) - in-cluster access for app
+# ------------------------
+apiVersion: v1
+kind: Service
+metadata:
+  name: workplace-postgres
+  labels:
+    app: workplace-postgres
+spec:
+  selector:
+    app: workplace-postgres
+  ports:
+    - port: 5432
+      targetPort: 5432
+      protocol: TCP
+  type: ClusterIP
+
+---
+# ------------------------
+# Workplace Tracker Service - NodePort for local access
+# ------------------------
 apiVersion: v1
 kind: Service
 metadata:
@@ -8,8 +29,9 @@ metadata:
 spec:
   selector:
     app: workplace-tracker
-  type: ClusterIP   # change to LoadBalancer or NodePort if you need external access
+  type: NodePort
   ports:
     - name: http
-      port: 80          # service port (inside cluster / external)
-      targetPort: 8010  # container port in Deployment
+      port: 80
+      targetPort: 8010
+      nodePort: 30080

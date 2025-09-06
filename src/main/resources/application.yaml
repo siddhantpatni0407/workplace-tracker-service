@@ -3,29 +3,27 @@ spring:
     name: workplace-tracker-service
 
   main:
-    #banner-mode: "off"  # Disable startup banner
     allow-bean-definition-overriding: true
 
   banner:
-    location: classpath:banner.txt  # Custom banner file
+    location: classpath:banner.txt
 
   security:
     user:
-      name: ${ADMIN_USERNAME:admin}      # Admin username (override via env variable)
-      password: ${ADMIN_PASSWORD:admin}  # Admin password (override via env variable)
+      name: ${ADMIN_USERNAME:admin}
+      password: ${ADMIN_PASSWORD:admin}
       roles: ACTUATOR_ADMIN
 
-  # Liquibase Configuration (For Database Versioning)
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.xml
     enabled: true
 
-  # Database Configuration
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:workplace_tracker_db}
-    username: ${DB_USERNAME:postgres}   # Securely fetch from env variable
-    password: ${DB_PASSWORD:root}       # Securely fetch from env variable
+    # Prefer SPRING_DATASOURCE_URL if provided, otherwise build from DB_HOST/DB_PORT/DB_NAME
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:workplace_tracker_db}}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:root}
     properties:
       charSet: UTF-8
     hikari:
@@ -37,19 +35,18 @@ spring:
       connection-timeout: 30000
       schema: dev
 
-  # JPA & Hibernate Configuration
   jpa:
     show-sql: true
     properties:
       hibernate:
-        default_schema: dev
+        default_schema: ${JPA_DEFAULT_SCHEMA:dev}
         globally_quoted_identifiers: true
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
         jdbc:
           time_zone: Asia/Kolkata
           lob:
-            non_contextual_creation: true  # Prevents unnecessary warnings for BLOB fields
+            non_contextual_creation: true
 
 encryption:
   aes:
@@ -58,17 +55,13 @@ encryption:
 
 app:
   backup:
-    directory: C:\Backup\Database\workplace_tracker_db  # Change this to your desired backup location
+    directory: C:\Backup\Database\workplace_tracker_db
     prefix: db_backup
     default-db: workplace_tracker_db
 
-  # JWT configuration - IMPORTANT: override these via environment variables in production
   jwt:
-    # Provide a secure secret of at least 32 characters via env or secrets manager (do NOT commit a production secret here)
     secret: ${APP_JWT_SECRET:my-super-secret-key-which-is-at-least-32-characters-long!}
-    # Token lifetime in milliseconds (default: 1 hour)
     expiration-ms: ${APP_JWT_EXPIRATION_MS:3600000}
-    # Allowed clock skew in seconds to tolerate tiny clock differences (default: 10s)
     allowed-clock-skew-sec: ${APP_JWT_ALLOWED_CLOCK_SKEW_SEC:10}
 
 ui:
@@ -76,10 +69,9 @@ ui:
   port: ${UI_PORT:3010}
 
 server:
-  port: ${SERVER_PORT:8010}  # Server port, configurable via environment variable
+  port: ${SERVER_PORT:8010}
 
-# Logging Configuration
 logging:
   level:
     root: INFO
-    com.sid: INFO  # Debug mode enabled for specific package
+    com.sid: INFO
