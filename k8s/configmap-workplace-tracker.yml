@@ -1,0 +1,23 @@
+# k8s/configmap-workplace-tracker.yml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: workplace-tracker-config
+  labels:
+    app: workplace-tracker
+data:
+  # Application related config
+  SERVER_PORT: "8010"
+  UI_HOST: "http://localhost,http://127.0.0.1,http://192.168.1.11"
+  UI_PORT: "3010"
+
+  # Database (non-sensitive)
+  DB_HOST: "postgresql"
+  DB_PORT: "5432"
+  DB_NAME: "workplace_tracker_db"
+
+  # JPA & Hibernate schema
+  JPA_DEFAULT_SCHEMA: "dev"
+
+  # Encryption (non-sensitive part)
+  AES_ALGORITHM: "AES"

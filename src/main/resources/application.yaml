@@ -71,8 +71,6 @@ app:
     # Allowed clock skew in seconds to tolerate tiny clock differences (default: 10s)
     allowed-clock-skew-sec: ${APP_JWT_ALLOWED_CLOCK_SKEW_SEC:10}
 
-
-# application.yml
 ui:
   host: ${UI_HOST:http://localhost,http://127.0.0.1,http://192.168.1.11}
   port: ${UI_PORT:3010}

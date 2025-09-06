@@ -1,0 +1,61 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: workplace-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USERNAME:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-root}
+      POSTGRES_DB: ${DB_NAME:-workplace_tracker_db}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-postgres} -d ${DB_NAME:-workplace_tracker_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  workplace-tracker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: siddhantpatni0407/workplace-tracker-service:latest
+    container_name: workplace-tracker
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    ports:
+      - "${HOST_PORT:8010}:8010"
+    environment:
+      # Database
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_NAME: ${DB_NAME:-workplace_tracker_db}
+      DB_USERNAME: ${DB_USERNAME:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-root}
+
+      # Server & UI
+      SERVER_PORT: "8010"
+      UI_HOST: ${UI_HOST:-http://localhost}
+      UI_PORT: ${UI_PORT:-3010}
+
+      # Admin & security (secrets via .env or override in production)
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin}
+      APP_JWT_SECRET: ${APP_JWT_SECRET:-my-super-secret-key-which-is-at-least-32-characters-long!}
+      AES_SECRET_KEY: ${AES_SECRET_KEY:-Xf9aLp3qzT7vN2sYgW5KbVc6Rm8QJ0dP}
+
+      # JVM override (optional)
+      JAVA_OPTS: ${JAVA_OPTS:-"-Xms256m -Xmx512m -Duser.timezone=Asia/Kolkata"}
+
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8010/actuator/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 8
+
+volumes:
+  pgdata:
