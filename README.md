@@ -94,7 +94,8 @@ API.
    # run
    mvn spring-boot:run
 ```
-   Or run the packaged jar:
+
+Or run the packaged jar:
 
 ```bash
    java -jar target/workplace-tracker-service-<version>.jar
@@ -406,6 +407,31 @@ kubectl describe svc workplace-tracker-service
 # if ingress: check ingress address
 kubectl get ingress workplace-tracker-ingress
 ```
+
+---
+
+### Stopping / Cleaning up Kubernetes resources
+
+If you’ve applied the manifests and want to stop the app, delete them in reverse order:
+
+```bash
+kubectl delete -f k8s/ingress.yml   --ignore-not-found
+kubectl delete -f k8s/hpa.yml       --ignore-not-found
+kubectl delete -f k8s/service.yml   --ignore-not-found
+kubectl delete -f k8s/deployment.yml --ignore-not-found
+kubectl delete -f k8s/secret-workplace-tracker.yml --ignore-not-found
+kubectl delete -f k8s/configmap-workplace-tracker.yml --ignore-not-found
+```
+
+Then verify:
+
+```bash
+kubectl get all -l app=workplace-tracker
+kubectl get configmap workplace-tracker-config --ignore-not-found
+kubectl get secret workplace-tracker-secret --ignore-not-found
+```
+
+Nothing should remain if cleanup was successful.
 
 ---
 
