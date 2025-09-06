@@ -78,7 +78,7 @@ API.
 
 1. **Clone repo**
 
-   ```bash
+```bash
    git clone https://github.com/siddhantpatni0407/workplace-tracker-service.git
    cd workplace-tracker-service
 ````
@@ -87,19 +87,18 @@ API.
 
 3. **Run with Maven**
 
-   ```bash
+```bash
    # build
    mvn clean package -DskipTests
 
    # run
    mvn spring-boot:run
-   ```
-
+```
    Or run the packaged jar:
 
-   ```bash
+```bash
    java -jar target/workplace-tracker-service-<version>.jar
-   ```
+```
 
 4. **Access**
 
@@ -110,7 +109,7 @@ API.
 
 ## Environment Variables (example)
 
-Set via `application.yml`/`application.properties` or environment variables.
+Set via `application.yml` or environment variables.
 
 * `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USERNAME`, `DB_PASSWORD`
 * `SERVER_PORT` — default `8010`
