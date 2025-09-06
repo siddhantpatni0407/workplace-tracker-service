@@ -1,0 +1,484 @@
+{
+	"info": {
+		"_postman_id": "244d21fe-5cb4-4f74-8e02-ae4383c0b71d",
+		"name": "workplace-tracker-service",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "6002209"
+	},
+	"item": [
+		{
+			"name": "MS - LOCAL",
+			"item": [
+				{
+					"name": "DB_Backup",
+					"item": [
+						{
+							"name": "DB Backup",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8010/api/v1/workplace-tracker-service/db-backup?type=sql&db=workplace_tracker_db&schema=dev",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8010",
+									"path": [
+										"api",
+										"v1",
+										"workplace-tracker-service",
+										"db-backup"
+									],
+									"query": [
+										{
+											"key": "type",
+											"value": "sql",
+											"description": "sql / dump / empty"
+										},
+										{
+											"key": "db",
+											"value": "workplace_tracker_db"
+										},
+										{
+											"key": "schema",
+											"value": "dev"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Auth",
+					"item": [
+						{
+							"name": "Register User",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"name\": \"Siya Patni\",\r\n    \"email\": \"siya@gmail.com\",\r\n    \"mobileNumber\": \"9090909090\",\r\n    \"password\": \"Siya@0708\",\r\n    \"role\": \"USER\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8010/api/v1/workplace-tracker-service/register",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8010",
+									"path": [
+										"api",
+										"v1",
+										"workplace-tracker-service",
+										"register"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "User Login",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"email\": \"siya@gmail.com\",\r\n    \"password\": \"Siya@0708\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8010/api/v1/workplace-tracker-service/login",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8010",
+									"path": [
+										"api",
+										"v1",
+										"workplace-tracker-service",
+										"login"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Password Reset",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"email\": \"siddhant4patni@gmail.com\",\r\n    \"otp\": \"277608\",\r\n    \"newPassword\": \"Sid@0407\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8010/api/v1/workplace-tracker-service/forgot-password/reset",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8010",
+									"path": [
+										"api",
+										"v1",
+										"workplace-tracker-service",
+										"forgot-password",
+										"reset"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Users",
+					"item": [
+						{
+							"name": "Get All Users",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8010/api/v1/workplace-tracker-service/user/fetch",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8010",
+									"path": [
+										"api",
+										"v1",
+										"workplace-tracker-service",
+										"user",
+										"fetch"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get User",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"vehicleType\": \"Sedan\",\r\n    \"vehicleCompany\": \"Toyota\",\r\n    \"vehicleModel\": \"Camry\",\r\n    \"chassisNumber\": \"CH1234567890\",\r\n    \"engineNumber\": \"EN9876543210\",\r\n    \"registrationNumber\": \"MH12AB1234\",\r\n    \"registrationDate\": \"2023-05-15\",\r\n    \"registrationValidityDate\": \"2033-05-15\",\r\n    \"ownerName\": \"John Doe\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8010/api/v1/workplace-tracker-service/user?userId=1",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8010",
+									"path": [
+										"api",
+										"v1",
+										"workplace-tracker-service",
+										"user"
+									],
+									"query": [
+										{
+											"key": "userId",
+											"value": "1"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update User",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"username\": \"ABC\",\r\n    \"email\": \"abc@gmail.com\",\r\n    \"mobileNumber\": \"1254780934\",\r\n    \"role\": \"USER\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8069/api/v1/workplace-tracker-service/user?userId=6",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8069",
+									"path": [
+										"api",
+										"v1",
+										"workplace-tracker-service",
+										"user"
+									],
+									"query": [
+										{
+											"key": "userId",
+											"value": "6"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update User Status",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "PATCH",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"userId\": 7,\r\n    \"isActive\": false,\r\n    \"isAccountLocked\": true\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8010/api/v1/workplace-tracker-service/user/status",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8010",
+									"path": [
+										"api",
+										"v1",
+										"workplace-tracker-service",
+										"user",
+										"status"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete User",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "DELETE",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"vehicleType\": \"Sedan\",\r\n    \"vehicleCompany\": \"Toyota\",\r\n    \"vehicleModel\": \"Camry\",\r\n    \"chassisNumber\": \"CH1234567890\",\r\n    \"engineNumber\": \"EN9876543210\",\r\n    \"registrationNumber\": \"MH12AB1234\",\r\n    \"registrationDate\": \"2023-05-15\",\r\n    \"registrationValidityDate\": \"2033-05-15\",\r\n    \"ownerName\": \"John Doe\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8010/api/v1/workplace-tracker-service/user?userId=5",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8010",
+									"path": [
+										"api",
+										"v1",
+										"workplace-tracker-service",
+										"user"
+									],
+									"query": [
+										{
+											"key": "userId",
+											"value": "5"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "User Settings",
+					"item": [
+						{
+							"name": "Get user settings",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "http://localhost:8010/api/v1/workplace-tracker-service/user/settings?userId=1",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8010",
+									"path": [
+										"api",
+										"v1",
+										"workplace-tracker-service",
+										"user",
+										"settings"
+									],
+									"query": [
+										{
+											"key": "userId",
+											"value": "1"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create or update user settings",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"userId\": 1,\n    \"timezone\": \"Asia/Kolkata\",\n    \"workWeekStart\": 1,\n    \"language\": \"English\",\n    \"dateFormat\": \"dd-MM-yyyy\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8010/api/v1/workplace-tracker-service/user/settings?userId=1",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8010",
+									"path": [
+										"api",
+										"v1",
+										"workplace-tracker-service",
+										"user",
+										"settings"
+									],
+									"query": [
+										{
+											"key": "userId",
+											"value": "1"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete user settings",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "http://localhost:8010/api/v1/workplace-tracker-service/user/settings?userId=1",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8010",
+									"path": [
+										"api",
+										"v1",
+										"workplace-tracker-service",
+										"user",
+										"settings"
+									],
+									"query": [
+										{
+											"key": "userId",
+											"value": "1"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			],
+			"auth": {
+				"type": "noauth"
+			},
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		}
+	]
+}

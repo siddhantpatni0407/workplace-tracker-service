@@ -7,6 +7,7 @@ import com.sid.app.model.UserStatusUpdateRequest;
 import com.sid.app.service.UserService;
 import com.sid.app.utils.ApplicationUtils;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -81,7 +82,7 @@ public class UserController {
      */
     @PutMapping(AppConstants.USER_ENDPOINT)
     public ResponseEntity<ResponseDTO<UserDTO>> updateUser(@RequestParam("userId") Long userId,
-                                                           @RequestBody UserDTO updatedUserDTO) {
+                                                           @RequestBody @Valid UserDTO updatedUserDTO) {
         log.info("updateUser() : Received request to update user with ID: {}", userId);
         try {
             UserDTO updatedUser = userService.updateUser(userId, updatedUserDTO);

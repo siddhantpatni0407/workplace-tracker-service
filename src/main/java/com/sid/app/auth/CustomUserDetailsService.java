@@ -1,7 +1,9 @@
 package com.sid.app.auth;
 
 import com.sid.app.entity.User;
+import com.sid.app.entity.UserRole;
 import com.sid.app.repository.UserRepository;
+import com.sid.app.repository.UserRoleRepository;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -15,9 +17,12 @@ import java.util.Collections;
 public class CustomUserDetailsService implements UserDetailsService {
 
     private final UserRepository userRepository;
+    private final UserRoleRepository userRoleRepository;
 
-    public CustomUserDetailsService(UserRepository userRepository) {
+    public CustomUserDetailsService(UserRepository userRepository,
+                                    UserRoleRepository userRoleRepository) {
         this.userRepository = userRepository;
+        this.userRoleRepository = userRoleRepository;
     }
 
     @Override
@@ -25,15 +30,19 @@ public class CustomUserDetailsService implements UserDetailsService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
 
-        // Map DB user -> Spring Security UserDetails
-        GrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + user.getRole().toUpperCase());
+        // resolve role name from roleId
+        String roleName = userRoleRepository.findById(user.getRoleId())
+                .map(UserRole::getRole)
+                .orElse("USER");
+
+        GrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + roleName.toUpperCase());
 
         return org.springframework.security.core.userdetails.User.builder()
                 .username(user.getEmail())
-                .password(user.getPassword()) // must be encoded with BCrypt
+                .password(user.getPassword()) // must be encoded
                 .authorities(Collections.singleton(authority))
-                .disabled(!user.getIsActive())
-                .accountLocked(user.getAccountLocked())
+                .disabled(!Boolean.TRUE.equals(user.getIsActive()))
+                .accountLocked(Boolean.TRUE.equals(user.getAccountLocked()))
                 .build();
     }
 }

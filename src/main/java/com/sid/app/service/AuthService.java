@@ -3,18 +3,19 @@ package com.sid.app.service;
 import com.sid.app.auth.JwtUtil;
 import com.sid.app.constants.AppConstants;
 import com.sid.app.entity.User;
+import com.sid.app.entity.UserRole;
 import com.sid.app.model.AuthResponse;
 import com.sid.app.model.LoginRequest;
 import com.sid.app.model.RegisterRequest;
 import com.sid.app.model.ForgotPasswordResetRequest;
 import com.sid.app.model.ResponseDTO;
 import com.sid.app.repository.UserRepository;
+import com.sid.app.repository.UserRoleRepository;
 import com.sid.app.utils.AESUtils;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -23,15 +24,19 @@ import org.springframework.stereotype.Service;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Optional;
-import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * AuthService - handles registration, login, refresh token, password reset, etc.
+ * Updated to use role_id on User and resolve role names via UserRoleRepository.
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class AuthService {
 
     private final UserRepository userRepository;
+    private final UserRoleRepository userRoleRepository;
     private final JwtUtil jwtUtil;
     private final BCryptPasswordEncoder passwordEncoder;
     private final AESUtils aesUtils;
@@ -39,6 +44,10 @@ public class AuthService {
 
     private static final ConcurrentHashMap<String, String> otpStore = new ConcurrentHashMap<>();
 
+    /**
+     * Register new user. Expects RegisterRequest to contain role (string) optionally.
+     * Maps role name -> role_id and stores role_id on User.
+     */
     public AuthResponse register(RegisterRequest request) {
         Optional<User> existingUser = userRepository.findByEmailOrMobileNumber(
                 request.getEmail(), request.getMobileNumber()
@@ -60,6 +69,7 @@ public class AuthService {
         }
 
         try {
+            // encrypt password using AES utils (your existing approach)
             String encryptedPassword = aesUtils.encrypt(request.getPassword());
 
             User newUser = new User();
@@ -67,7 +77,11 @@ public class AuthService {
             newUser.setEmail(request.getEmail());
             newUser.setMobileNumber(request.getMobileNumber());
             newUser.setPassword(encryptedPassword);
-            newUser.setRole(request.getRole());
+
+            // map role string to role_id (throws IllegalArgumentException if invalid)
+            Long roleId = resolveRoleId(request.getRole());
+            newUser.setRoleId(roleId);
+
             newUser.setPasswordEncryptionKeyVersion(encryptionKeyService.getLatestKey().getKeyVersion());
             newUser.setIsActive(true);
             newUser.setLoginAttempts(0);
@@ -75,9 +89,12 @@ public class AuthService {
 
             User savedUser = userRepository.save(newUser);
 
+            // resolve role name for response
+            String roleName = resolveRoleName(savedUser.getRoleId());
+
             return new AuthResponse(
                     jwtUtil.generateToken(savedUser.getEmail()),
-                    savedUser.getRole(),
+                    roleName,
                     savedUser.getUserId(),
                     savedUser.getName(),
                     AppConstants.STATUS_SUCCESS,
@@ -87,8 +104,14 @@ public class AuthService {
                     0,
                     false
             );
+        } catch (IllegalArgumentException iae) {
+            log.warn("register() : Invalid role specified: {}", request.getRole());
+            return new AuthResponse(null, null, null, null,
+                    AppConstants.STATUS_FAILED,
+                    iae.getMessage(),
+                    null, null, null, null);
         } catch (Exception e) {
-            log.error("Error encrypting password: {}", e.getMessage());
+            log.error("Error encrypting password or saving user: {}", e.getMessage(), e);
             return new AuthResponse(null, null, null, null,
                     AppConstants.STATUS_FAILED,
                     AppConstants.ERROR_MESSAGE_REGISTRATION,
@@ -96,6 +119,9 @@ public class AuthService {
         }
     }
 
+    /**
+     * Login using email + password (AES-encrypted password in DB).
+     */
     public AuthResponse login(LoginRequest request) {
         Optional<User> optionalUser = userRepository.findByEmail(request.getEmail());
 
@@ -141,6 +167,7 @@ public class AuthService {
                         null, user.getIsActive(), user.getLoginAttempts(), user.getAccountLocked());
             }
         } catch (Exception e) {
+            log.error("Error decrypting password for user {}: {}", request.getEmail(), e.getMessage());
             return new AuthResponse(null, null, null, null,
                     AppConstants.STATUS_FAILED,
                     AppConstants.ERROR_MESSAGE_LOGIN,
@@ -151,9 +178,11 @@ public class AuthService {
         user.setLastLoginTime(LocalDateTime.now());
         userRepository.save(user);
 
+        String roleName = resolveRoleName(user.getRoleId());
+
         return new AuthResponse(
                 jwtUtil.generateToken(user.getEmail()),
-                user.getRole(),
+                roleName,
                 user.getUserId(),
                 user.getName(),
                 AppConstants.STATUS_SUCCESS,
@@ -190,6 +219,9 @@ public class AuthService {
         servletResponse.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
     }
 
+    /**
+     * Reset password using OTP (simple flow using in-memory otpStore - adapt as needed).
+     */
     public ResponseEntity<ResponseDTO<Void>> resetPassword(ForgotPasswordResetRequest request) {
         String email = request.getEmail();
         String otp = request.getOtp();
@@ -214,6 +246,7 @@ public class AuthService {
 
             return ResponseEntity.ok(new ResponseDTO<>(AppConstants.STATUS_SUCCESS, "Password reset successful.", null));
         } catch (Exception e) {
+            log.error("Error resetting password for {}: {}", email, e.getMessage(), e);
             return ResponseEntity.internalServerError()
                     .body(new ResponseDTO<>(AppConstants.STATUS_FAILED, "Error resetting password.", null));
         }
@@ -222,10 +255,6 @@ public class AuthService {
     /**
      * Validate provided refresh token, issue a fresh access token and rotate refresh token.
      * Returns AuthResponse with new access token in token field.
-     *
-     * @param refreshToken    incoming refresh token (from cookie or header)
-     * @param servletResponse response object to set rotated refresh cookie (if rotation occurs)
-     * @return AuthResponse with new access token or failure status
      */
     public AuthResponse refreshToken(String refreshToken, HttpServletResponse servletResponse) {
         if (refreshToken == null || refreshToken.isBlank()) {
@@ -267,10 +296,12 @@ public class AuthService {
 
             servletResponse.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
+            String roleName = resolveRoleName(user.getRoleId());
+
             // prepare response (reuse your AuthResponse constructor/semantics)
             return new AuthResponse(
                     newAccessToken,
-                    user.getRole(),
+                    roleName,
                     user.getUserId(),
                     user.getName(),
                     AppConstants.STATUS_SUCCESS,
@@ -285,11 +316,39 @@ public class AuthService {
             return new AuthResponse(null, null, null, null,
                     AppConstants.STATUS_FAILED, "Refresh token expired.", null, null, null, null);
         } catch (Exception ex) {
-            log.error("Error during refreshToken: {}", ex.getMessage());
+            log.error("Error during refreshToken: {}", ex.getMessage(), ex);
             return new AuthResponse(null, null, null, null,
                     AppConstants.STATUS_FAILED, "Invalid refresh token.", null, null, null, null);
         }
     }
 
+    // ---------------------------
+    // Helper methods - role mapping
+    // ---------------------------
 
+    /**
+     * Resolve role name from DB by roleId. Returns "USER" as fallback if not found or null.
+     */
+    private String resolveRoleName(Long roleId) {
+        if (roleId == null) {
+            return "USER";
+        }
+        return userRoleRepository.findById(roleId)
+                .map(UserRole::getRole)
+                .orElse("USER");
+    }
+
+    /**
+     * Resolve roleId by role name. If roleName is null/blank, defaults to "USER".
+     * Throws IllegalArgumentException if role name is not found in DB.
+     */
+    private Long resolveRoleId(String roleName) {
+        String effective = (roleName == null || roleName.isBlank()) ? "USER" : roleName.trim();
+        Optional<UserRole> roleOpt = userRoleRepository.findByRole(effective);
+        if (roleOpt.isPresent()) {
+            return roleOpt.get().getRoleId();
+        } else {
+            throw new IllegalArgumentException("Invalid role: " + roleName);
+        }
+    }
 }

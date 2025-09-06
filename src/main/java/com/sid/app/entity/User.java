@@ -23,23 +23,23 @@ public class User extends Auditable {
     @Column(name = "user_id")
     private Long userId;
 
-    @Column(name = "name", length = 100, nullable = false)
+    @Column(name = "name", length = 50, nullable = false)
     private String name;
 
     @Column(name = "mobile_number", length = 15, nullable = false, unique = true)
     private String mobileNumber;
 
-    @Column(name = "email", length = 255, nullable = false, unique = true)
+    @Column(name = "email", length = 30, nullable = false, unique = true)
     private String email;
 
-    @Column(name = "password", length = 255, nullable = false)
+    @Column(name = "password", length = 50, nullable = false)
     private String password;
 
     @Column(name = "password_encryption_key_version", nullable = false)
     private Integer passwordEncryptionKeyVersion;
 
-    @Column(name = "role", length = 50, nullable = false)
-    private String role;
+    @Column(name = "role_id", nullable = false)
+    private Long roleId;
 
     @Column(name = "last_login_time")
     private LocalDateTime lastLoginTime;

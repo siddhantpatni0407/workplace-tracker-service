@@ -1,15 +1,18 @@
 package com.sid.app.service;
 
 import com.sid.app.entity.User;
+import com.sid.app.entity.UserRole;
 import com.sid.app.model.UserDTO;
 import com.sid.app.model.UserStatusUpdateRequest;
 import com.sid.app.repository.UserRepository;
+import com.sid.app.repository.UserRoleRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -23,6 +26,7 @@ import java.util.stream.Collectors;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final UserRoleRepository userRoleRepository;
 
     public List<UserDTO> getAllUsers() {
         log.info("Fetching all users from the database.");
@@ -53,10 +57,23 @@ public class UserService {
                     if (updatedUserDTO.getUsername() == null || updatedUserDTO.getEmail() == null) {
                         throw new IllegalArgumentException("Username and email cannot be null.");
                     }
+
+                    // map fields
                     user.setName(updatedUserDTO.getUsername());
                     user.setEmail(updatedUserDTO.getEmail());
                     user.setMobileNumber(updatedUserDTO.getMobileNumber());
-                    user.setRole(updatedUserDTO.getRole());
+
+                    // If role (string) provided in DTO, map it to role_id
+                    String requestedRole = updatedUserDTO.getRole();
+                    if (requestedRole != null && !requestedRole.isBlank()) {
+                        // Normalize role value (e.g., uppercase) depending on how roles are stored
+                        String normalized = requestedRole.trim();
+                        Optional<UserRole> roleOpt = userRoleRepository.findByRole(normalized);
+                        if (roleOpt.isEmpty()) {
+                            throw new IllegalArgumentException("Invalid role: " + requestedRole);
+                        }
+                        user.setRoleId(roleOpt.get().getRoleId());
+                    }
 
                     userRepository.save(user);
                     log.info("User with ID {} updated successfully.", userId);
@@ -92,7 +109,8 @@ public class UserService {
 
         if (changed) {
             userRepository.save(user);
-            log.info("updateUserStatus() : Updated userId={} isActive={} accountLocked={}", userId, user.getIsActive(), user.getAccountLocked());
+            log.info("updateUserStatus() : Updated userId={} isActive={} accountLocked={}",
+                    userId, user.getIsActive(), user.getAccountLocked());
         } else {
             log.info("updateUserStatus() : No changes requested for userId={}", userId);
         }
@@ -112,12 +130,20 @@ public class UserService {
     }
 
     private UserDTO convertToDTO(User user) {
+        // find role name from roleId; if not found, fallback to null or empty string
+        String roleName = null;
+        if (user.getRoleId() != null) {
+            roleName = userRoleRepository.findById(user.getRoleId())
+                    .map(UserRole::getRole)
+                    .orElse(null);
+        }
+
         return UserDTO.builder()
                 .userId(user.getUserId())
                 .username(user.getName())
                 .email(user.getEmail())
                 .mobileNumber(user.getMobileNumber())
-                .role(user.getRole())
+                .role(roleName)                       // <-- still returns role name string
                 .lastLoginTime(user.getLastLoginTime())
                 .loginAttempts(user.getLoginAttempts())
                 .isAccountLocked(user.getAccountLocked())

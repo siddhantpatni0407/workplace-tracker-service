@@ -15,7 +15,7 @@ public class EncryptionKey extends Auditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "encryption_keys_id", nullable = false)
+    @Column(name = "encryption_key_id", nullable = false)
     private Long id;
 
     @Column(name = "key_version", nullable = false, unique = true)
