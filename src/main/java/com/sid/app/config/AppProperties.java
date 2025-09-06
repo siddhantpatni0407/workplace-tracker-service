@@ -4,6 +4,9 @@ import lombok.Data;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.util.Arrays;
+import java.util.List;
+
 @Component
 @Data
 public class AppProperties {
@@ -29,4 +32,13 @@ public class AppProperties {
      */
     @Value("${app.jwt.allowed-clock-skew-sec:10}")
     private long jwtAllowedClockSkewSec;
+
+    public List<String> getAllowedOrigins() {
+        return Arrays.stream(uiHost.split(","))
+                .map(String::trim)
+                .filter(h -> !h.isEmpty())
+                .map(h -> h + ":" + uiPort)
+                .toList();
+    }
+
 }
