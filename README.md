@@ -1,11 +1,3 @@
-Understood — below is the **full `README.md`** with everything you asked for preserved, and **detailed Docker +
-Kubernetes steps included**, **but with no Dockerfile or Kubernetes manifest contents pasted inline**. Instead the
-README references the filenames (`Dockerfile`, `docker-compose.yml`, `k8s/*.yml`, `.env.example`) and gives exact
-commands and sequence to follow.
-
-Copy the text below into your `README.md`.
-
-````markdown
 # workplace-tracker-service
 
 A concise README for the **workplace-tracker-service** backend. It describes purpose, quick setup, configuration,
@@ -62,14 +54,14 @@ API.
 
 ## Tech Stack
 
-* Java 17+ (or compatible)
+* Java 21
 * Spring Boot (Web, Security, Data JPA)
 * Spring Security (JWT)
 * JPA / Hibernate
-* H2 (for dev) / PostgreSQL / MySQL (production)
-* Maven or Gradle build
+* PostgreSQL
+* Gradle build
 * Lombok
-* Optional: Flyway or Liquibase for DB migrations
+* Liquibase for DB migrations
 
 ---
 
@@ -87,7 +79,7 @@ API.
 1. **Clone repo**
 
    ```bash
-   git clone <repo-url>
+   git clone https://github.com/siddhantpatni0407/workplace-tracker-service.git
    cd workplace-tracker-service
 ````
 
