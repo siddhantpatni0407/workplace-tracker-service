@@ -36,7 +36,7 @@ spring:
       schema: dev
 
   jpa:
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
         default_schema: ${JPA_DEFAULT_SCHEMA:dev}
