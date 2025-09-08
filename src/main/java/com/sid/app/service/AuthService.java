@@ -4,6 +4,7 @@ import com.sid.app.auth.JwtUtil;
 import com.sid.app.constants.AppConstants;
 import com.sid.app.entity.User;
 import com.sid.app.entity.UserRole;
+import com.sid.app.exception.UserNotFoundException;
 import com.sid.app.model.AuthResponse;
 import com.sid.app.model.LoginRequest;
 import com.sid.app.model.RegisterRequest;
@@ -13,6 +14,7 @@ import com.sid.app.repository.UserRepository;
 import com.sid.app.repository.UserRoleRepository;
 import com.sid.app.utils.AESUtils;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -319,6 +321,55 @@ public class AuthService {
             log.error("Error during refreshToken: {}", ex.getMessage(), ex);
             return new AuthResponse(null, null, null, null,
                     AppConstants.STATUS_FAILED, "Invalid refresh token.", null, null, null, null);
+        }
+    }
+
+    @Transactional
+    public void changePassword(Long userId, String currentPassword, String newPassword) {
+        log.info("changePassword() : Attempting password change for userId={}", userId);
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> {
+                    log.warn("changePassword() : User not found userId={}", userId);
+                    return new UserNotFoundException("User not found with ID: " + userId);
+                });
+
+        try {
+            String decrypted = aesUtils.decrypt(user.getPassword(), user.getPasswordEncryptionKeyVersion());
+
+            if (!decrypted.equals(currentPassword)) {
+                log.info("changePassword() : Current password mismatch for userId={}", userId);
+                throw new IllegalArgumentException("Current password is incorrect.");
+            }
+
+            if (currentPassword.equals(newPassword)) {
+                log.info("changePassword() : New password same as current for userId={}", userId);
+                throw new IllegalArgumentException("New password must be different from current password.");
+            }
+
+            if (newPassword.length() < 8) {
+                log.info("changePassword() : New password too short for userId={}", userId);
+                throw new IllegalArgumentException("New password must be at least 8 characters long.");
+            }
+
+            String encryptedNew = aesUtils.encrypt(newPassword);
+            int updated = userRepository.updatePassword(
+                    userId,
+                    encryptedNew,
+                    encryptionKeyService.getLatestKey().getKeyVersion()
+            );
+
+            if (updated == 0) {
+                log.warn("changePassword() : No rows updated for userId={}", userId);
+                throw new UserNotFoundException("User not found with ID: " + userId);
+            }
+
+            log.info("changePassword() : Password updated successfully for userId={}", userId);
+        } catch (IllegalArgumentException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            log.error("changePassword() : Error while changing password for userId={}: {}", userId, ex.getMessage(), ex);
+            throw new RuntimeException("Failed to change password. Please try again later.");
         }
     }
 

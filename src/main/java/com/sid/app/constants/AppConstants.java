@@ -9,6 +9,7 @@ public class AppConstants {
     public static final String USER_REGISTER_ENDPOINT = "/api/v1/workplace-tracker-service/register";
     public static final String USER_LOGIN_ENDPOINT = "/api/v1/workplace-tracker-service/login";
     public static final String FORGOT_PASSWORD_RESET_ENDPOINT = "/api/v1/workplace-tracker-service/forgot/reset";
+    public static final String USER_CHANGE_PASSWORD_ENDPOINT = "/api/v1/workplace-tracker-service/user/change-password";
 
     // User endpoints
     public static final String FETCH_ALL_USERS_ENDPOINT = "/api/v1/workplace-tracker-service/user/fetch";
