@@ -2,9 +2,6 @@ spring:
   application:
     name: workplace-tracker-service
 
-  profiles:
-    active: ${SPRING_PROFILES_ACTIVE:}
-
   main:
     allow-bean-definition-overriding: true
 
@@ -23,10 +20,9 @@ spring:
 
   datasource:
     driver-class-name: org.postgresql.Driver
-    # Prefer SPRING_DATASOURCE_URL if provided, otherwise build from DB_HOST/DB_PORT/DB_NAME
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:workplace_tracker_db}}
-    username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:root}
+    url: jdbc:postgresql://ep-calm-moon-ad6c6glu-pooler.c-2.us-east-1.aws.neon.tech/workplace_tracker_db?sslmode=require&channelBinding=require
+    username: neondb_owner
+    password: npg_9C1qedHXLNEZ
     properties:
       charSet: UTF-8
     hikari:
