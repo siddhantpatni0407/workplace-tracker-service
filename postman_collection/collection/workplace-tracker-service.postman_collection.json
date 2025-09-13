@@ -147,6 +147,38 @@
 								}
 							},
 							"response": []
+						},
+						{
+							"name": "Change Password",
+							"request": {
+								"method": "PATCH",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"userId\": 2,\r\n    \"currentPassword\": \"Sid@040796\",\r\n    \"newPassword\": \"Sid@0407\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8010/api/v1/workplace-tracker-service/user/change-password",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8010",
+									"path": [
+										"api",
+										"v1",
+										"workplace-tracker-service",
+										"user",
+										"change-password"
+									]
+								}
+							},
+							"response": []
 						}
 					]
 				},
@@ -336,6 +368,14 @@
 								}
 							},
 							"response": []
+						},
+						{
+							"name": "New Request",
+							"request": {
+								"method": "GET",
+								"header": []
+							},
+							"response": []
 						}
 					]
 				},
@@ -447,6 +487,851 @@
 										{
 											"key": "userId",
 											"value": "1"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Leave Policy",
+					"item": [
+						{
+							"name": "Get all leave policies",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8010/api/v1/workplace-tracker-service/leave-policies",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8010",
+									"path": [
+										"api",
+										"v1",
+										"workplace-tracker-service",
+										"leave-policies"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get single leave policy",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8010/api/v1/workplace-tracker-service/leave-policies/exact?policyId=1",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8010",
+									"path": [
+										"api",
+										"v1",
+										"workplace-tracker-service",
+										"leave-policies",
+										"exact"
+									],
+									"query": [
+										{
+											"key": "policyId",
+											"value": "1"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create leave policy",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"policyCode\": \"ANNUAL\",\r\n    \"policyName\": \"Annual Leave\",\r\n    \"defaultAnnualDays\": 20,\r\n    \"description\": \"Standard annual leave allocation\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8010/api/v1/workplace-tracker-service/leave-policies",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8010",
+									"path": [
+										"api",
+										"v1",
+										"workplace-tracker-service",
+										"leave-policies"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Leave policy",
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"policyCode\": \"ANNUAL\",\r\n    \"policyName\": \"Annual Leave\",\r\n    \"defaultAnnualDays\": 18,\r\n    \"description\": \"Standard annual leave allocation\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8010/api/v1/workplace-tracker-service/leave-policies?policyId=1",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8010",
+									"path": [
+										"api",
+										"v1",
+										"workplace-tracker-service",
+										"leave-policies"
+									],
+									"query": [
+										{
+											"key": "policyId",
+											"value": "1"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "User Leave",
+					"item": [
+						{
+							"name": "Get leaves for a user",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8010/api/v1/workplace-tracker-service/user-leaves?userId=1",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8010",
+									"path": [
+										"api",
+										"v1",
+										"workplace-tracker-service",
+										"user-leaves"
+									],
+									"query": [
+										{
+											"key": "userId",
+											"value": "1"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create user leave",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"userId\": 1,\r\n    \"policyId\": 2,\r\n    \"startDate\": \"2025-12-26\",\r\n    \"endDate\": \"2025-12-26\",\r\n    \"days\": 1,\r\n    \"dayPart\": \"FULL\",\r\n    \"notes\": \"Christmas Continue\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8010/api/v1/workplace-tracker-service/user-leaves?userId=1",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8010",
+									"path": [
+										"api",
+										"v1",
+										"workplace-tracker-service",
+										"user-leaves"
+									],
+									"query": [
+										{
+											"key": "userId",
+											"value": "1"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update user leave",
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"userId\": 1,\r\n    \"policyId\": 1,\r\n    \"startDate\": \"2025-09-17\",\r\n    \"endDate\": \"2025-09-19\",\r\n    \"days\": 2,\r\n    \"dayPart\": \"FULL\",\r\n    \"notes\": \"Medical appointment\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8010/api/v1/workplace-tracker-service/user-leaves?userLeaveId=2",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8010",
+									"path": [
+										"api",
+										"v1",
+										"workplace-tracker-service",
+										"user-leaves"
+									],
+									"query": [
+										{
+											"key": "userLeaveId",
+											"value": "2"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete user leave",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8010/api/v1/workplace-tracker-service/user-leaves?userLeaveId=1",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8010",
+									"path": [
+										"api",
+										"v1",
+										"workplace-tracker-service",
+										"user-leaves"
+									],
+									"query": [
+										{
+											"key": "userLeaveId",
+											"value": "1"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "User Leave Balance",
+					"item": [
+						{
+							"name": "Get User Leave Balance",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8010/api/v1/workplace-tracker-service/user-leave-balance?userId=1&policyId=1&year=2025",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8010",
+									"path": [
+										"api",
+										"v1",
+										"workplace-tracker-service",
+										"user-leave-balance"
+									],
+									"query": [
+										{
+											"key": "userId",
+											"value": "1"
+										},
+										{
+											"key": "policyId",
+											"value": "1"
+										},
+										{
+											"key": "year",
+											"value": "2025"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Upsert User Leave Balance (ADMIN)",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"userId\": 1,\r\n    \"policyId\": 1,\r\n    \"year\": 2025,\r\n    \"allocatedDays\": 20.0,\r\n    \"usedDays\": 8.0,\r\n    \"remainingDays\": 12.0\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8010/api/v1/workplace-tracker-service/user-leave-balance",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8010",
+									"path": [
+										"api",
+										"v1",
+										"workplace-tracker-service",
+										"user-leave-balance"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Adjust User Leave Balance (ADMIN/programmatic)",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"userId\": 101,\r\n    \"policyId\": 1,\r\n    \"year\": 2025,\r\n    \"allocatedDays\": 18.0,\r\n    \"usedDays\": 5.0,\r\n    \"remainingDays\": 13.0\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8010/api/v1/workplace-tracker-service/user-leave-balance/adjust?userId=1&policyId=1&year=2025&delta=1.0",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8010",
+									"path": [
+										"api",
+										"v1",
+										"workplace-tracker-service",
+										"user-leave-balance",
+										"adjust"
+									],
+									"query": [
+										{
+											"key": "userId",
+											"value": "1"
+										},
+										{
+											"key": "policyId",
+											"value": "1"
+										},
+										{
+											"key": "year",
+											"value": "2025"
+										},
+										{
+											"key": "delta",
+											"value": "1.0"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Recalculate User Leave Balance (ADMIN)",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"userId\": 101,\r\n    \"policyId\": 1,\r\n    \"year\": 2025,\r\n    \"allocatedDays\": 18.0,\r\n    \"usedDays\": 5.0,\r\n    \"remainingDays\": 13.0\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8010/api/v1/workplace-tracker-service/user-leave-balance/recalculate?userId=1&policyId=1&year=2025",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8010",
+									"path": [
+										"api",
+										"v1",
+										"workplace-tracker-service",
+										"user-leave-balance",
+										"recalculate"
+									],
+									"query": [
+										{
+											"key": "userId",
+											"value": "1"
+										},
+										{
+											"key": "policyId",
+											"value": "1"
+										},
+										{
+											"key": "year",
+											"value": "2025"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Holiday",
+					"item": [
+						{
+							"name": "Get all holidays",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8010/api/v1/workplace-tracker-service/holidays",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8010",
+									"path": [
+										"api",
+										"v1",
+										"workplace-tracker-service",
+										"holidays"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get range holidays",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8010/api/v1/workplace-tracker-service/holidays?from=2025-01-01&to=2025-10-22",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8010",
+									"path": [
+										"api",
+										"v1",
+										"workplace-tracker-service",
+										"holidays"
+									],
+									"query": [
+										{
+											"key": "from",
+											"value": "2025-01-01"
+										},
+										{
+											"key": "to",
+											"value": "2025-10-22"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create holiday",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"holidayDate\": \"2025-09-18\",\r\n    \"name\": \"Hackathon\",\r\n    \"holidayType\": \"MANDATORY\",\r\n    \"description\": \"Hackathon\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8010/api/v1/workplace-tracker-service/holidays",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8010",
+									"path": [
+										"api",
+										"v1",
+										"workplace-tracker-service",
+										"holidays"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete holiday",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8010/api/v1/workplace-tracker-service/holidays?holidayId=1",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8010",
+									"path": [
+										"api",
+										"v1",
+										"workplace-tracker-service",
+										"holidays"
+									],
+									"query": [
+										{
+											"key": "holidayId",
+											"value": "1"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Office Visit",
+					"item": [
+						{
+							"name": "Upsert (create/update) a visit",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"userId\": 1,\r\n    \"visitDate\": \"2025-09-22\",\r\n    \"dayOfWeek\": 1,\r\n    \"visitType\": \"WFH\",\r\n    \"notes\": \"Onsite review\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8010/api/v1/workplace-tracker-service/visits",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8010",
+									"path": [
+										"api",
+										"v1",
+										"workplace-tracker-service",
+										"visits"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get visits for a month",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8010/api/v1/workplace-tracker-service/visits?userId=1&year=2025&month=9",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8010",
+									"path": [
+										"api",
+										"v1",
+										"workplace-tracker-service",
+										"visits"
+									],
+									"query": [
+										{
+											"key": "userId",
+											"value": "1"
+										},
+										{
+											"key": "year",
+											"value": "2025"
+										},
+										{
+											"key": "month",
+											"value": "9"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete visit",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8010/api/v1/workplace-tracker-service/visits?officeVisitId=2",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8010",
+									"path": [
+										"api",
+										"v1",
+										"workplace-tracker-service",
+										"visits"
+									],
+									"query": [
+										{
+											"key": "officeVisitId",
+											"value": "2"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "User Daily View Records",
+					"item": [
+						{
+							"name": "Fetch daily view for a month",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8010/api/v1/workplace-tracker-service/fetch-daily-view-records?userId=1&year=2025&month=10",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8010",
+									"path": [
+										"api",
+										"v1",
+										"workplace-tracker-service",
+										"fetch-daily-view-records"
+									],
+									"query": [
+										{
+											"key": "userId",
+											"value": "1"
+										},
+										{
+											"key": "year",
+											"value": "2025"
+										},
+										{
+											"key": "month",
+											"value": "10"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Fetch daily view for a custom date range",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8010/api/v1/workplace-tracker-service/fetch-daily-view-records?userId=101&from=2025-09-01&to=2025-09-10",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8010",
+									"path": [
+										"api",
+										"v1",
+										"workplace-tracker-service",
+										"fetch-daily-view-records"
+									],
+									"query": [
+										{
+											"key": "userId",
+											"value": "101"
+										},
+										{
+											"key": "from",
+											"value": "2025-09-01"
+										},
+										{
+											"key": "to",
+											"value": "2025-09-10"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Fetch daily view including all details",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8010/api/v1/workplace-tracker-service/fetch-daily-view-records?userId=1&year=2025&month=9&showAll=true",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8010",
+									"path": [
+										"api",
+										"v1",
+										"workplace-tracker-service",
+										"fetch-daily-view-records"
+									],
+									"query": [
+										{
+											"key": "userId",
+											"value": "1"
+										},
+										{
+											"key": "year",
+											"value": "2025"
+										},
+										{
+											"key": "month",
+											"value": "9"
+										},
+										{
+											"key": "showAll",
+											"value": "true"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Analytics",
+					"item": [
+						{
+							"name": "Monthly aggregation",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8010/api/v1/workplace-tracker-service/analytics/visits-leaves-aggregate?userId=1&from=2025-12-01&to=2025-12-31&groupBy=month",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8010",
+									"path": [
+										"api",
+										"v1",
+										"workplace-tracker-service",
+										"analytics",
+										"visits-leaves-aggregate"
+									],
+									"query": [
+										{
+											"key": "userId",
+											"value": "1"
+										},
+										{
+											"key": "from",
+											"value": "2025-12-01"
+										},
+										{
+											"key": "to",
+											"value": "2025-12-31"
+										},
+										{
+											"key": "groupBy",
+											"value": "month"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Org-wide weekly aggregation",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8010/api/v1/workplace-tracker-service/analytics/visits-leaves-aggregate?from=2025-09-01&to=2025-09-30&groupBy=week",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8010",
+									"path": [
+										"api",
+										"v1",
+										"workplace-tracker-service",
+										"analytics",
+										"visits-leaves-aggregate"
+									],
+									"query": [
+										{
+											"key": "from",
+											"value": "2025-09-01"
+										},
+										{
+											"key": "to",
+											"value": "2025-09-30"
+										},
+										{
+											"key": "groupBy",
+											"value": "week"
 										}
 									]
 								}
