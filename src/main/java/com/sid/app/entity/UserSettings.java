@@ -4,8 +4,6 @@ import com.sid.app.audit.Auditable;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.OffsetDateTime;
-
 @Entity
 @Table(name = "user_settings", uniqueConstraints = {@UniqueConstraint(columnNames = "user_id")})
 @Getter
@@ -24,16 +22,19 @@ public class UserSettings extends Auditable {
     @Column(name = "user_id", nullable = false, unique = true)
     private Long userId;
 
+    @Builder.Default
     @Column(name = "timezone", length = 64, nullable = false)
     private String timezone = "UTC";
 
+    @Builder.Default
     @Column(name = "work_week_start", nullable = false)
     private Integer workWeekStart = 1; // 1 = Monday
 
+    @Builder.Default
     @Column(name = "language", length = 16, nullable = false)
     private String language = "en";
 
+    @Builder.Default
     @Column(name = "date_format", length = 32, nullable = false)
     private String dateFormat = "yyyy-MM-dd";
-
 }

@@ -1,4 +1,8 @@
 -- =========================
+-- Start of changeset : schema.sql
+-- =========================
+
+-- =========================
 -- Create user_role table
 -- =========================
 CREATE TABLE IF NOT EXISTS user_role (
@@ -73,3 +77,7 @@ CREATE TABLE IF NOT EXISTS user_settings (
 
 -- Index to speed up lookups by user_id (user_id is UNIQUE so this is optional but explicit)
 CREATE INDEX IF NOT EXISTS idx_user_settings_user ON user_settings(user_id);
+
+-- =========================
+-- End of changeset : schema.sql
+-- =========================

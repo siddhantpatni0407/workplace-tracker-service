@@ -27,6 +27,9 @@ public class AppProperties {
     @Value("${app.jwt.expiration-ms:3600000}")
     private long jwtExpirationMs;
 
+    @Value("${app.daily-view.max-range-days}")
+    private int dailyViewMaxRangeDays;
+
     /**
      * Allowed clock skew in seconds (default 10 seconds)
      */

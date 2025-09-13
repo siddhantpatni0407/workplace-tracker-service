@@ -49,7 +49,17 @@ public class SecurityConfig {
                                 AppConstants.USER_STATUS_ENDPOINT,
                                 AppConstants.AUTH_REFRESH_ENDPOINT,
                                 AppConstants.USER_SETTINGS_ENDPOINT,
-                                AppConstants.USER_CHANGE_PASSWORD_ENDPOINT
+                                AppConstants.USER_CHANGE_PASSWORD_ENDPOINT,
+                                AppConstants.LEAVE_POLICY_ENDPOINT,
+                                AppConstants.EXACT_LEAVE_POLICY_ENDPOINT,
+                                AppConstants.USER_LEAVE_ENDPOINT,
+                                AppConstants.USER_LEAVE_BALANCE_ENDPOINT,
+                                AppConstants.USER_LEAVE_BALANCE_ADJUST_ENDPOINT,
+                                AppConstants.USER_LEAVE_BALANCE_RECALCULATE_ENDPOINT,
+                                AppConstants.HOLIDAYS_ENDPOINT,
+                                AppConstants.VISITS_ENDPOINT,
+                                AppConstants.FETCH_DAILY_VIEW_ENDPOINT,
+                                AppConstants.ANALYTICS_VISITS_LEAVES_AGG_ENDPOINT
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
