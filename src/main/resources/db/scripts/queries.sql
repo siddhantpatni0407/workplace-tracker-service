@@ -17,3 +17,14 @@ LEFT JOIN user_role r
 ON u.role = r.role
 WHERE r.role IS NULL;
 
+select * from dev.user_role;
+select * from dev.encryption_keys;
+select * from dev.users;
+-- delete from dev.users where user_id=9;
+select * from dev.user_settings;
+select * from dev.holiday;
+select * from dev.leave_policy;
+select * from dev.user_leave;
+select * from dev.user_leave_balance;
+select * from dev.office_visit;
+-- delete from dev.office_visit;
