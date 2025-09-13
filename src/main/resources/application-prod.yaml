@@ -53,6 +53,8 @@ encryption:
     secret-key: ${AES_SECRET_KEY:Xf9aLp3qzT7vN2sYgW5KbVc6Rm8QJ0dP}
 
 app:
+  daily-view:
+    max-range-days: ${DAILY_VIEW_MAX_RANGE:366}
   backup:
     directory: C:\Backup\Database\workplace_tracker_db
     prefix: db_backup
@@ -74,3 +76,5 @@ logging:
   level:
     root: INFO
     com.sid: INFO
+    org.liquibase: DEBUG
+    org.springframework.boot.autoconfigure.liquibase: DEBUG

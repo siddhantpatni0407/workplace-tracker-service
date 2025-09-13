@@ -23,6 +23,65 @@ public class AppConstants {
     // Auth refresh
     public static final String AUTH_REFRESH_ENDPOINT = "/api/v1/workplace-tracker-service/auth/refresh";
 
+    // Leave / holiday / visits endpoints (full paths, no base concatenation)
+    public static final String LEAVE_POLICY_ENDPOINT = "/api/v1/workplace-tracker-service/leave-policies";
+    public static final String EXACT_LEAVE_POLICY_ENDPOINT = "/api/v1/workplace-tracker-service/leave-policies/exact";
+    public static final String USER_LEAVE_ENDPOINT = "/api/v1/workplace-tracker-service/user-leaves";
+    public static final String USER_LEAVE_BALANCE_ENDPOINT = "/api/v1/workplace-tracker-service/user-leave-balance";
+    public static final String USER_LEAVE_BALANCE_ADJUST_ENDPOINT = "/api/v1/workplace-tracker-service/user-leave-balance/adjust";
+    public static final String USER_LEAVE_BALANCE_RECALCULATE_ENDPOINT = "/api/v1/workplace-tracker-service/user-leave-balance/recalculate";
+
+    public static final String HOLIDAYS_ENDPOINT = "/api/v1/workplace-tracker-service/holidays";
+    public static final String VISITS_ENDPOINT = "/api/v1/workplace-tracker-service/visits";
+    public static final String FETCH_DAILY_VIEW_ENDPOINT = "/api/v1/workplace-tracker-service/fetch-daily-view-records";
+    public static final String ANALYTICS_VISITS_LEAVES_AGG_ENDPOINT = "/api/v1/workplace-tracker-service/analytics/visits-leaves-aggregate";
+
+    // Holidays messages
+    public static final String SUCCESS_HOLIDAYS_RETRIEVED = "Holidays retrieved";
+    public static final String ERROR_NO_HOLIDAYS_FOUND = "No holidays found";
+    public static final String ERROR_NO_HOLIDAYS_IN_RANGE = "No holidays found in range";
+    public static final String ERROR_INVALID_DATE_RANGE = "Invalid date format for from/to. Expected yyyy-MM-dd.";
+    // (existing ones you already have)
+    public static final String SUCCESS_HOLIDAY_CREATED = "Holiday created";
+    public static final String SUCCESS_HOLIDAY_DELETED = "Holiday deleted";
+
+    // Leave policy messages & errors
+    public static final String ERROR_NO_LEAVE_POLICIES_FOUND = "No leave policies found";
+    public static final String ERROR_INVALID_POLICY_ID = "policyId must be provided and greater than 0";
+    public static final String ERROR_INTERNAL_SERVER = "Internal server error";
+
+    // Visits messages & errors
+    public static final String SUCCESS_VISITS_RETRIEVED = "Visits retrieved";
+    public static final String SUCCESS_VISIT_SAVED = "Visit saved successfully";
+    public static final String SUCCESS_VISIT_DELETED = "Visit deleted successfully";
+    public static final String ERROR_NO_VISITS_FOUND = "No visits found";
+    public static final String ERROR_INVALID_VISIT_PARAMS = "Invalid parameters: userId must be > 0 and month between 1-12";
+    public static final String ERROR_INVALID_VISIT_ID = "Invalid officeVisitId";
+
+    // Leave balance messages & errors
+    public static final String SUCCESS_BALANCE_RETRIEVED = "User leave balance retrieved successfully";
+    public static final String SUCCESS_BALANCE_UPSERTED = "User leave balance created/updated successfully";
+
+    // User leave messages & errors
+    public static final String SUCCESS_LEAVES_RETRIEVED = "User leaves retrieved";
+    public static final String ERROR_NO_LEAVES_FOR_USER = "No leaves found for user";
+    public static final String ERROR_INVALID_USER_ID = "Invalid userId";
+    public static final String ERROR_INVALID_LEAVE_ID = "Invalid userLeaveId";
+
+    // Daily View Messages
+    public static final String SUCCESS_DAILY_VIEW_RETRIEVED = "Daily view records retrieved";
+    public static final String ERROR_INVALID_DAILY_VIEW_PARAMS = "Invalid parameters. Provide userId and either (year & month) or (from & to)";
+    public static final String ERROR_NO_DAILY_VIEW_FOUND = "No daily view records found";
+    public static final String ERROR_DATE_RANGE_TOO_LARGE = "Requested date range is too large. Max allowed days = 366";
+
+    // Messages for responses
+    public static final String SUCCESS_POLICY_RETRIEVED = "Policy retrieved";
+    public static final String SUCCESS_POLICY_CREATED = "Policy created";
+    public static final String SUCCESS_POLICY_UPDATED = "Policy updated";
+    public static final String SUCCESS_LEAVE_CREATED = "Leave created";
+    public static final String SUCCESS_LEAVE_UPDATED = "Leave updated";
+    public static final String SUCCESS_LEAVE_DELETED = "Leave deleted";
+
     // Status
     public static final String STATUS_SUCCESS = "SUCCESS";
     public static final String STATUS_FAILED = "FAILED";
@@ -38,6 +97,11 @@ public class AppConstants {
     public static final String ERROR_MESSAGE_INACTIVE_ACCOUNT = "Account is inactive.";
     public static final String ERROR_MESSAGE_REGISTRATION = "Registration failed.";
     public static final String ERROR_MESSAGE_LOGIN = "Login failed.";
+    public static final String SUCCESS_ANALYTICS_RETRIEVED = "Analytics aggregated data retrieved";
+    public static final String ERROR_INVALID_ANALYTICS_PARAMS = "Invalid analytics parameters. Provide from, to and groupBy(month|year|week)";
+    public static final String SUCCESS_BALANCE_ADJUSTED = "Balance adjusted";
+    public static final String SUCCESS_BALANCE_RECALCULATED = "Balance recalculated";
+    public static final String ERROR_INVALID_BALANCE_PARAMS = "Invalid parameters for balance API";
 
     // User settings messages
     public static final String SUCCESS_MESSAGE_USER_SETTINGS_RETRIEVED = "User settings retrieved.";

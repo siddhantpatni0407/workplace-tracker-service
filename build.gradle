@@ -6,7 +6,7 @@ plugins {
 
 group = 'com.sid.app'
 version = '0.0.1-SNAPSHOT'
-description = 'Demo project for Spring Boot'
+description = 'Workplace Tracker Application'
 
 java {
     toolchain {
@@ -24,33 +24,55 @@ repositories {
     mavenCentral()
 }
 
+ext {
+    testcontainersVersion = '1.19.0' // bump if newer release available
+    jjwtVersion = '0.11.5'
+    lombokVersion = '1.18.30'
+    jacksonJsr310Version = '2.16.1'
+}
+
 dependencies {
+    // Spring starters
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-security'
-    implementation 'io.jsonwebtoken:jjwt:0.12.3'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
-    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.16.1'
+
+    // JSON / Date handling
+    implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:${jacksonJsr310Version}"
+
+    // JWT
+    implementation "io.jsonwebtoken:jjwt-api:${jjwtVersion}"
+    implementation "io.jsonwebtoken:jjwt-impl:${jjwtVersion}"
+    implementation "io.jsonwebtoken:jjwt-jackson:${jjwtVersion}" // Required for JSON processing
+    implementation 'io.jsonwebtoken:jjwt:0.12.3' // keep if used elsewhere
+
+    // Liquibase
     implementation 'org.liquibase:liquibase-core'
+
+    // Database driver (runtime)
     runtimeOnly 'org.postgresql:postgresql'
+
     // Logging
     implementation 'org.slf4j:slf4j-ext'
 
     // Apache Commons
     implementation 'commons-beanutils:commons-beanutils:1.9.4'
 
-    // Lombok
-    compileOnly 'org.projectlombok:lombok:1.18.30'
-    annotationProcessor 'org.projectlombok:lombok:1.18.30'
-
-    implementation("io.jsonwebtoken:jjwt-api:0.11.5")
-    implementation("io.jsonwebtoken:jjwt-impl:0.11.5")
-    implementation("io.jsonwebtoken:jjwt-jackson:0.11.5") // Required for JSON processing
-
+    // OpenAPI
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0'
 
-    // Testing
+    // Lombok
+    compileOnly "org.projectlombok:lombok:${lombokVersion}"
+    annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+
+    // Testing - Spring Boot test
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+    // Testcontainers - for integration tests with PostgreSQL (test scope)
+    testImplementation "org.testcontainers:junit-jupiter:${testcontainersVersion}"
+    testImplementation "org.testcontainers:postgresql:${testcontainersVersion}"
+    testImplementation "org.testcontainers:testcontainers:${testcontainersVersion}"
 }
 
 tasks.named('test') {
