@@ -43,6 +43,7 @@ public class AppConstants {
     public static final String ERROR_INVALID_DATE_RANGE = "Invalid date format for from/to. Expected yyyy-MM-dd.";
     // (existing ones you already have)
     public static final String SUCCESS_HOLIDAY_CREATED = "Holiday created";
+    public static final String SUCCESS_HOLIDAY_UPDATED = "Holiday updated";
     public static final String SUCCESS_HOLIDAY_DELETED = "Holiday deleted";
 
     // Leave policy messages & errors

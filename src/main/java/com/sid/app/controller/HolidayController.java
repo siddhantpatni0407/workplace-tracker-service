@@ -24,13 +24,6 @@ public class HolidayController {
 
     private final HolidayService holidayService;
 
-    /**
-     * GET /holidays
-     * - If no query params: return all holidays
-     * - If from & to provided: return holidays in range (inclusive)
-     * <p>
-     * Uses AppConstants for messages, validates date format and returns 400 on parse errors.
-     */
     @GetMapping
     public ResponseEntity<ResponseDTO<List<HolidayDTO>>> getHolidays(
             @RequestParam(value = "from", required = false) String from,
@@ -38,7 +31,6 @@ public class HolidayController {
 
         log.info("getHolidays() called with from='{}' to='{}'", from, to);
 
-        // If either from or to is missing, return all
         if (Optional.ofNullable(from).orElse("").trim().isEmpty() || Optional.ofNullable(to).orElse("").trim().isEmpty()) {
             List<HolidayDTO> all = holidayService.getAllHolidays();
             if (all.isEmpty()) {
@@ -50,7 +42,6 @@ public class HolidayController {
             return ResponseEntity.ok(new ResponseDTO<>(AppConstants.STATUS_SUCCESS, AppConstants.SUCCESS_HOLIDAYS_RETRIEVED, all));
         }
 
-        // Both from & to provided -> parse and fetch range
         try {
             LocalDate f = LocalDate.parse(from.trim());
             LocalDate t = LocalDate.parse(to.trim());
@@ -84,6 +75,27 @@ public class HolidayController {
         HolidayDTO created = holidayService.createHoliday(req);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(new ResponseDTO<>(AppConstants.STATUS_SUCCESS, AppConstants.SUCCESS_HOLIDAY_CREATED, created));
+    }
+
+    /**
+     * Update existing holiday.
+     * Accepts: PUT /holidays?holidayId={id}  OR  (if you prefer path param, you can change to @PutMapping("/{holidayId}"))
+     */
+    @PutMapping
+    public ResponseEntity<ResponseDTO<HolidayDTO>> updateHoliday(@RequestParam("holidayId") Long holidayId,
+                                                                 @Valid @RequestBody HolidayDTO req) {
+        log.info("updateHoliday() holidayId={} name={} date={}", holidayId, req.getName(), req.getHolidayDate());
+        try {
+            HolidayDTO updated = holidayService.updateHoliday(holidayId, req);
+            return ResponseEntity.ok(new ResponseDTO<>(AppConstants.STATUS_SUCCESS, AppConstants.SUCCESS_HOLIDAY_UPDATED, updated));
+        } catch (IllegalArgumentException ex) {
+            log.warn("updateHoliday() - bad request holidayId={} error={}", holidayId, ex.getMessage());
+            return ResponseEntity.badRequest().body(new ResponseDTO<>(AppConstants.STATUS_FAILED, ex.getMessage(), null));
+        } catch (Exception ex) {
+            log.warn("updateHoliday() - not found or error holidayId={} error={}", holidayId, ex.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ResponseDTO<>(AppConstants.STATUS_FAILED, ex.getMessage(), null));
+        }
     }
 
     @DeleteMapping

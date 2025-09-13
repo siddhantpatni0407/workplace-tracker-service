@@ -44,6 +44,31 @@ public class HolidayService {
         return toDto(h);
     }
 
+    /**
+     * Update an existing holiday row. Throws EntityNotFoundException if id not present.
+     */
+    @Transactional
+    public HolidayDTO updateHoliday(Long holidayId, HolidayDTO dto) {
+        log.info("updateHoliday() id={} name={} date={}", holidayId, dto.getName(), dto.getHolidayDate());
+        Holiday existing = holidayRepo.findById(holidayId)
+                .orElseThrow(() -> new EntityNotFoundException("Holiday not found id: " + holidayId));
+
+        // update fields if provided (allow partial updates)
+        if (dto.getName() != null) existing.setName(dto.getName());
+        if (dto.getHolidayDate() != null) existing.setHolidayDate(dto.getHolidayDate());
+        if (dto.getHolidayType() != null) {
+            try {
+                existing.setHolidayType(HolidayType.valueOf(dto.getHolidayType()));
+            } catch (IllegalArgumentException ex) {
+                throw new IllegalArgumentException("Invalid holidayType: " + dto.getHolidayType());
+            }
+        }
+        if (dto.getDescription() != null) existing.setDescription(dto.getDescription());
+
+        Holiday saved = holidayRepo.save(existing);
+        return toDto(saved);
+    }
+
     @Transactional
     public void deleteHoliday(Long holidayId) {
         log.info("deleteHoliday() holidayId={}", holidayId);
