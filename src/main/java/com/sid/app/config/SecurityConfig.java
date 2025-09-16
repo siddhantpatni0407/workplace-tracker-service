@@ -49,6 +49,7 @@ public class SecurityConfig {
                                 AppConstants.USER_STATUS_ENDPOINT,
                                 AppConstants.AUTH_REFRESH_ENDPOINT,
                                 AppConstants.USER_SETTINGS_ENDPOINT,
+                                AppConstants.USER_PROFILE_ENDPOINT,
                                 AppConstants.USER_CHANGE_PASSWORD_ENDPOINT,
                                 AppConstants.LEAVE_POLICY_ENDPOINT,
                                 AppConstants.EXACT_LEAVE_POLICY_ENDPOINT,
