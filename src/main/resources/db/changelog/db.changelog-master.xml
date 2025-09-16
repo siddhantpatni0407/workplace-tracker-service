@@ -10,4 +10,7 @@
     <changeSet id="2" author="sid">
         <sqlFile path="db/scripts/add-holiday-leave-office-visit.sql"/>
     </changeSet>
+    <changeSet id="3" author="sid">
+        <sqlFile path="db/scripts/add-user-address-user-profile.sql"/>
+    </changeSet>
 </databaseChangeLog>

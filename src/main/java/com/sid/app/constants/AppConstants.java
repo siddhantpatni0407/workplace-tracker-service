@@ -16,6 +16,7 @@ public class AppConstants {
     public static final String USER_ENDPOINT = "/api/v1/workplace-tracker-service/user";
     public static final String USER_STATUS_ENDPOINT = "/api/v1/workplace-tracker-service/user/status";
     public static final String USER_SETTINGS_ENDPOINT = "/api/v1/workplace-tracker-service/user/settings";
+    public static final String USER_PROFILE_ENDPOINT = "/api/v1/workplace-tracker-service/user/profile";;
 
     // DB endpoints
     public static final String DB_BACKUP_ENDPOINT = "/api/v1/workplace-tracker-service/db-backup";
