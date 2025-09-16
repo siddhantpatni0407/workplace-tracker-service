@@ -9,13 +9,12 @@ import java.util.Optional;
 /**
  * @author Siddhant Patni
  */
-@Component
+@Component("auditorAwareImpl") // explicit name for clarity
 public class AuditorAwareImpl implements AuditorAware<String> {
 
     @Override
     public Optional<String> getCurrentAuditor() {
-        // Here you can fetch the current logged in user, for this example returning a hardcoded user
+        // Ideally return logged-in user from SecurityContext
         return Optional.of(AppConstants.DEFAULT_USER);
     }
-
 }
