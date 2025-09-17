@@ -85,9 +85,9 @@ public class AuthService {
             newUser.setRoleId(roleId);
 
             newUser.setPasswordEncryptionKeyVersion(encryptionKeyService.getLatestKey().getKeyVersion());
-            newUser.setIsActive(true);
+            newUser.setIsActive(Boolean.FALSE);
             newUser.setLoginAttempts(0);
-            newUser.setAccountLocked(false);
+            newUser.setAccountLocked(Boolean.FALSE);
 
             User savedUser = userRepository.save(newUser);
 
@@ -148,7 +148,7 @@ public class AuthService {
             return new AuthResponse(null, null, null, null,
                     AppConstants.STATUS_FAILED,
                     AppConstants.ERROR_MESSAGE_ACCOUNT_LOCKED,
-                    null, user.getIsActive(), user.getLoginAttempts(), true);
+                    null, true, user.getLoginAttempts(), true);
         }
 
         try {
