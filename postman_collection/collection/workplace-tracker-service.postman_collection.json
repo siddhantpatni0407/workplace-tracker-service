@@ -496,6 +496,491 @@
 					]
 				},
 				{
+					"name": "Special Days",
+					"item": [
+						{
+							"name": "Get All Special Days",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "http://localhost:8010/api/v1/workplace-tracker-service/special-days",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8010",
+									"path": [
+										"api",
+										"v1",
+										"workplace-tracker-service",
+										"special-days"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get All Special Days - With filters and pagination",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "http://localhost:8010/api/v1/workplace-tracker-service/special-days?month=9&year=2025&page=1&limit=10&type=all",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8010",
+									"path": [
+										"api",
+										"v1",
+										"workplace-tracker-service",
+										"special-days"
+									],
+									"query": [
+										{
+											"key": "month",
+											"value": "9"
+										},
+										{
+											"key": "year",
+											"value": "2025"
+										},
+										{
+											"key": "page",
+											"value": "1"
+										},
+										{
+											"key": "limit",
+											"value": "10"
+										},
+										{
+											"key": "type",
+											"value": "all"
+										},
+										{
+											"key": "department",
+											"value": "Engineering",
+											"disabled": true
+										},
+										{
+											"key": "location",
+											"value": "Mumbai",
+											"disabled": true
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get All Special Days - Filter by month",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "http://localhost:8010/api/v1/workplace-tracker-service/special-days?month=9&year=2025",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8010",
+									"path": [
+										"api",
+										"v1",
+										"workplace-tracker-service",
+										"special-days"
+									],
+									"query": [
+										{
+											"key": "month",
+											"value": "9"
+										},
+										{
+											"key": "year",
+											"value": "2025"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get All Special Days - With pagination",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "http://localhost:8010/api/v1/workplace-tracker-service/special-days?page=1&limit=20",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8010",
+									"path": [
+										"api",
+										"v1",
+										"workplace-tracker-service",
+										"special-days"
+									],
+									"query": [
+										{
+											"key": "page",
+											"value": "1"
+										},
+										{
+											"key": "limit",
+											"value": "20"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "GET Current Month Special Days",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "http://localhost:8010/api/v1/workplace-tracker-service/special-days/current-month",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8010",
+									"path": [
+										"api",
+										"v1",
+										"workplace-tracker-service",
+										"special-days",
+										"current-month"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Current Month Special Days - With parameters",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "http://localhost:8010/api/v1/workplace-tracker-service/special-days/current-month?month=9&year=2025&limit=10",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8010",
+									"path": [
+										"api",
+										"v1",
+										"workplace-tracker-service",
+										"special-days",
+										"current-month"
+									],
+									"query": [
+										{
+											"key": "month",
+											"value": "9"
+										},
+										{
+											"key": "year",
+											"value": "2025"
+										},
+										{
+											"key": "limit",
+											"value": "10"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Current Month Special Days - Limited results",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "http://localhost:8010/api/v1/workplace-tracker-service/special-days/current-month?limit=5",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8010",
+									"path": [
+										"api",
+										"v1",
+										"workplace-tracker-service",
+										"special-days",
+										"current-month"
+									],
+									"query": [
+										{
+											"key": "limit",
+											"value": "5"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Birthdays",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "http://localhost:8010/api/v1/workplace-tracker-service/special-days/birthdays",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8010",
+									"path": [
+										"api",
+										"v1",
+										"workplace-tracker-service",
+										"special-days",
+										"birthdays"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Birthdays - With pagination",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "http://localhost:8010/api/v1/workplace-tracker-service/special-days/birthdays?year=2025&page=1&limit=8",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8010",
+									"path": [
+										"api",
+										"v1",
+										"workplace-tracker-service",
+										"special-days",
+										"birthdays"
+									],
+									"query": [
+										{
+											"key": "year",
+											"value": "2025"
+										},
+										{
+											"key": "page",
+											"value": "1"
+										},
+										{
+											"key": "limit",
+											"value": "8"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Birthdays - Specific month",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "http://localhost:8010/api/v1/workplace-tracker-service/special-days/birthdays?month=9&year=2025",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8010",
+									"path": [
+										"api",
+										"v1",
+										"workplace-tracker-service",
+										"special-days",
+										"birthdays"
+									],
+									"query": [
+										{
+											"key": "month",
+											"value": "9"
+										},
+										{
+											"key": "year",
+											"value": "2025"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Work Anniversaries",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "http://localhost:8010/api/v1/workplace-tracker-service/special-days/anniversaries",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8010",
+									"path": [
+										"api",
+										"v1",
+										"workplace-tracker-service",
+										"special-days",
+										"anniversaries"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Work Anniversaries - With pagination",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "http://localhost:8010/api/v1/workplace-tracker-service/special-days/anniversaries?year=2025&page=1&limit=8",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8010",
+									"path": [
+										"api",
+										"v1",
+										"workplace-tracker-service",
+										"special-days",
+										"anniversaries"
+									],
+									"query": [
+										{
+											"key": "year",
+											"value": "2025"
+										},
+										{
+											"key": "page",
+											"value": "1"
+										},
+										{
+											"key": "limit",
+											"value": "8"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Work Anniversaries - Specific month",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "http://localhost:8010/api/v1/workplace-tracker-service/special-days/anniversaries?month=9&year=2025",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8010",
+									"path": [
+										"api",
+										"v1",
+										"workplace-tracker-service",
+										"special-days",
+										"anniversaries"
+									],
+									"query": [
+										{
+											"key": "month",
+											"value": "9"
+										},
+										{
+											"key": "year",
+											"value": "2025"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
 					"name": "Leave Policy",
 					"item": [
 						{
@@ -1332,6 +1817,87 @@
 										{
 											"key": "groupBy",
 											"value": "week"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "User Profile",
+					"item": [
+						{
+							"name": "Get User Profile",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "http://localhost:8010/api/v1/workplace-tracker-service/user/profile?userId=1",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8010",
+									"path": [
+										"api",
+										"v1",
+										"workplace-tracker-service",
+										"user",
+										"profile"
+									],
+									"query": [
+										{
+											"key": "userId",
+											"value": "1"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Upsert (Create/Update) User Profile",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"userId\": 123,\n    \"username\": \"john.doe\",\n    \"email\": \"john.doe@example.com\",\n    \"firstName\": \"John\",\n    \"lastName\": \"Doe\",\n    \"phoneNumber\": \"+1234567890\",\n    \"dateOfBirth\": \"1990-05-15\",\n    \"gender\": \"Male\",\n    \"department\": \"Engineering\",\n    \"position\": \"Senior Developer\",\n    \"employeeId\": \"EMP001\",\n    \"dateOfJoining\": \"2021-01-10\",\n    \"profilePicture\": \"https://example.com/images/john.png\",\n    \"bio\": \"Software engineer with 10+ years of experience\",\n    \"emergencyContactName\": \"Jane Doe\",\n    \"emergencyContactPhone\": \"+1987654321\",\n    \"emergencyContactRelation\": \"Spouse\",\n    \"primaryAddress\": {\n      \"address\": \"123 Main Street\",\n      \"city\": \"New York\",\n      \"state\": \"NY\",\n      \"country\": \"USA\",\n      \"postalCode\": \"10001\",\n      \"isPrimary\": true\n    }\n  }",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8010/api/v1/workplace-tracker-service/user-profile?userId=1",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8010",
+									"path": [
+										"api",
+										"v1",
+										"workplace-tracker-service",
+										"user-profile"
+									],
+									"query": [
+										{
+											"key": "userId",
+											"value": "1"
 										}
 									]
 								}
