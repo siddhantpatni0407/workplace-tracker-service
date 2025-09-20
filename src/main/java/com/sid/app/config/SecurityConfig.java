@@ -60,7 +60,12 @@ public class SecurityConfig {
                                 AppConstants.HOLIDAYS_ENDPOINT,
                                 AppConstants.VISITS_ENDPOINT,
                                 AppConstants.FETCH_DAILY_VIEW_ENDPOINT,
-                                AppConstants.ANALYTICS_VISITS_LEAVES_AGG_ENDPOINT
+                                AppConstants.ANALYTICS_VISITS_LEAVES_AGG_ENDPOINT,
+                                // Special Days endpoints
+                                AppConstants.SPECIAL_DAYS_ENDPOINT,
+                                AppConstants.SPECIAL_DAYS_CURRENT_MONTH_ENDPOINT,
+                                AppConstants.SPECIAL_DAYS_BIRTHDAYS_ENDPOINT,
+                                AppConstants.SPECIAL_DAYS_ANNIVERSARIES_ENDPOINT
                         ).permitAll()
                         .anyRequest().authenticated()
                 )

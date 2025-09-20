@@ -24,6 +24,12 @@ public class AppConstants {
     // Auth refresh
     public static final String AUTH_REFRESH_ENDPOINT = "/api/v1/workplace-tracker-service/auth/refresh";
 
+    // Special Days endpoints
+    public static final String SPECIAL_DAYS_ENDPOINT = "/api/v1/workplace-tracker-service/special-days";
+    public static final String SPECIAL_DAYS_CURRENT_MONTH_ENDPOINT = "/api/v1/workplace-tracker-service/special-days/current-month";
+    public static final String SPECIAL_DAYS_BIRTHDAYS_ENDPOINT = "/api/v1/workplace-tracker-service/special-days/birthdays";
+    public static final String SPECIAL_DAYS_ANNIVERSARIES_ENDPOINT = "/api/v1/workplace-tracker-service/special-days/anniversaries";
+
     // Leave / holiday / visits endpoints (full paths, no base concatenation)
     public static final String LEAVE_POLICY_ENDPOINT = "/api/v1/workplace-tracker-service/leave-policies";
     public static final String EXACT_LEAVE_POLICY_ENDPOINT = "/api/v1/workplace-tracker-service/leave-policies/exact";
@@ -112,6 +118,14 @@ public class AppConstants {
     public static final String ERROR_MESSAGE_RETRIEVE_USER_SETTINGS = "Unable to retrieve user settings.";
     public static final String ERROR_MESSAGE_SAVE_USER_SETTINGS = "Unable to save user settings.";
     public static final String ERROR_MESSAGE_DELETE_USER_SETTINGS = "Unable to delete user settings.";
+
+    // Special Days messages
+    public static final String SUCCESS_SPECIAL_DAYS_RETRIEVED = "Special Day Data retrieved successfully";
+    public static final String SUCCESS_CURRENT_MONTH_SPECIAL_DAYS_RETRIEVED = "Current month special days retrieved successfully";
+    public static final String SUCCESS_BIRTHDAYS_RETRIEVED = "Birthdays retrieved successfully";
+    public static final String SUCCESS_ANNIVERSARIES_RETRIEVED = "Work anniversaries retrieved successfully";
+    public static final String ERROR_SPECIAL_DAYS_RETRIEVAL_FAILED = "Failed to retrieve special days data";
+    public static final String ERROR_CURRENT_MONTH_SPECIAL_DAYS_FAILED = "Failed to retrieve current month special days";
 
     /**
      * Default user.

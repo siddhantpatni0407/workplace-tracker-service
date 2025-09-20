@@ -1,11 +1,14 @@
 package com.sid.app.repository;
 
 import com.sid.app.entity.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -30,5 +33,24 @@ public interface UserRepository extends JpaRepository<User, Long> {
     int updatePassword(@Param("userId") Long userId,
                        @Param("password") String password,
                        @Param("keyVersion") Integer keyVersion);
+
+    /**
+     * Find active users with their profiles for Special Days functionality
+     */
+    @Query("SELECT u FROM User u " +
+           "JOIN UserRole ur ON u.roleId = ur.roleId " +
+           "WHERE u.isActive = true " +
+           "AND ur.role = 'USER' " +
+           "ORDER BY u.name")
+    List<User> findActiveUsersWithProfiles();
+
+    /**
+     * Find active users with their profiles and addresses with pagination
+     */
+    @Query("SELECT u FROM User u " +
+           "JOIN UserRole ur ON u.roleId = ur.roleId " +
+           "WHERE u.isActive = true " +
+           "AND ur.role = 'USER'")
+    Page<User> findActiveUsersWithProfilesAndAddresses(Pageable pageable);
 
 }
