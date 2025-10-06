@@ -43,6 +43,12 @@ public class AppConstants {
     public static final String FETCH_DAILY_VIEW_ENDPOINT = "/api/v1/workplace-tracker-service/fetch-daily-view-records";
     public static final String ANALYTICS_VISITS_LEAVES_AGG_ENDPOINT = "/api/v1/workplace-tracker-service/analytics/visits-leaves-aggregate";
 
+    // Daily Tasks endpoints
+    public static final String DAILY_TASKS_ENDPOINT = "/api/v1/workplace-tracker-service/daily-tasks";
+    public static final String USER_DAILY_TASKS_ENDPOINT = "/api/v1/workplace-tracker-service/daily-tasks/user";
+    public static final String USER_DAILY_TASKS_DATE_RANGE_ENDPOINT = "/api/v1/workplace-tracker-service/daily-tasks/user/date-range";
+    public static final String USER_DAILY_TASKS_DATE_ENDPOINT = "/api/v1/workplace-tracker-service/daily-tasks/user/date";
+
     // Holidays messages
     public static final String SUCCESS_HOLIDAYS_RETRIEVED = "Holidays retrieved";
     public static final String ERROR_NO_HOLIDAYS_FOUND = "No holidays found";

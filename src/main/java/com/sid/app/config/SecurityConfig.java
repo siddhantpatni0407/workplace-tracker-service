@@ -65,7 +65,12 @@ public class SecurityConfig {
                                 AppConstants.SPECIAL_DAYS_ENDPOINT,
                                 AppConstants.SPECIAL_DAYS_CURRENT_MONTH_ENDPOINT,
                                 AppConstants.SPECIAL_DAYS_BIRTHDAYS_ENDPOINT,
-                                AppConstants.SPECIAL_DAYS_ANNIVERSARIES_ENDPOINT
+                                AppConstants.SPECIAL_DAYS_ANNIVERSARIES_ENDPOINT,
+                                // Daily Tasks endpoints
+                                AppConstants.DAILY_TASKS_ENDPOINT,
+                                AppConstants.USER_DAILY_TASKS_ENDPOINT,
+                                AppConstants.USER_DAILY_TASKS_DATE_RANGE_ENDPOINT,
+                                AppConstants.USER_DAILY_TASKS_DATE_ENDPOINT
                         ).permitAll()
                         .anyRequest().authenticated()
                 )

@@ -13,4 +13,7 @@
     <changeSet id="3" author="sid">
         <sqlFile path="db/scripts/add-user-address-user-profile.sql"/>
     </changeSet>
+    <changeSet id="4" author="sid">
+        <sqlFile path="db/scripts/add-daily-tasks.sql"/>
+    </changeSet>
 </databaseChangeLog>
