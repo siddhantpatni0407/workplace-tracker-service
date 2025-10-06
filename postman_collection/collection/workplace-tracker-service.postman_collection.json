@@ -1905,6 +1905,246 @@
 							"response": []
 						}
 					]
+				},
+				{
+					"name": "Daily Tasks",
+					"item": [
+						{
+							"name": "Create Daily Task",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"userId\": 1,\n    \"dailyTaskDate\": \"2025-10-06\",\n    \"dailyTaskDay\": \"Monday\",\n    \"projectCode\": \"PROJ-123\",\n    \"projectName\": \"Quarterly Reporting\",\n    \"storyTaskBugNumber\": \"STORY-456\",\n    \"taskDetails\": \"Finalize the quarterly project report\",\n    \"remarks\": \"High priority\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8010/api/v1/workplace-tracker-service/daily-tasks",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8010",
+									"path": [
+										"api",
+										"v1",
+										"workplace-tracker-service",
+										"daily-tasks"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Daily Task",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"userId\": 1,\n    \"dailyTaskDate\": \"2025-10-06\",\n    \"dailyTaskDay\": \"Monday\",\n    \"projectCode\": \"PROJ-123\",\n    \"projectName\": \"Quarterly Reporting1\",\n    \"storyTaskBugNumber\": \"STORY-456\",\n    \"taskDetails\": \"Finalize the quarterly project report1\",\n    \"remarks\": \"Low priority\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8010/api/v1/workplace-tracker-service/daily-tasks?taskId=1",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8010",
+									"path": [
+										"api",
+										"v1",
+										"workplace-tracker-service",
+										"daily-tasks"
+									],
+									"query": [
+										{
+											"key": "taskId",
+											"value": "1"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete Daily Task",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8010/api/v1/workplace-tracker-service/daily-tasks?taskId=1",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8010",
+									"path": [
+										"api",
+										"v1",
+										"workplace-tracker-service",
+										"daily-tasks"
+									],
+									"query": [
+										{
+											"key": "taskId",
+											"value": "1"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Daily Task by ID",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8010/api/v1/workplace-tracker-service/daily-tasks?taskId=2",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8010",
+									"path": [
+										"api",
+										"v1",
+										"workplace-tracker-service",
+										"daily-tasks"
+									],
+									"query": [
+										{
+											"key": "taskId",
+											"value": "2"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Daily Tasks by User ID",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8010/api/v1/workplace-tracker-service/daily-tasks/user?userId=1",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8010",
+									"path": [
+										"api",
+										"v1",
+										"workplace-tracker-service",
+										"daily-tasks",
+										"user"
+									],
+									"query": [
+										{
+											"key": "userId",
+											"value": "1"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Daily Tasks by User ID and Date Range",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8010/api/v1/workplace-tracker-service/daily-tasks/user/date-range?userId=1&startDate=2025-10-01&endDate=2025-10-15",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8010",
+									"path": [
+										"api",
+										"v1",
+										"workplace-tracker-service",
+										"daily-tasks",
+										"user",
+										"date-range"
+									],
+									"query": [
+										{
+											"key": "userId",
+											"value": "1"
+										},
+										{
+											"key": "startDate",
+											"value": "2025-10-01"
+										},
+										{
+											"key": "endDate",
+											"value": "2025-10-15"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Daily Tasks by User ID and Specific Date",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8010/api/v1/workplace-tracker-service/daily-tasks/user/date?userId=1&date=2025-10-06",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8010",
+									"path": [
+										"api",
+										"v1",
+										"workplace-tracker-service",
+										"daily-tasks",
+										"user",
+										"date"
+									],
+									"query": [
+										{
+											"key": "userId",
+											"value": "1"
+										},
+										{
+											"key": "date",
+											"value": "2025-10-06"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
 				}
 			],
 			"auth": {
