@@ -92,7 +92,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"email\": \"siya@gmail.com\",\r\n    \"password\": \"Siya@0708\"\r\n}",
+									"raw": "{\r\n    \"email\": \"siddhant4patni@gmail.com\",\r\n    \"password\": \"Sid@0407\"\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -189,7 +189,14 @@
 							"name": "Get All Users",
 							"request": {
 								"auth": {
-									"type": "noauth"
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzaWRkaGFudDRwYXRuaUBnbWFpbC5jb20iLCJpYXQiOjE3NjAwNDE4MDcsImV4cCI6MTc2MDA0NTQwNywidXNlcklkIjoxLCJyb2xlIjoiVVNFUiIsInVzZXJuYW1lIjoiU2lkZGhhbnQgUGF0bmkifQ.NEa3QjUllECbImAcczia4FEFqfZ78qdLQWvvaqUQso0",
+											"type": "string"
+										}
+									]
 								},
 								"method": "GET",
 								"header": [],
@@ -333,7 +340,14 @@
 							"name": "Delete User",
 							"request": {
 								"auth": {
-									"type": "noauth"
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzaWRkaGFudDRwYXRuaUBnbWFpbC5jb20iLCJpYXQiOjE3NjAwNDE4MDcsImV4cCI6MTc2MDA0NTQwNywidXNlcklkIjoxLCJyb2xlIjoiVVNFUiIsInVzZXJuYW1lIjoiU2lkZGhhbnQgUGF0bmkifQ.NEa3QjUllECbImAcczia4FEFqfZ78qdLQWvvaqUQso0",
+											"type": "string"
+										}
+									]
 								},
 								"method": "DELETE",
 								"header": [],
@@ -368,14 +382,6 @@
 								}
 							},
 							"response": []
-						},
-						{
-							"name": "New Request",
-							"request": {
-								"method": "GET",
-								"header": []
-							},
-							"response": []
 						}
 					]
 				},
@@ -385,6 +391,16 @@
 						{
 							"name": "Get user settings",
 							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzaWRkaGFudDRwYXRuaUBnbWFpbC5jb20iLCJpYXQiOjE3NjAwNDE4MDcsImV4cCI6MTc2MDA0NTQwNywidXNlcklkIjoxLCJyb2xlIjoiVVNFUiIsInVzZXJuYW1lIjoiU2lkZGhhbnQgUGF0bmkifQ.NEa3QjUllECbImAcczia4FEFqfZ78qdLQWvvaqUQso0",
+											"type": "string"
+										}
+									]
+								},
 								"method": "GET",
 								"header": [
 									{
@@ -986,6 +1002,16 @@
 						{
 							"name": "Get all leave policies",
 							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzaWRkaGFudDRwYXRuaUBnbWFpbC5jb20iLCJpYXQiOjE3NjAwMzMzOTYsImV4cCI6MTc2MDAzNjk5Nn0.dXNS40uE7eh_ol53jGN8KcNoueUFSkb8MzWJ1J9f4PM",
+											"type": "string"
+										}
+									]
+								},
 								"method": "GET",
 								"header": [],
 								"url": {
@@ -1413,6 +1439,16 @@
 						{
 							"name": "Get all holidays",
 							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzaWRkaGFudHBhdG5pMDRAZ21haWwuY29tIiwiaWF0IjoxNzYwMDM4MzIzLCJleHAiOjE3NjAwNDE5MjMsInVzZXJuYW1lIjoiQWRtaW4iLCJyb2xlIjoiQURNSU4iLCJ1c2VySWQiOjJ9.bmsXPMEuTqGzL5eLIiBAM-cmzx63bMEqk6MdCWopRFc",
+											"type": "string"
+										}
+									]
+								},
 								"method": "GET",
 								"header": [],
 								"url": {
