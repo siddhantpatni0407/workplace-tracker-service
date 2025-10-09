@@ -1,5 +1,6 @@
 package com.sid.app.controller;
 
+import com.sid.app.auth.RequiredRole;
 import com.sid.app.constants.AppConstants;
 import com.sid.app.model.DailyViewRecordsDTO;
 import com.sid.app.model.ResponseDTO;
@@ -26,6 +27,7 @@ public class DailyViewRecordsController {
     private final DailyViewRecordsService service;
 
     @GetMapping
+    @RequiredRole({"USER", "ADMIN", "SUPER_ADMIN"})
     public ResponseEntity<ResponseDTO<List<DailyViewRecordsDTO>>> fetchDailyViewRecords(@RequestParam("userId") Long userId,
                                                                                         @RequestParam(value = "year", required = false) Integer year,
                                                                                         @RequestParam(value = "month", required = false) Integer month,

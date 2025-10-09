@@ -6,6 +6,7 @@ import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
@@ -14,12 +15,15 @@ import java.util.Date;
 import java.util.Map;
 import java.util.Optional;
 
+/**
+ * JWT utility class for token generation, validation, and claim extraction.
+ * Supports enhanced tokens with user details (userId, username, role).
+ */
 @Component
 public class JwtUtil {
     private static final Logger log = LoggerFactory.getLogger(JwtUtil.class);
 
     private final AppProperties appProperties;
-
     private SecretKey secretKey;
 
     public JwtUtil(AppProperties appProperties) {
@@ -30,7 +34,8 @@ public class JwtUtil {
     public void init() {
         String secret = appProperties.getJwtSecret();
         if (secret == null || secret.length() < 32) {
-            log.warn("JWT secret appears weak/short (length {}). It's recommended to provide a secure secret of at least 32 characters via configuration (app.jwt.secret).", secret == null ? 0 : secret.length());
+            log.warn("JWT secret appears weak/short (length {}). It's recommended to provide a secure secret of at least 32 characters via configuration (app.jwt.secret).",
+                    secret == null ? 0 : secret.length());
         }
         this.secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
         log.info("JwtUtil initialized (expirationMs={}, allowedClockSkewSec={})",
@@ -74,6 +79,30 @@ public class JwtUtil {
     }
 
     /**
+     * Generate JWT with additional user claims (role, userId, username)
+     *
+     * @param subject     subject (email)
+     * @param userId      user ID
+     * @param username    username/name
+     * @param role        user role
+     * @param ttlMillis   optional TTL override (if <=0, default expirationTimeMs is used)
+     * @return compact JWT string
+     */
+    public String generateTokenWithUserDetails(String subject, Long userId, String username, String role, long ttlMillis) {
+        Map<String, Object> extraClaims = Map.of(
+                "userId", userId,
+                "username", username,
+                "role", role
+        );
+        return generateToken(subject, extraClaims, ttlMillis);
+    }
+
+    /** Convenience overload with default TTL */
+    public String generateTokenWithUserDetails(String subject, Long userId, String username, String role) {
+        return generateTokenWithUserDetails(subject, userId, username, role, -1);
+    }
+
+    /**
      * Parse token and return Claims wrapped in Optional.
      * Recognizes ExpiredJwtException (returns empty but logs at debug) and logs other JwtExceptions.
      */
@@ -100,7 +129,7 @@ public class JwtUtil {
      * Extract username (subject) from token.
      * Throws ExpiredJwtException if token is expired so callers can detect it specifically.
      */
-    public String extractUsername(String token) {
+    public String extractUsername(String token) throws ExpiredJwtException {
         try {
             Jws<Claims> parsed = Jwts.parserBuilder()
                     .setSigningKey(secretKey)
@@ -109,61 +138,84 @@ public class JwtUtil {
                     .parseClaimsJws(token);
             return parsed.getBody().getSubject();
         } catch (ExpiredJwtException eje) {
-            log.debug("extractUsername: token expired: {}", eje.getMessage());
-            // rethrow so filters can catch and respond with a proper 401/refresh flow
+            // Re-throw ExpiredJwtException so callers can handle it specifically
             throw eje;
         } catch (JwtException | IllegalArgumentException ex) {
-            log.warn("extractUsername: invalid token: {}", ex.getMessage());
-            throw ex;
+            log.warn("Failed to extract username from JWT: {}", ex.getMessage());
+            return null;
         }
     }
 
     /**
-     * Validate token belongs to username and not expired.
-     * Returns false on invalid/expired tokens (does not throw).
+     * Extract username from token, returning null if expired or invalid.
      */
-    public boolean validateToken(String token, String username) {
-        try {
-            Optional<Claims> claimsOpt = parseClaims(token);
-            if (claimsOpt.isEmpty()) return false;
-            Claims claims = claimsOpt.get();
-            String subj = claims.getSubject();
-            return subj != null && subj.equals(username) && !isTokenExpired(claims);
-        } catch (Exception ex) {
-            log.warn("validateToken exception: {}", ex.getMessage());
-            return false;
-        }
-    }
-
-    /** Check expiration using Claims (already parsed with allowed clock skew). */
-    private boolean isTokenExpired(Claims claims) {
-        Date expiration = claims.getExpiration();
-        if (expiration == null) return true;
-        return expiration.before(new Date());
-    }
-
-    /** Convenience: parse and check expiration (returns true if expired or invalid) */
-    private boolean isTokenExpired(String token) {
-        Optional<Claims> claimsOpt = parseClaims(token);
-        return claimsOpt.map(this::isTokenExpired).orElse(true);
+    public String extractUsernameIfValid(String token) {
+        return parseClaims(token).map(Claims::getSubject).orElse(null);
     }
 
     /**
-     * Returns remaining validity in milliseconds or 0 if expired/invalid.
-     * Useful to decide when to trigger refresh on client side.
+     * Check if token is valid for the given user.
      */
-    public long getRemainingValidityMillis(String token) {
-        try {
-            Optional<Claims> claimsOpt = parseClaims(token);
-            if (claimsOpt.isEmpty()) return 0L;
-            Date exp = claimsOpt.get().getExpiration();
-            if (exp == null) return 0L;
-            long diff = exp.getTime() - System.currentTimeMillis();
-            return Math.max(0L, diff);
-        } catch (Exception ex) {
-            log.debug("getRemainingValidityMillis: {}", ex.getMessage());
-            return 0L;
+    public boolean isTokenValid(String token, UserDetails userDetails) {
+        final String username = extractUsernameIfValid(token);
+        return (username != null && username.equals(userDetails.getUsername()) && !isTokenExpired(token));
+    }
+
+    /**
+     * Check if token is expired.
+     */
+    public boolean isTokenExpired(String token) {
+        return parseClaims(token)
+                .map(claims -> claims.getExpiration().before(new Date()))
+                .orElse(true); // Consider invalid tokens as expired
+    }
+
+    /**
+     * Extract expiration date from token.
+     */
+    public Date extractExpiration(String token) {
+        return parseClaims(token).map(Claims::getExpiration).orElse(null);
+    }
+
+    /**
+     * Extract a specific claim from token.
+     */
+    public Object extractClaim(String token, String claimName) {
+        return parseClaims(token).map(claims -> claims.get(claimName)).orElse(null);
+    }
+
+    /**
+     * Validate token without checking user details.
+     */
+    public boolean isTokenValid(String token) {
+        return parseClaims(token).isPresent();
+    }
+
+    /**
+     * Extract user ID from token.
+     */
+    public Long extractUserId(String token) {
+        Object userIdObj = extractClaim(token, "userId");
+        if (userIdObj instanceof Number) {
+            return ((Number) userIdObj).longValue();
         }
+        return null;
+    }
+
+    /**
+     * Extract display name from token.
+     */
+    public String extractUserDisplayName(String token) {
+        Object usernameObj = extractClaim(token, "username");
+        return usernameObj != null ? usernameObj.toString() : null;
+    }
+
+    /**
+     * Extract role from token.
+     */
+    public String extractRole(String token) {
+        Object roleObj = extractClaim(token, "role");
+        return roleObj != null ? roleObj.toString() : null;
     }
 
     /**
@@ -181,11 +233,45 @@ public class JwtUtil {
         Claims claims = claimsOpt.get();
         String subject = claims.getSubject();
 
-        // copy claims except standard ones (sub/iat/exp)
-        claims.remove(Claims.SUBJECT);
-        claims.remove(Claims.ISSUED_AT);
-        claims.remove(Claims.EXPIRATION);
+        // Copy claims except standard ones (sub/iat/exp)
+        Map<String, Object> extraClaims = Map.of(
+                "userId", claims.get("userId"),
+                "username", claims.get("username"),
+                "role", claims.get("role")
+        );
 
-        return generateToken(subject, claims, newTtlMillis);
+        return generateToken(subject, extraClaims, newTtlMillis);
+    }
+
+    /**
+     * Check if token contains all required user details (userId, username, role).
+     */
+    public boolean hasUserDetails(String token) {
+        return extractUserId(token) != null &&
+               extractUserDisplayName(token) != null &&
+               extractRole(token) != null;
+    }
+
+    /**
+     * Get token expiration time in milliseconds.
+     */
+    public long getTokenExpirationTime(String token) {
+        Date expiration = extractExpiration(token);
+        return expiration != null ? expiration.getTime() : 0;
+    }
+
+    /**
+     * Check if token will expire within the given time frame (in milliseconds).
+     */
+    public boolean isTokenExpiringWithin(String token, long timeFrameMs) {
+        Date expiration = extractExpiration(token);
+        if (expiration == null) {
+            return true; // Consider invalid tokens as expiring
+        }
+
+        long currentTime = System.currentTimeMillis();
+        long expirationTime = expiration.getTime();
+
+        return (expirationTime - currentTime) <= timeFrameMs;
     }
 }

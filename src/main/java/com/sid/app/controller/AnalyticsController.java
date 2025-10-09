@@ -1,5 +1,6 @@
 package com.sid.app.controller;
 
+import com.sid.app.auth.RequiredRole;
 import com.sid.app.constants.AppConstants;
 import com.sid.app.model.AggregatePeriodDTO;
 import com.sid.app.model.ResponseDTO;
@@ -33,6 +34,7 @@ public class AnalyticsController {
      * - groupBy = month | year | week
      */
     @GetMapping
+    @RequiredRole({"USER", "ADMIN", "SUPER_ADMIN"})
     public ResponseEntity<ResponseDTO<List<AggregatePeriodDTO>>> getVisitsLeavesAggregate(@RequestParam(value = "userId", required = false) Long userId,
                                                                                           @RequestParam(value = "from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
                                                                                           @RequestParam(value = "to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,

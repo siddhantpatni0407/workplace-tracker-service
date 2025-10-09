@@ -1,5 +1,6 @@
 package com.sid.app.controller;
 
+import com.sid.app.auth.RequiredRole;
 import com.sid.app.constants.AppConstants;
 import com.sid.app.model.ResponseDTO;
 import com.sid.app.model.UserSettingsDTO;
@@ -22,6 +23,7 @@ public class UserSettingsController {
      * Get user settings
      */
     @GetMapping(AppConstants.USER_SETTINGS_ENDPOINT)
+    @RequiredRole({"USER", "ADMIN", "SUPER_ADMIN"})
     public ResponseEntity<ResponseDTO<UserSettingsDTO>> getUserSettings(@RequestParam("userId") Long userId) {
         log.info("getUserSettings() -> userId={}", userId);
         try {
@@ -41,6 +43,7 @@ public class UserSettingsController {
      * Create or update user settings
      */
     @PutMapping(AppConstants.USER_SETTINGS_ENDPOINT)
+    @RequiredRole({"USER", "ADMIN", "SUPER_ADMIN"})
     public ResponseEntity<ResponseDTO<UserSettingsDTO>> upsertUserSettings(
             @RequestParam("userId") Long userId,
             @Valid @RequestBody UserSettingsDTO dto) {
@@ -68,6 +71,7 @@ public class UserSettingsController {
      * Delete user settings
      */
     @DeleteMapping(AppConstants.USER_SETTINGS_ENDPOINT)
+    @RequiredRole({"USER", "ADMIN", "SUPER_ADMIN"})
     public ResponseEntity<ResponseDTO<Void>> deleteUserSettings(@RequestParam("userId") Long userId) {
         try {
             userSettingsService.deleteSettings(userId);

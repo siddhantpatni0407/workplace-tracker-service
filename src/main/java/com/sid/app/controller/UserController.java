@@ -1,5 +1,6 @@
 package com.sid.app.controller;
 
+import com.sid.app.auth.RequiredRole;
 import com.sid.app.constants.AppConstants;
 import com.sid.app.model.ResponseDTO;
 import com.sid.app.model.UserDTO;
@@ -38,6 +39,7 @@ public class UserController {
      * @return ResponseEntity with a ResponseDTO containing a list of UserDTOs.
      */
     @GetMapping(AppConstants.FETCH_ALL_USERS_ENDPOINT)
+    @RequiredRole({"ADMIN", "SUPER_ADMIN"})
     public ResponseEntity<ResponseDTO<List<UserDTO>>> getAllUsers() {
         log.info("getAllUsers() : Received request to fetch all users.");
 
@@ -60,6 +62,7 @@ public class UserController {
      * @return ResponseEntity with a ResponseDTO containing the UserDTO.
      */
     @GetMapping(AppConstants.USER_ENDPOINT)
+    @RequiredRole({"ADMIN", "SUPER_ADMIN"})
     public ResponseEntity<ResponseDTO<UserDTO>> getUserById(@RequestParam("userId") Long userId) {
         log.info("getUserById() : Received request to fetch user with ID: {}", userId);
         try {
@@ -81,6 +84,7 @@ public class UserController {
      * @return ResponseEntity with a ResponseDTO indicating the update status.
      */
     @PutMapping(AppConstants.USER_ENDPOINT)
+    @RequiredRole({"ADMIN", "SUPER_ADMIN"})
     public ResponseEntity<ResponseDTO<UserDTO>> updateUser(@RequestParam("userId") Long userId,
                                                            @RequestBody @Valid UserDTO updatedUserDTO) {
         log.info("updateUser() : Received request to update user with ID: {}", userId);
@@ -103,6 +107,7 @@ public class UserController {
      * Update user active / locked status in a single API call.
      */
     @PatchMapping(value = AppConstants.USER_STATUS_ENDPOINT, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @RequiredRole({"ADMIN", "SUPER_ADMIN"})
     public ResponseEntity<ResponseDTO<UserDTO>> updateUserStatus(@RequestBody UserStatusUpdateRequest req) {
         log.info("updateUserStatus() : Received request -> {}", ApplicationUtils.getJSONString(req));
 
@@ -137,6 +142,7 @@ public class UserController {
      * @return ResponseEntity with a ResponseDTO indicating the deletion status.
      */
     @DeleteMapping(AppConstants.USER_ENDPOINT)
+    @RequiredRole({"ADMIN", "SUPER_ADMIN"})
     public ResponseEntity<ResponseDTO<Void>> deleteUser(@RequestParam("userId") Long userId) {
         log.info("deleteUser() : Received request to delete user with ID: {}", userId);
         try {

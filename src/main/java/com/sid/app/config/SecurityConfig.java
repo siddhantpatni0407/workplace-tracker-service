@@ -35,43 +35,21 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        // Allow documentation endpoints without authentication
                         .requestMatchers(
                                 "/swagger-ui.html",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
-                                "/webjars/**",
+                                "/webjars/**"
+                        ).permitAll()
+                        // Allow public authentication endpoints without JWT
+                        .requestMatchers(
                                 AppConstants.USER_REGISTER_ENDPOINT,
                                 AppConstants.USER_LOGIN_ENDPOINT,
                                 AppConstants.FORGOT_PASSWORD_RESET_ENDPOINT,
-                                AppConstants.DB_BACKUP_ENDPOINT,
-                                AppConstants.USER_ENDPOINT,
-                                AppConstants.FETCH_ALL_USERS_ENDPOINT,
-                                AppConstants.USER_STATUS_ENDPOINT,
-                                AppConstants.AUTH_REFRESH_ENDPOINT,
-                                AppConstants.USER_SETTINGS_ENDPOINT,
-                                AppConstants.USER_PROFILE_ENDPOINT,
-                                AppConstants.USER_CHANGE_PASSWORD_ENDPOINT,
-                                AppConstants.LEAVE_POLICY_ENDPOINT,
-                                AppConstants.EXACT_LEAVE_POLICY_ENDPOINT,
-                                AppConstants.USER_LEAVE_ENDPOINT,
-                                AppConstants.USER_LEAVE_BALANCE_ENDPOINT,
-                                AppConstants.USER_LEAVE_BALANCE_ADJUST_ENDPOINT,
-                                AppConstants.USER_LEAVE_BALANCE_RECALCULATE_ENDPOINT,
-                                AppConstants.HOLIDAYS_ENDPOINT,
-                                AppConstants.VISITS_ENDPOINT,
-                                AppConstants.FETCH_DAILY_VIEW_ENDPOINT,
-                                AppConstants.ANALYTICS_VISITS_LEAVES_AGG_ENDPOINT,
-                                // Special Days endpoints
-                                AppConstants.SPECIAL_DAYS_ENDPOINT,
-                                AppConstants.SPECIAL_DAYS_CURRENT_MONTH_ENDPOINT,
-                                AppConstants.SPECIAL_DAYS_BIRTHDAYS_ENDPOINT,
-                                AppConstants.SPECIAL_DAYS_ANNIVERSARIES_ENDPOINT,
-                                // Daily Tasks endpoints
-                                AppConstants.DAILY_TASKS_ENDPOINT,
-                                AppConstants.USER_DAILY_TASKS_ENDPOINT,
-                                AppConstants.USER_DAILY_TASKS_DATE_RANGE_ENDPOINT,
-                                AppConstants.USER_DAILY_TASKS_DATE_ENDPOINT
+                                AppConstants.AUTH_REFRESH_ENDPOINT
                         ).permitAll()
+                        // Require authentication for all other endpoints
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);

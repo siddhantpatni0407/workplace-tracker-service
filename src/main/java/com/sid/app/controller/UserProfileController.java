@@ -1,5 +1,6 @@
 package com.sid.app.controller;
 
+import com.sid.app.auth.RequiredRole;
 import com.sid.app.constants.AppConstants;
 import com.sid.app.model.ResponseDTO;
 import com.sid.app.model.UserProfileDTO;
@@ -26,6 +27,7 @@ public class UserProfileController {
      * GET /user-profile?userId=123
      */
     @GetMapping(value = AppConstants.USER_PROFILE_ENDPOINT, produces = "application/json")
+    @RequiredRole({"USER", "ADMIN", "SUPER_ADMIN"})
     public ResponseEntity<ResponseDTO<UserProfileDTO>> getProfile(@RequestParam("userId") Long userId) {
         log.info("GET /user/profile called - userId={}", userId);
         try {
@@ -48,6 +50,7 @@ public class UserProfileController {
      * PUT /user-profile?userId=123
      */
     @PutMapping(value = AppConstants.USER_PROFILE_ENDPOINT, produces = "application/json")
+    @RequiredRole({"USER", "ADMIN", "SUPER_ADMIN"})
     public ResponseEntity<ResponseDTO<?>> upsertProfile(@RequestParam("userId") Long userId,
                                                         @Valid @RequestBody UserProfileDTO dto) {
 

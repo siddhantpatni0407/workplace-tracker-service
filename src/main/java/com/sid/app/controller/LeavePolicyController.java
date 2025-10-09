@@ -1,5 +1,6 @@
 package com.sid.app.controller;
 
+import com.sid.app.auth.RequiredRole;
 import com.sid.app.constants.AppConstants;
 import com.sid.app.model.LeavePolicyDTO;
 import com.sid.app.model.ResponseDTO;
@@ -22,6 +23,7 @@ public class LeavePolicyController {
     private final LeavePolicyService policyService;
 
     @GetMapping(AppConstants.LEAVE_POLICY_ENDPOINT)
+    @RequiredRole({"USER", "ADMIN", "SUPER_ADMIN"})
     public ResponseEntity<ResponseDTO<List<LeavePolicyDTO>>> getAllPolicies() {
         log.info("getAllPolicies() - request");
         List<LeavePolicyDTO> list = policyService.getAllPolicies();
@@ -37,6 +39,7 @@ public class LeavePolicyController {
     }
 
     @GetMapping(AppConstants.EXACT_LEAVE_POLICY_ENDPOINT)
+    @RequiredRole({"USER", "ADMIN", "SUPER_ADMIN"})
     public ResponseEntity<ResponseDTO<LeavePolicyDTO>> getPolicy(@RequestParam("policyId") Long policyId) {
         log.info("getPolicy() - policyId={}", policyId);
 
@@ -59,6 +62,7 @@ public class LeavePolicyController {
     }
 
     @PostMapping(AppConstants.LEAVE_POLICY_ENDPOINT)
+    @RequiredRole({"ADMIN"})
     public ResponseEntity<ResponseDTO<LeavePolicyDTO>> createPolicy(@Valid @RequestBody LeavePolicyDTO req) {
         log.info("createPolicy() - code={}", req.getPolicyCode());
         try {
@@ -76,6 +80,7 @@ public class LeavePolicyController {
     }
 
     @PutMapping(AppConstants.LEAVE_POLICY_ENDPOINT)
+    @RequiredRole({"ADMIN"})
     public ResponseEntity<ResponseDTO<LeavePolicyDTO>> updatePolicy(@RequestParam("policyId") Long policyId,
                                                                     @Valid @RequestBody LeavePolicyDTO req) {
         log.info("updatePolicy() - policyId={} code={}", policyId, req.getPolicyCode());

@@ -1,5 +1,6 @@
 package com.sid.app.controller;
 
+import com.sid.app.auth.RequiredRole;
 import com.sid.app.constants.AppConstants;
 import com.sid.app.model.HolidayDTO;
 import com.sid.app.model.ResponseDTO;
@@ -25,9 +26,9 @@ public class HolidayController {
     private final HolidayService holidayService;
 
     @GetMapping
-    public ResponseEntity<ResponseDTO<List<HolidayDTO>>> getHolidays(
-            @RequestParam(value = "from", required = false) String from,
-            @RequestParam(value = "to", required = false) String to) {
+    @RequiredRole({"USER", "ADMIN", "SUPER_ADMIN"})
+    public ResponseEntity<ResponseDTO<List<HolidayDTO>>> getHolidays(@RequestParam(value = "from", required = false) String from,
+                                                                     @RequestParam(value = "to", required = false) String to) {
 
         log.info("getHolidays() called with from='{}' to='{}'", from, to);
 
@@ -70,6 +71,7 @@ public class HolidayController {
     }
 
     @PostMapping
+    @RequiredRole({"ADMIN"})
     public ResponseEntity<ResponseDTO<HolidayDTO>> createHoliday(@Valid @RequestBody HolidayDTO req) {
         log.info("createHoliday() name='{}' date='{}'", req.getName(), req.getHolidayDate());
         HolidayDTO created = holidayService.createHoliday(req);
@@ -82,6 +84,7 @@ public class HolidayController {
      * Accepts: PUT /holidays?holidayId={id}  OR  (if you prefer path param, you can change to @PutMapping("/{holidayId}"))
      */
     @PutMapping
+    @RequiredRole({"ADMIN"})
     public ResponseEntity<ResponseDTO<HolidayDTO>> updateHoliday(@RequestParam("holidayId") Long holidayId,
                                                                  @Valid @RequestBody HolidayDTO req) {
         log.info("updateHoliday() holidayId={} name={} date={}", holidayId, req.getName(), req.getHolidayDate());
@@ -99,6 +102,7 @@ public class HolidayController {
     }
 
     @DeleteMapping
+    @RequiredRole({"ADMIN"})
     public ResponseEntity<ResponseDTO<Void>> deleteHoliday(@RequestParam("holidayId") Long holidayId) {
         log.info("deleteHoliday() holidayId={}", holidayId);
         try {

@@ -94,8 +94,16 @@ public class AuthService {
             // resolve role name for response
             String roleName = resolveRoleName(savedUser.getRoleId());
 
+            // Generate JWT token with user details
+            String jwtToken = jwtUtil.generateTokenWithUserDetails(
+                    savedUser.getEmail(),
+                    savedUser.getUserId(),
+                    savedUser.getName(),
+                    roleName
+            );
+
             return new AuthResponse(
-                    jwtUtil.generateToken(savedUser.getEmail()),
+                    jwtToken,
                     roleName,
                     savedUser.getUserId(),
                     savedUser.getName(),
@@ -182,8 +190,16 @@ public class AuthService {
 
         String roleName = resolveRoleName(user.getRoleId());
 
+        // Generate JWT token with user details
+        String jwtToken = jwtUtil.generateTokenWithUserDetails(
+                user.getEmail(),
+                user.getUserId(),
+                user.getName(),
+                roleName
+        );
+
         return new AuthResponse(
-                jwtUtil.generateToken(user.getEmail()),
+                jwtToken,
                 roleName,
                 user.getUserId(),
                 user.getName(),

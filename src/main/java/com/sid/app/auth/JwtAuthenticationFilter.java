@@ -1,42 +1,43 @@
 package com.sid.app.auth;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sid.app.constants.AppConstants;
+import com.sid.app.model.ResponseDTO;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.Collections;
 
 @Component
+@RequiredArgsConstructor
+@Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private static final Logger log = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
-
     private final JwtUtil jwtUtil;
-
-    public JwtAuthenticationFilter(JwtUtil jwtUtil) {
-        this.jwtUtil = jwtUtil;
-    }
+    private final CustomUserDetailsService userDetailsService;
+    private final ObjectMapper objectMapper;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-        final String path = request.getRequestURI();
 
-        // Allow the refresh endpoint to be called without parsing the Authorization header.
-        // (refresh will typically rely on HttpOnly cookie)
+        final String path = request.getRequestURI();
+        log.debug("Processing request for path: {}", path);
+
+        // Allow the refresh endpoint to be called without parsing the Authorization header
         if (path != null && path.contains(AppConstants.AUTH_REFRESH_ENDPOINT)) {
             filterChain.doFilter(request, response);
             return;
@@ -44,48 +45,58 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         final String authHeader = request.getHeader("Authorization");
 
-        // If no Authorization header, continue (some endpoints might use cookie or be public)
+        // If no Authorization header, continue (some endpoints might be public)
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            log.debug("No valid Authorization header found for path: {}", path);
             filterChain.doFilter(request, response);
             return;
         }
-
-        String token = authHeader.substring(7);
 
         try {
-            String username = jwtUtil.extractUsername(token);
+            final String jwt = authHeader.substring(7);
+            final String username = jwtUtil.extractUsername(jwt);
 
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                if (jwtUtil.validateToken(token, username)) {
-                    UsernamePasswordAuthenticationToken authToken =
-                            new UsernamePasswordAuthenticationToken(
-                                    new User(username, "", Collections.emptyList()),
-                                    null,
-                                    Collections.emptyList()
-                            );
+                UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
+
+                if (jwtUtil.isTokenValid(jwt, userDetails)) {
+                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                            userDetails,
+                            null,
+                            userDetails.getAuthorities()
+                    );
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authToken);
+                    log.debug("Successfully authenticated user: {}", username);
+                } else {
+                    log.warn("Invalid JWT token for user: {}", username);
+                    handleAuthenticationError(response, "Invalid JWT token");
+                    return;
                 }
             }
-
-            filterChain.doFilter(request, response);
-        } catch (ExpiredJwtException eje) {
-            // Token expired: return 401 and indicate token expiry so clients can call refresh
-            log.debug("JWT expired for request {}: {}", path, eje.getMessage());
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.setHeader("X-Token-Expired", "true");
-            response.setContentType("application/json");
-            String body = "{\"status\":\"FAILED\",\"message\":\"Access token expired\"}";
-            response.getWriter().write(body);
+        } catch (ExpiredJwtException e) {
+            log.warn("JWT token expired: {}", e.getMessage());
+            handleAuthenticationError(response, "JWT token has expired");
             return;
-        } catch (Exception ex) {
-            // invalid token or other errors - respond 401 (do not leak internal details)
-            log.debug("JWT validation error for request {}: {}", path, ex.getMessage());
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.setContentType("application/json");
-            String body = "{\"status\":\"FAILED\",\"message\":\"Invalid access token\"}";
-            response.getWriter().write(body);
+        } catch (Exception e) {
+            log.error("JWT authentication error: {}", e.getMessage());
+            handleAuthenticationError(response, "Authentication failed");
             return;
         }
+
+        filterChain.doFilter(request, response);
+    }
+
+    private void handleAuthenticationError(HttpServletResponse response, String message) throws IOException {
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+
+        ResponseDTO<Object> errorResponse = new ResponseDTO<>(
+                AppConstants.STATUS_FAILED,
+                message,
+                null
+        );
+
+        response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
     }
 }

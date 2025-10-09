@@ -1,5 +1,7 @@
 package com.sid.app.controller;
 
+import com.sid.app.auth.RequiredRole;
+import com.sid.app.auth.JwtAuthenticationContext;
 import com.sid.app.constants.AppConstants;
 import com.sid.app.model.DailyTaskDTO;
 import com.sid.app.model.ResponseDTO;
@@ -19,7 +21,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Controller for handling daily task-related operations.
+ * Controller for handling daily task-related operations with role-based authorization.
  * Provides endpoints for creating, updating, deleting, and retrieving daily tasks.
  *
  * <p>Author: Siddhant Patni</p>
@@ -32,15 +34,28 @@ public class DailyTaskController {
     @Autowired
     private DailyTaskService dailyTaskService;
 
+    @Autowired
+    private JwtAuthenticationContext authContext;
+
     /**
      * Creates a new daily task.
+     * Users can only create tasks for themselves unless they are admin.
      *
      * @param dailyTaskDTO the daily task information
      * @return ResponseEntity with a ResponseDTO containing the created daily task
      */
     @PostMapping(AppConstants.DAILY_TASKS_ENDPOINT)
+    @RequiredRole({"USER", "ADMIN", "SUPER_ADMIN"})
     public ResponseEntity<ResponseDTO<DailyTaskDTO>> createDailyTask(@RequestBody @Valid DailyTaskDTO dailyTaskDTO) {
         log.info("createDailyTask() : Creating daily task for user ID: {}", dailyTaskDTO.getUserId());
+
+        // Validate user can create task for the specified userId
+        if (!authContext.isOwnerOrAdmin(dailyTaskDTO.getUserId())) {
+            log.warn("createDailyTask() : User {} attempted to create task for user {}",
+                    authContext.getCurrentUserId(), dailyTaskDTO.getUserId());
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(new ResponseDTO<>(AppConstants.STATUS_FAILED, "You can only create tasks for yourself", null));
+        }
 
         try {
             DailyTaskDTO createdTask = dailyTaskService.createDailyTask(dailyTaskDTO);
@@ -61,16 +76,26 @@ public class DailyTaskController {
 
     /**
      * Updates an existing daily task.
+     * Users can only update their own tasks unless they are admin.
      *
      * @param taskId       the ID of the task to update
      * @param dailyTaskDTO the updated task information
      * @return ResponseEntity with a ResponseDTO containing the updated daily task
      */
     @PutMapping(AppConstants.DAILY_TASKS_ENDPOINT)
+    @RequiredRole({"USER", "ADMIN", "SUPER_ADMIN"})
     public ResponseEntity<ResponseDTO<DailyTaskDTO>> updateDailyTask(@RequestParam("taskId") Long taskId,
                                                                      @RequestBody @Valid DailyTaskDTO dailyTaskDTO) {
 
         log.info("updateDailyTask() : Updating daily task with ID: {}", taskId);
+
+        // Validate user can update task for the specified userId
+        if (!authContext.isOwnerOrAdmin(dailyTaskDTO.getUserId())) {
+            log.warn("updateDailyTask() : User {} attempted to update task for user {}",
+                    authContext.getCurrentUserId(), dailyTaskDTO.getUserId());
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(new ResponseDTO<>(AppConstants.STATUS_FAILED, "You can only update your own tasks", null));
+        }
 
         try {
             DailyTaskDTO updatedTask = dailyTaskService.updateDailyTask(taskId, dailyTaskDTO);
@@ -91,15 +116,28 @@ public class DailyTaskController {
 
     /**
      * Deletes a daily task by its ID.
+     * Users can only delete their own tasks unless they are admin.
      *
      * @param taskId the ID of the task to delete
      * @return ResponseEntity with a ResponseDTO indicating the result of the operation
      */
     @DeleteMapping(AppConstants.DAILY_TASKS_ENDPOINT)
+    @RequiredRole({"USER", "ADMIN", "SUPER_ADMIN"})
     public ResponseEntity<ResponseDTO<Void>> deleteDailyTask(@RequestParam("taskId") Long taskId) {
         log.info("deleteDailyTask() : Deleting daily task with ID: {}", taskId);
 
         try {
+            // First get the task to validate ownership
+            DailyTaskDTO task = dailyTaskService.getDailyTaskById(taskId);
+
+            // Validate user can delete this task (owner or admin)
+            if (!authContext.isOwnerOrAdmin(task.getUserId())) {
+                log.warn("deleteDailyTask() : User {} attempted to delete task belonging to user {}",
+                        authContext.getCurrentUserId(), task.getUserId());
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(new ResponseDTO<>(AppConstants.STATUS_FAILED, "You can only delete your own tasks", null));
+            }
+
             dailyTaskService.deleteDailyTask(taskId);
             log.info("deleteDailyTask() : Daily task deleted successfully with ID: {}", taskId);
 
@@ -118,16 +156,27 @@ public class DailyTaskController {
 
     /**
      * Retrieves a daily task by its ID.
+     * Users can only view their own tasks unless they are admin.
      *
      * @param taskId the ID of the task to retrieve
      * @return ResponseEntity with a ResponseDTO containing the retrieved daily task
      */
     @GetMapping(AppConstants.DAILY_TASKS_ENDPOINT)
+    @RequiredRole({"USER", "ADMIN", "SUPER_ADMIN"})
     public ResponseEntity<ResponseDTO<DailyTaskDTO>> getDailyTaskById(@RequestParam("taskId") Long taskId) {
         log.info("getDailyTaskById() : Retrieving daily task with ID: {}", taskId);
 
         try {
             DailyTaskDTO task = dailyTaskService.getDailyTaskById(taskId);
+
+            // Validate user can view this task (owner or admin)
+            if (!authContext.isOwnerOrAdmin(task.getUserId())) {
+                log.warn("getDailyTaskById() : User {} attempted to view task belonging to user {}",
+                        authContext.getCurrentUserId(), task.getUserId());
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(new ResponseDTO<>(AppConstants.STATUS_FAILED, "You can only view your own tasks", null));
+            }
+
             log.info("getDailyTaskById() : Daily task retrieved successfully with ID: {}", taskId);
 
             return ResponseEntity.ok()
@@ -145,41 +194,40 @@ public class DailyTaskController {
 
     /**
      * Retrieves all daily tasks for a specific user.
+     * Users can only view their own tasks unless they are admin.
      *
-     * @param userId the ID of the user
+     * @param userId the ID of the user whose tasks to retrieve
      * @return ResponseEntity with a ResponseDTO containing the list of daily tasks
      */
     @GetMapping(AppConstants.USER_DAILY_TASKS_ENDPOINT)
-    public ResponseEntity<ResponseDTO<List<DailyTaskDTO>>> getDailyTasksByUserId(@RequestParam("userId") Long userId) {
-        log.info("getDailyTasksByUserId() : Retrieving daily tasks for user ID: {}", userId);
+    @RequiredRole({"USER", "ADMIN", "SUPER_ADMIN"})
+    public ResponseEntity<ResponseDTO<List<DailyTaskDTO>>> getUserDailyTasks(@RequestParam("userId") Long userId) {
+        log.info("getUserDailyTasks() : Fetching daily tasks for user ID: {}", userId);
+
+        // Validate user can view tasks for the specified userId
+        if (!authContext.isOwnerOrAdmin(userId)) {
+            log.warn("getUserDailyTasks() : User {} attempted to view tasks for user {}",
+                    authContext.getCurrentUserId(), userId);
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(new ResponseDTO<>(AppConstants.STATUS_FAILED, "You can only view your own tasks", null));
+        }
 
         try {
-            List<DailyTaskDTO> tasks = dailyTaskService.getDailyTasksByUserId(userId);
-
-            if (tasks.isEmpty()) {
-                log.warn("getDailyTasksByUserId() : No daily tasks found for user ID: {}", userId);
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(new ResponseDTO<>(AppConstants.STATUS_FAILED, "No daily tasks found for the user", Collections.emptyList()));
-            }
-
-            log.info("getDailyTasksByUserId() : Retrieved {} daily tasks for user ID: {}", tasks.size(), userId);
-            log.debug("getDailyTasksByUserId() : Tasks: {}", ApplicationUtils.getJSONString(tasks));
+            List<DailyTaskDTO> tasks = dailyTaskService.getUserDailyTasks(userId);
+            log.info("getUserDailyTasks() : Retrieved {} daily tasks for user ID: {}", tasks.size(), userId);
 
             return ResponseEntity.ok()
                     .body(new ResponseDTO<>(AppConstants.STATUS_SUCCESS, "Daily tasks retrieved successfully", tasks));
-        } catch (EntityNotFoundException e) {
-            log.warn("getDailyTasksByUserId() : {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new ResponseDTO<>(AppConstants.STATUS_FAILED, e.getMessage(), Collections.emptyList()));
         } catch (Exception e) {
-            log.error("getDailyTasksByUserId() : Failed to retrieve daily tasks", e);
+            log.error("getUserDailyTasks() : Failed to fetch daily tasks for user ID: {}", userId, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ResponseDTO<>(AppConstants.STATUS_FAILED, "Failed to retrieve daily tasks: " + e.getMessage(), Collections.emptyList()));
+                    .body(new ResponseDTO<>(AppConstants.STATUS_FAILED, "Failed to fetch daily tasks: " + e.getMessage(), Collections.emptyList()));
         }
     }
 
     /**
      * Retrieves daily tasks for a user within a date range.
+     * Users can only view their own tasks unless they are admin.
      *
      * @param userId    the ID of the user
      * @param startDate the start date of the range
@@ -187,6 +235,7 @@ public class DailyTaskController {
      * @return ResponseEntity with a ResponseDTO containing the list of daily tasks
      */
     @GetMapping(AppConstants.USER_DAILY_TASKS_DATE_RANGE_ENDPOINT)
+    @RequiredRole({"USER", "ADMIN", "SUPER_ADMIN"})
     public ResponseEntity<ResponseDTO<List<DailyTaskDTO>>> getDailyTasksByUserIdAndDateRange(
             @RequestParam("userId") Long userId,
             @RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
@@ -194,6 +243,14 @@ public class DailyTaskController {
 
         log.info("getDailyTasksByUserIdAndDateRange() : Retrieving daily tasks for user ID: {} between {} and {}",
                 userId, startDate, endDate);
+
+        // Validate user can view tasks for the specified userId
+        if (!authContext.isOwnerOrAdmin(userId)) {
+            log.warn("getDailyTasksByUserIdAndDateRange() : User {} attempted to view tasks for user {}",
+                    authContext.getCurrentUserId(), userId);
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(new ResponseDTO<>(AppConstants.STATUS_FAILED, "You can only view your own tasks", Collections.emptyList()));
+        }
 
         try {
             List<DailyTaskDTO> tasks = dailyTaskService.getDailyTasksByUserIdAndDateRange(userId, startDate, endDate);
@@ -222,17 +279,27 @@ public class DailyTaskController {
 
     /**
      * Retrieves daily tasks for a specific date.
+     * Users can only view their own tasks unless they are admin.
      *
      * @param userId the ID of the user
      * @param date   the date to filter by
      * @return ResponseEntity with a ResponseDTO containing the list of daily tasks
      */
     @GetMapping(AppConstants.USER_DAILY_TASKS_DATE_ENDPOINT)
+    @RequiredRole({"USER", "ADMIN", "SUPER_ADMIN"})
     public ResponseEntity<ResponseDTO<List<DailyTaskDTO>>> getDailyTasksByUserIdAndDate(
             @RequestParam("userId") Long userId,
             @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
 
         log.info("getDailyTasksByUserIdAndDate() : Retrieving daily tasks for user ID: {} on date: {}", userId, date);
+
+        // Validate user can view tasks for the specified userId
+        if (!authContext.isOwnerOrAdmin(userId)) {
+            log.warn("getDailyTasksByUserIdAndDate() : User {} attempted to view tasks for user {}",
+                    authContext.getCurrentUserId(), userId);
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(new ResponseDTO<>(AppConstants.STATUS_FAILED, "You can only view your own tasks", Collections.emptyList()));
+        }
 
         try {
             List<DailyTaskDTO> tasks = dailyTaskService.getDailyTasksByUserIdAndDate(userId, date);

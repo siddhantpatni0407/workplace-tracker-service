@@ -1,5 +1,6 @@
 package com.sid.app.controller;
 
+import com.sid.app.auth.RequiredRole;
 import com.sid.app.constants.AppConstants;
 import com.sid.app.model.CurrentMonthSpecialDaysDTO;
 import com.sid.app.model.ResponseDTO;
@@ -12,7 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * Controller for Special Days API endpoints (birthdays and work anniversaries)
+ * Controller for Special Days API endpoints with role-based authorization (birthdays and work anniversaries)
  */
 @Slf4j
 @RestController
@@ -22,9 +23,11 @@ public class SpecialDaysController {
     private final SpecialDaysService specialDaysService;
 
     /**
-     * Get special days with filtering and pagination
+     * Get special days with filtering and pagination.
+     * All authenticated users can view special days.
      */
     @GetMapping(value = AppConstants.SPECIAL_DAYS_ENDPOINT, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequiredRole({"USER", "ADMIN", "SUPER_ADMIN"})
     public ResponseEntity<ResponseDTO<SpecialDaysDataDTO>> getSpecialDays(@RequestParam(required = false) Integer month,
                                                                           @RequestParam(required = false) Integer year,
                                                                           @RequestParam(required = false) Integer page,
@@ -43,54 +46,62 @@ public class SpecialDaysController {
     }
 
     /**
-     * Get current month special days for dashboard
+     * Get current month special days for dashboard.
+     * All authenticated users can view special days.
      */
     @GetMapping(value = AppConstants.SPECIAL_DAYS_CURRENT_MONTH_ENDPOINT, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequiredRole({"USER", "ADMIN", "SUPER_ADMIN"})
     public ResponseEntity<ResponseDTO<CurrentMonthSpecialDaysDTO>> getCurrentMonthSpecialDays(@RequestParam(required = false) Integer month,
                                                                                               @RequestParam(required = false) Integer year,
                                                                                               @RequestParam(required = false) Integer limit) {
 
-        log.info("GET {} - month: {}, year: {}, limit: {}",
-                AppConstants.SPECIAL_DAYS_CURRENT_MONTH_ENDPOINT, month, year, limit);
+        log.info("GET {} - month: {}, year: {}, limit: {}", AppConstants.SPECIAL_DAYS_CURRENT_MONTH_ENDPOINT, month, year, limit);
 
-        ResponseDTO<CurrentMonthSpecialDaysDTO> response = specialDaysService.getCurrentMonthSpecialDays(
-                month, year, limit);
+        ResponseDTO<CurrentMonthSpecialDaysDTO> response = specialDaysService.getCurrentMonthSpecialDays(month, year, limit);
 
         return ResponseEntity.ok(response);
     }
 
     /**
-     * Get birthdays for a specific year
+     * Get birthdays with filtering.
+     * All authenticated users can view birthdays.
      */
     @GetMapping(value = AppConstants.SPECIAL_DAYS_BIRTHDAYS_ENDPOINT, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ResponseDTO<SpecialDaysDataDTO>> getBirthdays(@RequestParam(required = false) Integer year,
+    @RequiredRole({"USER", "ADMIN", "SUPER_ADMIN"})
+    public ResponseEntity<ResponseDTO<SpecialDaysDataDTO>> getBirthdays(@RequestParam(required = false) Integer month,
+                                                                        @RequestParam(required = false) Integer year,
                                                                         @RequestParam(required = false) Integer page,
                                                                         @RequestParam(required = false) Integer limit,
-                                                                        @RequestParam(required = false) Integer month) {
+                                                                        @RequestParam(required = false) String department,
+                                                                        @RequestParam(required = false) String location) {
 
-        log.info("GET {} - year: {}, page: {}, limit: {}, month: {}",
-                AppConstants.SPECIAL_DAYS_BIRTHDAYS_ENDPOINT, year, page, limit, month);
+        log.info("GET {} - month: {}, year: {}, page: {}, limit: {}, department: {}, location: {}",
+                AppConstants.SPECIAL_DAYS_BIRTHDAYS_ENDPOINT, month, year, page, limit, department, location);
 
         ResponseDTO<SpecialDaysDataDTO> response = specialDaysService.getSpecialDays(
-                month, year, page, limit, "birthday", "all", "all");
+                month, year, page, limit, "BIRTHDAY", department, location);
 
         return ResponseEntity.ok(response);
     }
 
     /**
-     * Get work anniversaries for a specific year
+     * Get work anniversaries with filtering.
+     * All authenticated users can view anniversaries.
      */
     @GetMapping(value = AppConstants.SPECIAL_DAYS_ANNIVERSARIES_ENDPOINT, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ResponseDTO<SpecialDaysDataDTO>> getAnniversaries(@RequestParam(required = false) Integer year,
+    @RequiredRole({"USER", "ADMIN", "SUPER_ADMIN"})
+    public ResponseEntity<ResponseDTO<SpecialDaysDataDTO>> getAnniversaries(@RequestParam(required = false) Integer month,
+                                                                            @RequestParam(required = false) Integer year,
                                                                             @RequestParam(required = false) Integer page,
                                                                             @RequestParam(required = false) Integer limit,
-                                                                            @RequestParam(required = false) Integer month) {
+                                                                            @RequestParam(required = false) String department,
+                                                                            @RequestParam(required = false) String location) {
 
-        log.info("GET {} - year: {}, page: {}, limit: {}, month: {}",
-                AppConstants.SPECIAL_DAYS_ANNIVERSARIES_ENDPOINT, year, page, limit, month);
+        log.info("GET {} - month: {}, year: {}, page: {}, limit: {}, department: {}, location: {}",
+                AppConstants.SPECIAL_DAYS_ANNIVERSARIES_ENDPOINT, month, year, page, limit, department, location);
 
         ResponseDTO<SpecialDaysDataDTO> response = specialDaysService.getSpecialDays(
-                month, year, page, limit, "work-anniversary", "all", "all");
+                month, year, page, limit, "ANNIVERSARY", department, location);
 
         return ResponseEntity.ok(response);
     }

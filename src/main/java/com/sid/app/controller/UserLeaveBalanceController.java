@@ -1,5 +1,6 @@
 package com.sid.app.controller;
 
+import com.sid.app.auth.RequiredRole;
 import com.sid.app.constants.AppConstants;
 import com.sid.app.model.ResponseDTO;
 import com.sid.app.model.UserLeaveBalanceDTO;
@@ -33,6 +34,7 @@ public class UserLeaveBalanceController {
      * GET /user-leave-balance?userId=..&policyId=..&year=..
      */
     @GetMapping(AppConstants.USER_LEAVE_BALANCE_ENDPOINT)
+    @RequiredRole({"USER", "ADMIN", "SUPER_ADMIN"})
     public ResponseEntity<ResponseDTO<UserLeaveBalanceDTO>> getBalance(@RequestParam("userId") Long userId,
                                                                        @RequestParam("policyId") Long policyId,
                                                                        @RequestParam("year") Integer year) {
@@ -64,8 +66,8 @@ public class UserLeaveBalanceController {
      * Admin override: Upsert balance manually.
      * Keep this restricted to ADMIN role to avoid accidental edits.
      */
-    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(AppConstants.USER_LEAVE_BALANCE_ENDPOINT)
+    @RequiredRole({"USER", "ADMIN", "SUPER_ADMIN"})
     public ResponseEntity<ResponseDTO<UserLeaveBalanceDTO>> upsertBalance(@Valid @RequestBody UserLeaveBalanceDTO req) {
         log.info("upsertBalance() (ADMIN) userId={} policyId={} year={}", req.getUserId(), req.getPolicyId(), req.getYear());
 
@@ -114,8 +116,8 @@ public class UserLeaveBalanceController {
      * <p>
      * This endpoint is useful for adhoc adjustments / testing and should be protected.
      */
-    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(AppConstants.USER_LEAVE_BALANCE_ADJUST_ENDPOINT)
+    @RequiredRole({"USER", "ADMIN", "SUPER_ADMIN"})
     public ResponseEntity<ResponseDTO<UserLeaveBalanceDTO>> adjustBalance(@RequestParam("userId") Long userId,
                                                                           @RequestParam("policyId") Long policyId,
                                                                           @RequestParam("year") Integer year,
@@ -148,8 +150,8 @@ public class UserLeaveBalanceController {
      * Recalculate balance from user_leave records for a user+policy+year (admin).
      * Useful for reconciliation after a bug or historical import.
      */
-    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(AppConstants.USER_LEAVE_BALANCE_RECALCULATE_ENDPOINT)
+    @RequiredRole({"USER", "ADMIN", "SUPER_ADMIN"})
     public ResponseEntity<ResponseDTO<UserLeaveBalanceDTO>> recalculate(@RequestParam("userId") Long userId,
                                                                         @RequestParam("policyId") Long policyId,
                                                                         @RequestParam("year") Integer year) {
