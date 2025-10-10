@@ -196,12 +196,13 @@ public class DailyTaskController {
      * Retrieves all daily tasks for a specific user.
      * Users can only view their own tasks unless they are admin.
      *
-     * @param userId the ID of the user whose tasks to retrieve
      * @return ResponseEntity with a ResponseDTO containing the list of daily tasks
      */
     @GetMapping(AppConstants.USER_DAILY_TASKS_ENDPOINT)
     @RequiredRole({"USER", "ADMIN", "SUPER_ADMIN"})
-    public ResponseEntity<ResponseDTO<List<DailyTaskDTO>>> getUserDailyTasks(@RequestParam("userId") Long userId) {
+    public ResponseEntity<ResponseDTO<List<DailyTaskDTO>>> getUserDailyTasks() {
+
+        Long userId = authContext.getCurrentUserId();
         log.info("getUserDailyTasks() : Fetching daily tasks for user ID: {}", userId);
 
         // Validate user can view tasks for the specified userId
@@ -229,18 +230,16 @@ public class DailyTaskController {
      * Retrieves daily tasks for a user within a date range.
      * Users can only view their own tasks unless they are admin.
      *
-     * @param userId    the ID of the user
      * @param startDate the start date of the range
      * @param endDate   the end date of the range
      * @return ResponseEntity with a ResponseDTO containing the list of daily tasks
      */
     @GetMapping(AppConstants.USER_DAILY_TASKS_DATE_RANGE_ENDPOINT)
     @RequiredRole({"USER", "ADMIN", "SUPER_ADMIN"})
-    public ResponseEntity<ResponseDTO<List<DailyTaskDTO>>> getDailyTasksByUserIdAndDateRange(
-            @RequestParam("userId") Long userId,
-            @RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+    public ResponseEntity<ResponseDTO<List<DailyTaskDTO>>> getDailyTasksByUserIdAndDateRange(@RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+                                                                                             @RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
 
+        Long userId = authContext.getCurrentUserId();
         log.info("getDailyTasksByUserIdAndDateRange() : Retrieving daily tasks for user ID: {} between {} and {}",
                 userId, startDate, endDate);
 
@@ -281,16 +280,14 @@ public class DailyTaskController {
      * Retrieves daily tasks for a specific date.
      * Users can only view their own tasks unless they are admin.
      *
-     * @param userId the ID of the user
-     * @param date   the date to filter by
+     * @param date the date to filter by
      * @return ResponseEntity with a ResponseDTO containing the list of daily tasks
      */
     @GetMapping(AppConstants.USER_DAILY_TASKS_DATE_ENDPOINT)
     @RequiredRole({"USER", "ADMIN", "SUPER_ADMIN"})
-    public ResponseEntity<ResponseDTO<List<DailyTaskDTO>>> getDailyTasksByUserIdAndDate(
-            @RequestParam("userId") Long userId,
-            @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+    public ResponseEntity<ResponseDTO<List<DailyTaskDTO>>> getDailyTasksByUserIdAndDate(@RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
 
+        Long userId = authContext.getCurrentUserId();
         log.info("getDailyTasksByUserIdAndDate() : Retrieving daily tasks for user ID: {} on date: {}", userId, date);
 
         // Validate user can view tasks for the specified userId

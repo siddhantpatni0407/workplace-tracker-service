@@ -1,5 +1,6 @@
 package com.sid.app.controller;
 
+import com.sid.app.auth.JwtAuthenticationContext;
 import com.sid.app.auth.RequiredRole;
 import com.sid.app.constants.AppConstants;
 import com.sid.app.model.DailyViewRecordsDTO;
@@ -7,6 +8,7 @@ import com.sid.app.model.ResponseDTO;
 import com.sid.app.service.DailyViewRecordsService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,14 +28,17 @@ public class DailyViewRecordsController {
 
     private final DailyViewRecordsService service;
 
+    @Autowired
+    private JwtAuthenticationContext jwtAuthenticationContext;
+
     @GetMapping
     @RequiredRole({"USER", "ADMIN", "SUPER_ADMIN"})
-    public ResponseEntity<ResponseDTO<List<DailyViewRecordsDTO>>> fetchDailyViewRecords(@RequestParam("userId") Long userId,
-                                                                                        @RequestParam(value = "year", required = false) Integer year,
+    public ResponseEntity<ResponseDTO<List<DailyViewRecordsDTO>>> fetchDailyViewRecords(@RequestParam(value = "year", required = false) Integer year,
                                                                                         @RequestParam(value = "month", required = false) Integer month,
                                                                                         @RequestParam(value = "from", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
                                                                                         @RequestParam(value = "to", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
                                                                                         @RequestParam(value = "showAll", required = false, defaultValue = "false") boolean showAll) {
+        Long userId = jwtAuthenticationContext.getCurrentUserId();
         log.info("fetchDailyViewRecords() userId={} year={} month={} from={} to={} showAll={}",
                 userId, year, month, from, to, showAll);
 

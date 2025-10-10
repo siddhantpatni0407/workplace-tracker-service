@@ -38,11 +38,10 @@ public class OfficeVisitController {
      */
     @GetMapping
     @RequiredRole({"USER", "ADMIN", "SUPER_ADMIN"})
-    public ResponseEntity<ResponseDTO<List<OfficeVisitDTO>>> getVisitsForMonth(
-            @RequestParam("userId") Long userId,
-            @RequestParam("year") int year,
-            @RequestParam("month") int month) {
+    public ResponseEntity<ResponseDTO<List<OfficeVisitDTO>>> getVisitsForMonth(@RequestParam("year") int year,
+                                                                               @RequestParam("month") int month) {
 
+        Long userId = authContext.getCurrentUserId();
         log.info("getVisitsForMonth() userId={} year={} month={}", userId, year, month);
 
         if (Optional.ofNullable(userId).orElse(0L) <= 0 || month < 1 || month > 12) {

@@ -1,5 +1,6 @@
 package com.sid.app.controller;
 
+import com.sid.app.auth.JwtAuthenticationContext;
 import com.sid.app.auth.RequiredRole;
 import com.sid.app.constants.AppConstants;
 import com.sid.app.model.ResponseDTO;
@@ -12,6 +13,7 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -28,17 +30,20 @@ public class UserLeaveBalanceController {
     private final UserLeaveBalanceService balanceService;
     private final LeavePolicyRepository policyRepo;
     private final UserLeaveRepository userLeaveRepo;
-    private final UserRepository userRepo;   // << add this
+    private final UserRepository userRepo;
+
+    @Autowired
+    private JwtAuthenticationContext jwtAuthenticationContext;
 
     /**
-     * GET /user-leave-balance?userId=..&policyId=..&year=..
+     * GET /user-leave-balance?policyId=..&year=..
      */
     @GetMapping(AppConstants.USER_LEAVE_BALANCE_ENDPOINT)
     @RequiredRole({"USER", "ADMIN", "SUPER_ADMIN"})
-    public ResponseEntity<ResponseDTO<UserLeaveBalanceDTO>> getBalance(@RequestParam("userId") Long userId,
-                                                                       @RequestParam("policyId") Long policyId,
+    public ResponseEntity<ResponseDTO<UserLeaveBalanceDTO>> getBalance(@RequestParam("policyId") Long policyId,
                                                                        @RequestParam("year") Integer year) {
 
+        Long userId = jwtAuthenticationContext.getCurrentUserId();
         log.info("getBalance() userId={} policyId={} year={}", userId, policyId, year);
 
         if (Optional.ofNullable(userId).orElse(0L) <= 0 ||
@@ -112,17 +117,17 @@ public class UserLeaveBalanceController {
      * from inside the leave create/update/delete flows.
      * <p>
      * Example:
-     * POST /user-leave-balance/adjust?userId=101&policyId=1&year=2025&delta=1.0
+     * POST /user-leave-balance/adjust?policyId=1&year=2025&delta=1.0
      * <p>
      * This endpoint is useful for adhoc adjustments / testing and should be protected.
      */
     @PostMapping(AppConstants.USER_LEAVE_BALANCE_ADJUST_ENDPOINT)
     @RequiredRole({"USER", "ADMIN", "SUPER_ADMIN"})
-    public ResponseEntity<ResponseDTO<UserLeaveBalanceDTO>> adjustBalance(@RequestParam("userId") Long userId,
-                                                                          @RequestParam("policyId") Long policyId,
+    public ResponseEntity<ResponseDTO<UserLeaveBalanceDTO>> adjustBalance(@RequestParam("policyId") Long policyId,
                                                                           @RequestParam("year") Integer year,
                                                                           @RequestParam("delta") BigDecimal delta) {
 
+        Long userId = jwtAuthenticationContext.getCurrentUserId();
         log.info("adjustBalance() (ADMIN) userId={} policyId={} year={} delta={}", userId, policyId, year, delta);
 
         if (!userRepo.existsById(userId)) {
@@ -152,10 +157,10 @@ public class UserLeaveBalanceController {
      */
     @PostMapping(AppConstants.USER_LEAVE_BALANCE_RECALCULATE_ENDPOINT)
     @RequiredRole({"USER", "ADMIN", "SUPER_ADMIN"})
-    public ResponseEntity<ResponseDTO<UserLeaveBalanceDTO>> recalculate(@RequestParam("userId") Long userId,
-                                                                        @RequestParam("policyId") Long policyId,
+    public ResponseEntity<ResponseDTO<UserLeaveBalanceDTO>> recalculate(@RequestParam("policyId") Long policyId,
                                                                         @RequestParam("year") Integer year) {
 
+        Long userId = jwtAuthenticationContext.getCurrentUserId();
         log.info("recalculateBalance() (ADMIN) userId={} policyId={} year={}", userId, policyId, year);
 
         if (!userRepo.existsById(userId)) {

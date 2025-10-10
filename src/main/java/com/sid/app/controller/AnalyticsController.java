@@ -1,5 +1,6 @@
 package com.sid.app.controller;
 
+import com.sid.app.auth.JwtAuthenticationContext;
 import com.sid.app.auth.RequiredRole;
 import com.sid.app.constants.AppConstants;
 import com.sid.app.model.AggregatePeriodDTO;
@@ -7,9 +8,10 @@ import com.sid.app.model.ResponseDTO;
 import com.sid.app.service.AnalyticsService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -24,6 +26,9 @@ public class AnalyticsController {
 
     private final AnalyticsService analyticsService;
 
+    @Autowired
+    private JwtAuthenticationContext jwtAuthenticationContext;
+
     /**
      * GET /analytics/visits-leaves-aggregate
      * <p>
@@ -35,10 +40,11 @@ public class AnalyticsController {
      */
     @GetMapping
     @RequiredRole({"USER", "ADMIN", "SUPER_ADMIN"})
-    public ResponseEntity<ResponseDTO<List<AggregatePeriodDTO>>> getVisitsLeavesAggregate(@RequestParam(value = "userId", required = false) Long userId,
-                                                                                          @RequestParam(value = "from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+    public ResponseEntity<ResponseDTO<List<AggregatePeriodDTO>>> getVisitsLeavesAggregate(@RequestParam(value = "from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
                                                                                           @RequestParam(value = "to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
                                                                                           @RequestParam(value = "groupBy") String groupBy) {
+        Long userId = jwtAuthenticationContext.getCurrentUserId();
+
         log.info("getVisitsLeavesAggregate() userId={} from={} to={} groupBy={}", userId, from, to, groupBy);
 
         if (from == null || to == null || groupBy == null || groupBy.trim().isEmpty()) {

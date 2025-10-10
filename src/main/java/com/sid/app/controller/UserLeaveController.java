@@ -37,7 +37,8 @@ public class UserLeaveController {
      */
     @GetMapping
     @RequiredRole({"USER", "ADMIN", "SUPER_ADMIN"})
-    public ResponseEntity<ResponseDTO<List<UserLeaveDTO>>> getUserLeaves(@RequestParam("userId") Long userId) {
+    public ResponseEntity<ResponseDTO<List<UserLeaveDTO>>> getUserLeaves() {
+        Long userId = authContext.getCurrentUserId();
         log.info("getUserLeaves() - userId={}", userId);
 
         if (Optional.ofNullable(userId).orElse(0L) <= 0) {
@@ -103,9 +104,8 @@ public class UserLeaveController {
      */
     @PutMapping
     @RequiredRole({"USER", "ADMIN", "SUPER_ADMIN"})
-    public ResponseEntity<ResponseDTO<UserLeaveDTO>> updateLeave(
-            @RequestParam("userLeaveId") Long userLeaveId,
-            @Valid @RequestBody UserLeaveDTO req) {
+    public ResponseEntity<ResponseDTO<UserLeaveDTO>> updateLeave(@RequestParam("userLeaveId") Long userLeaveId,
+                                                                 @Valid @RequestBody UserLeaveDTO req) {
 
         log.info("updateLeave() - userLeaveId={} userId={}", userLeaveId, req.getUserId());
 

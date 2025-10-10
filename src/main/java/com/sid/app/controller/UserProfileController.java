@@ -1,5 +1,6 @@
 package com.sid.app.controller;
 
+import com.sid.app.auth.JwtAuthenticationContext;
 import com.sid.app.auth.RequiredRole;
 import com.sid.app.constants.AppConstants;
 import com.sid.app.model.ResponseDTO;
@@ -9,6 +10,7 @@ import com.sid.app.exception.UserProfileValidationException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,13 +24,17 @@ public class UserProfileController {
 
     private final UserProfileService userProfileService;
 
+    @Autowired
+    private JwtAuthenticationContext jwtAuthenticationContext;
+
     /**
-     * Get user profile (request param)
-     * GET /user-profile?userId=123
+     * Get user profile
+     * GET /user-profile
      */
     @GetMapping(value = AppConstants.USER_PROFILE_ENDPOINT, produces = "application/json")
     @RequiredRole({"USER", "ADMIN", "SUPER_ADMIN"})
-    public ResponseEntity<ResponseDTO<UserProfileDTO>> getProfile(@RequestParam("userId") Long userId) {
+    public ResponseEntity<ResponseDTO<UserProfileDTO>> getProfile() {
+        Long userId = jwtAuthenticationContext.getCurrentUserId();
         log.info("GET /user/profile called - userId={}", userId);
         try {
             UserProfileDTO dto = userProfileService.getProfile(userId);
@@ -46,13 +52,14 @@ public class UserProfileController {
     }
 
     /**
-     * Create or update user profile (request param)
-     * PUT /user-profile?userId=123
+     * Create or update user profile
+     * PUT /user-profile
      */
     @PutMapping(value = AppConstants.USER_PROFILE_ENDPOINT, produces = "application/json")
     @RequiredRole({"USER", "ADMIN", "SUPER_ADMIN"})
-    public ResponseEntity<ResponseDTO<?>> upsertProfile(@RequestParam("userId") Long userId,
-                                                        @Valid @RequestBody UserProfileDTO dto) {
+    public ResponseEntity<ResponseDTO<?>> upsertProfile(@Valid @RequestBody UserProfileDTO dto) {
+
+        Long userId = jwtAuthenticationContext.getCurrentUserId();
 
         log.info("PUT /user/profile called - userIdParam={}, userIdBody={}", userId, dto.getUserId());
 

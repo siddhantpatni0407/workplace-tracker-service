@@ -1,5 +1,6 @@
 package com.sid.app.controller;
 
+import com.sid.app.auth.JwtAuthenticationContext;
 import com.sid.app.auth.RequiredRole;
 import com.sid.app.constants.AppConstants;
 import com.sid.app.model.ResponseDTO;
@@ -8,6 +9,7 @@ import com.sid.app.service.UserSettingsService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,12 +21,16 @@ public class UserSettingsController {
 
     private final UserSettingsService userSettingsService;
 
+    @Autowired
+    private JwtAuthenticationContext jwtAuthenticationContext;
+
     /**
      * Get user settings
      */
     @GetMapping(AppConstants.USER_SETTINGS_ENDPOINT)
     @RequiredRole({"USER", "ADMIN", "SUPER_ADMIN"})
-    public ResponseEntity<ResponseDTO<UserSettingsDTO>> getUserSettings(@RequestParam("userId") Long userId) {
+    public ResponseEntity<ResponseDTO<UserSettingsDTO>> getUserSettings() {
+        Long userId = jwtAuthenticationContext.getCurrentUserId();
         log.info("getUserSettings() -> userId={}", userId);
         try {
             UserSettingsDTO dto = userSettingsService.getSettings(userId);
@@ -45,8 +51,9 @@ public class UserSettingsController {
     @PutMapping(AppConstants.USER_SETTINGS_ENDPOINT)
     @RequiredRole({"USER", "ADMIN", "SUPER_ADMIN"})
     public ResponseEntity<ResponseDTO<UserSettingsDTO>> upsertUserSettings(
-            @RequestParam("userId") Long userId,
             @Valid @RequestBody UserSettingsDTO dto) {
+
+        Long userId = jwtAuthenticationContext.getCurrentUserId();
 
         if (!userId.equals(dto.getUserId())) {
             return ResponseEntity.badRequest()
@@ -72,7 +79,8 @@ public class UserSettingsController {
      */
     @DeleteMapping(AppConstants.USER_SETTINGS_ENDPOINT)
     @RequiredRole({"USER", "ADMIN", "SUPER_ADMIN"})
-    public ResponseEntity<ResponseDTO<Void>> deleteUserSettings(@RequestParam("userId") Long userId) {
+    public ResponseEntity<ResponseDTO<Void>> deleteUserSettings() {
+        Long userId = jwtAuthenticationContext.getCurrentUserId();
         try {
             userSettingsService.deleteSettings(userId);
             return ResponseEntity.ok(new ResponseDTO<>(AppConstants.STATUS_SUCCESS, AppConstants.SUCCESS_MESSAGE_USER_SETTINGS_DELETED, null));

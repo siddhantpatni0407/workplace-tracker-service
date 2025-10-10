@@ -1,5 +1,6 @@
 package com.sid.app.controller;
 
+import com.sid.app.auth.JwtAuthenticationContext;
 import com.sid.app.auth.RequiredRole;
 import com.sid.app.constants.AppConstants;
 import com.sid.app.model.ResponseDTO;
@@ -33,6 +34,9 @@ public class UserController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private JwtAuthenticationContext jwtAuthenticationContext;
+
     /**
      * Fetches all users from the system.
      *
@@ -58,12 +62,12 @@ public class UserController {
     /**
      * Fetches a user by their ID.
      *
-     * @param userId The ID of the user to retrieve.
      * @return ResponseEntity with a ResponseDTO containing the UserDTO.
      */
     @GetMapping(AppConstants.USER_ENDPOINT)
     @RequiredRole({"ADMIN", "SUPER_ADMIN"})
-    public ResponseEntity<ResponseDTO<UserDTO>> getUserById(@RequestParam("userId") Long userId) {
+    public ResponseEntity<ResponseDTO<UserDTO>> getUserById() {
+        Long userId = jwtAuthenticationContext.getCurrentUserId();
         log.info("getUserById() : Received request to fetch user with ID: {}", userId);
         try {
             UserDTO user = userService.getUserById(userId);
@@ -79,14 +83,13 @@ public class UserController {
     /**
      * Updates an existing user's details.
      *
-     * @param userId         The ID of the user to update.
      * @param updatedUserDTO The updated user details.
      * @return ResponseEntity with a ResponseDTO indicating the update status.
      */
     @PutMapping(AppConstants.USER_ENDPOINT)
     @RequiredRole({"ADMIN", "SUPER_ADMIN"})
-    public ResponseEntity<ResponseDTO<UserDTO>> updateUser(@RequestParam("userId") Long userId,
-                                                           @RequestBody @Valid UserDTO updatedUserDTO) {
+    public ResponseEntity<ResponseDTO<UserDTO>> updateUser(@RequestBody @Valid UserDTO updatedUserDTO) {
+        Long userId = jwtAuthenticationContext.getCurrentUserId();
         log.info("updateUser() : Received request to update user with ID: {}", userId);
         try {
             UserDTO updatedUser = userService.updateUser(userId, updatedUserDTO);
@@ -138,12 +141,12 @@ public class UserController {
     /**
      * Deletes a user by their ID.
      *
-     * @param userId The ID of the user to delete.
      * @return ResponseEntity with a ResponseDTO indicating the deletion status.
      */
     @DeleteMapping(AppConstants.USER_ENDPOINT)
     @RequiredRole({"ADMIN", "SUPER_ADMIN"})
-    public ResponseEntity<ResponseDTO<Void>> deleteUser(@RequestParam("userId") Long userId) {
+    public ResponseEntity<ResponseDTO<Void>> deleteUser() {
+        Long userId = jwtAuthenticationContext.getCurrentUserId();
         log.info("deleteUser() : Received request to delete user with ID: {}", userId);
         try {
             userService.deleteUser(userId);
