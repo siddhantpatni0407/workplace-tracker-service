@@ -351,7 +351,7 @@ public class UserNotesServiceImpl implements UserNotesService {
 
     private UserNotesDTO convertToDTO(UserNotes note) {
         return UserNotesDTO.builder()
-                .noteId(note.getNoteId())
+                .userNoteId(note.getNoteId())
                 .userId(note.getUserId())
                 .noteTitle(note.getNoteTitle())
                 .noteContent(note.getNoteContent())

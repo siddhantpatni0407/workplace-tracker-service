@@ -56,7 +56,7 @@ public class UserNotesController {
 
         try {
             UserNotesDTO createdNote = userNotesService.createNote(userId, noteDTO);
-            log.info("createNote() : Note created successfully with ID: {}", createdNote.getNoteId());
+            log.info("createNote() : Note created successfully with ID: {}", createdNote.getUserNoteId());
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(new ResponseDTO<>(AppConstants.STATUS_SUCCESS, AppConstants.SUCCESS_NOTE_CREATED, createdNote));
         } catch (Exception e) {
