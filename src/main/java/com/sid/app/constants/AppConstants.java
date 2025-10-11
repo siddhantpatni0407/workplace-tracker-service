@@ -49,6 +49,22 @@ public class AppConstants {
     public static final String USER_DAILY_TASKS_DATE_RANGE_ENDPOINT = "/api/v1/workplace-tracker-service/daily-tasks/user/date-range";
     public static final String USER_DAILY_TASKS_DATE_ENDPOINT = "/api/v1/workplace-tracker-service/daily-tasks/user/date";
 
+    // UserNotes endpoints
+    public static final String NOTES_ENDPOINT = "/api/v1/workplace-tracker-service/notes";
+    public static final String NOTES_USER_ENDPOINT = "/api/v1/workplace-tracker-service/notes/user";
+    public static final String NOTES_BY_TYPE_ENDPOINT = "/api/v1/workplace-tracker-service/notes/by-type";
+    public static final String NOTES_BY_CATEGORY_ENDPOINT = "/api/v1/workplace-tracker-service/notes/by-category";
+    public static final String NOTES_PINNED_ENDPOINT = "/api/v1/workplace-tracker-service/notes/pinned";
+    public static final String NOTES_ARCHIVED_ENDPOINT = "/api/v1/workplace-tracker-service/notes/archived";
+    public static final String NOTES_SEARCH_ENDPOINT = "/api/v1/workplace-tracker-service/notes/search";
+    public static final String NOTES_STATS_ENDPOINT = "/api/v1/workplace-tracker-service/notes/stats";
+    public static final String NOTES_BULK_UPDATE_ENDPOINT = "/api/v1/workplace-tracker-service/notes/bulk-update";
+    public static final String NOTES_BULK_DELETE_ENDPOINT = "/api/v1/workplace-tracker-service/notes/bulk-delete";
+    public static final String NOTES_STATUS_ENDPOINT = "/api/v1/workplace-tracker-service/notes/status";
+    public static final String NOTES_PIN_ENDPOINT = "/api/v1/workplace-tracker-service/notes/pin";
+    public static final String NOTES_COLOR_ENDPOINT = "/api/v1/workplace-tracker-service/notes/color";
+    public static final String NOTES_DUPLICATE_ENDPOINT = "/api/v1/workplace-tracker-service/notes/duplicate";
+
     // Holidays messages
     public static final String SUCCESS_HOLIDAYS_RETRIEVED = "Holidays retrieved";
     public static final String ERROR_NO_HOLIDAYS_FOUND = "No holidays found";
@@ -132,6 +148,24 @@ public class AppConstants {
     public static final String SUCCESS_ANNIVERSARIES_RETRIEVED = "Work anniversaries retrieved successfully";
     public static final String ERROR_SPECIAL_DAYS_RETRIEVAL_FAILED = "Failed to retrieve special days data";
     public static final String ERROR_CURRENT_MONTH_SPECIAL_DAYS_FAILED = "Failed to retrieve current month special days";
+
+    // Notes messages
+    public static final String SUCCESS_NOTE_CREATED = "Note created successfully";
+    public static final String SUCCESS_NOTE_UPDATED = "Note updated successfully";
+    public static final String SUCCESS_NOTE_DELETED = "Note deleted successfully";
+    public static final String SUCCESS_NOTE_RETRIEVED = "Note retrieved successfully";
+    public static final String SUCCESS_NOTES_RETRIEVED = "Notes retrieved successfully";
+    public static final String SUCCESS_NOTE_STATUS_UPDATED = "Note status updated successfully";
+    public static final String SUCCESS_NOTE_PIN_TOGGLED = "Note pin status toggled successfully";
+    public static final String SUCCESS_NOTE_COLOR_UPDATED = "Note color updated successfully";
+    public static final String SUCCESS_NOTES_BULK_UPDATED = "Notes bulk updated successfully";
+    public static final String SUCCESS_NOTES_BULK_DELETED = "Notes bulk deleted successfully";
+    public static final String SUCCESS_NOTE_DUPLICATED = "Note duplicated successfully";
+    public static final String SUCCESS_NOTE_STATS_RETRIEVED = "Note statistics retrieved successfully";
+    public static final String ERROR_NOTE_NOT_FOUND = "Note not found";
+    public static final String ERROR_NOTES_NOT_FOUND = "No notes found";
+    public static final String ERROR_INVALID_NOTE_PARAMS = "Invalid note parameters";
+    public static final String ERROR_NOTE_ACCESS_DENIED = "Access denied to note";
 
     /**
      * Default user.
