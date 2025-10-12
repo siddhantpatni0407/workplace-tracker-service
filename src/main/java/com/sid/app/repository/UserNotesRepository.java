@@ -23,7 +23,7 @@ public interface UserNotesRepository extends JpaRepository<UserNotes, Long> {
     Page<UserNotes> findByUserIdAndStatusNot(Long userId, NoteStatus status, Pageable pageable);
 
     // Find specific note by ID and user ID
-    Optional<UserNotes> findByNoteIdAndUserId(Long noteId, Long userId);
+    Optional<UserNotes> findByUserNoteIdAndUserId(Long userNoteId, Long userId);
 
     // Find notes by user ID and type
     Page<UserNotes> findByUserIdAndNoteTypeAndStatusNot(Long userId, NoteType noteType, NoteStatus status, Pageable pageable);
@@ -102,11 +102,11 @@ public interface UserNotesRepository extends JpaRepository<UserNotes, Long> {
     List<UserNotes> findRecentlyModified(@Param("userId") Long userId, @Param("excludeStatus") NoteStatus excludeStatus, Pageable pageable);
 
     // Bulk operations
-    @Query("SELECT n FROM UserNotes n WHERE n.noteId IN :noteIds AND n.userId = :userId")
-    List<UserNotes> findByNoteIdsAndUserId(@Param("noteIds") List<Long> noteIds, @Param("userId") Long userId);
+    @Query("SELECT n FROM UserNotes n WHERE n.userNoteId IN :userNoteIds AND n.userId = :userId")
+    List<UserNotes> findByUserNoteIdsAndUserId(@Param("userNoteIds") List<Long> userNoteIds, @Param("userId") Long userId);
 
     // Update access count and last accessed date
     @Modifying
-    @Query("UPDATE UserNotes n SET n.accessCount = n.accessCount + 1, n.lastAccessedDate = :accessTime WHERE n.noteId = :noteId AND n.userId = :userId")
-    void updateAccessInfo(@Param("noteId") Long noteId, @Param("userId") Long userId, @Param("accessTime") LocalDateTime accessTime);
+    @Query("UPDATE UserNotes n SET n.accessCount = n.accessCount + 1, n.lastAccessedDate = :accessTime WHERE n.userNoteId = :userNoteId AND n.userId = :userId")
+    void updateAccessInfo(@Param("userNoteId") Long userNoteId, @Param("userId") Long userId, @Param("accessTime") LocalDateTime accessTime);
 }

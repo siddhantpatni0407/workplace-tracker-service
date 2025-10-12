@@ -33,7 +33,7 @@ public class UserNotes extends Auditable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_note_id")
-    private Long noteId;
+    private Long userNoteId;
 
     @Column(name = "user_id", nullable = false)
     private Long userId;

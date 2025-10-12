@@ -47,7 +47,7 @@ public class UserNotesServiceImpl implements UserNotesService {
                 .build();
 
         UserNotes savedNote = userNotesRepository.save(note);
-        log.info("Note created successfully with ID: {}", savedNote.getNoteId());
+        log.info("Note created successfully with ID: {}", savedNote.getUserNoteId());
         return convertToDTO(savedNote);
     }
 
@@ -56,7 +56,7 @@ public class UserNotesServiceImpl implements UserNotesService {
     public UserNotesDTO getNoteById(Long userId, Long noteId) {
         log.info("Fetching note {} for user {}", noteId, userId);
 
-        UserNotes note = userNotesRepository.findByNoteIdAndUserId(noteId, userId)
+        UserNotes note = userNotesRepository.findByUserNoteIdAndUserId(noteId, userId)
                 .orElseThrow(() -> new EntityNotFoundException("Note not found with id: " + noteId));
 
         // Update access count and last accessed date
@@ -95,7 +95,7 @@ public class UserNotesServiceImpl implements UserNotesService {
     public UserNotesDTO updateNote(Long userId, Long noteId, UserNotesDTO noteDTO) {
         log.info("Updating note {} for user {}", noteId, userId);
 
-        UserNotes existingNote = userNotesRepository.findByNoteIdAndUserId(noteId, userId)
+        UserNotes existingNote = userNotesRepository.findByUserNoteIdAndUserId(noteId, userId)
                 .orElseThrow(() -> new EntityNotFoundException("Note not found with id: " + noteId));
 
         // Update fields
@@ -120,7 +120,7 @@ public class UserNotesServiceImpl implements UserNotesService {
     public void deleteNote(Long userId, Long noteId, boolean permanent) {
         log.info("Deleting note {} for user {} (permanent: {})", noteId, userId, permanent);
 
-        UserNotes note = userNotesRepository.findByNoteIdAndUserId(noteId, userId)
+        UserNotes note = userNotesRepository.findByUserNoteIdAndUserId(noteId, userId)
                 .orElseThrow(() -> new EntityNotFoundException("Note not found with id: " + noteId));
 
         if (permanent) {
@@ -203,7 +203,7 @@ public class UserNotesServiceImpl implements UserNotesService {
     public UserNotesDTO updateNoteStatus(Long userId, Long noteId, NoteStatus status) {
         log.info("Updating note status {} for note {} and user {}", status, noteId, userId);
 
-        UserNotes note = userNotesRepository.findByNoteIdAndUserId(noteId, userId)
+        UserNotes note = userNotesRepository.findByUserNoteIdAndUserId(noteId, userId)
                 .orElseThrow(() -> new EntityNotFoundException("Note not found with id: " + noteId));
 
         note.setStatus(status);
@@ -217,7 +217,7 @@ public class UserNotesServiceImpl implements UserNotesService {
     public UserNotesDTO togglePinStatus(Long userId, Long noteId) {
         log.info("Toggling pin status for note {} and user {}", noteId, userId);
 
-        UserNotes note = userNotesRepository.findByNoteIdAndUserId(noteId, userId)
+        UserNotes note = userNotesRepository.findByUserNoteIdAndUserId(noteId, userId)
                 .orElseThrow(() -> new EntityNotFoundException("Note not found with id: " + noteId));
 
         note.setIsPinned(!note.getIsPinned());
@@ -231,7 +231,7 @@ public class UserNotesServiceImpl implements UserNotesService {
     public UserNotesDTO updateNoteColor(Long userId, Long noteId, NoteColor color) {
         log.info("Updating note color {} for note {} and user {}", color, noteId, userId);
 
-        UserNotes note = userNotesRepository.findByNoteIdAndUserId(noteId, userId)
+        UserNotes note = userNotesRepository.findByUserNoteIdAndUserId(noteId, userId)
                 .orElseThrow(() -> new EntityNotFoundException("Note not found with id: " + noteId));
 
         note.setColor(color);
@@ -281,7 +281,7 @@ public class UserNotesServiceImpl implements UserNotesService {
     public List<UserNotesDTO> bulkUpdateNotes(Long userId, UserNotesBulkUpdateRequest request) {
         log.info("Bulk updating {} notes for user {}", request.getNoteIds().size(), userId);
 
-        List<UserNotes> notes = userNotesRepository.findByNoteIdsAndUserId(request.getNoteIds(), userId);
+        List<UserNotes> notes = userNotesRepository.findByUserNoteIdsAndUserId(request.getNoteIds(), userId);
 
         if (notes.size() != request.getNoteIds().size()) {
             throw new EntityNotFoundException("Some notes not found for the user");
@@ -308,7 +308,7 @@ public class UserNotesServiceImpl implements UserNotesService {
         log.info("Bulk deleting {} notes for user {} (permanent: {})",
                 request.getNoteIds().size(), userId, request.getPermanentDelete());
 
-        List<UserNotes> notes = userNotesRepository.findByNoteIdsAndUserId(request.getNoteIds(), userId);
+        List<UserNotes> notes = userNotesRepository.findByUserNoteIdsAndUserId(request.getNoteIds(), userId);
 
         if (notes.size() != request.getNoteIds().size()) {
             throw new EntityNotFoundException("Some notes not found for the user");
@@ -326,7 +326,7 @@ public class UserNotesServiceImpl implements UserNotesService {
     public UserNotesDTO duplicateNote(Long userId, Long noteId) {
         log.info("Duplicating note {} for user {}", noteId, userId);
 
-        UserNotes originalNote = userNotesRepository.findByNoteIdAndUserId(noteId, userId)
+        UserNotes originalNote = userNotesRepository.findByUserNoteIdAndUserId(noteId, userId)
                 .orElseThrow(() -> new EntityNotFoundException("Note not found with id: " + noteId));
 
         UserNotes duplicatedNote = UserNotes.builder()
@@ -351,7 +351,7 @@ public class UserNotesServiceImpl implements UserNotesService {
 
     private UserNotesDTO convertToDTO(UserNotes note) {
         return UserNotesDTO.builder()
-                .userNoteId(note.getNoteId())
+                .userNoteId(note.getUserNoteId())
                 .userId(note.getUserId())
                 .noteTitle(note.getNoteTitle())
                 .noteContent(note.getNoteContent())
