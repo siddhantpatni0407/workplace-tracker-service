@@ -87,6 +87,33 @@
 						},
 						{
 							"name": "User Login",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Always wrap in try/catch in case response isn't JSON\r",
+											"try {\r",
+											"    const response = pm.response.json();\r",
+											"    const token = response.token;\r",
+											"\r",
+											"    if (token) {\r",
+											"        pm.globals.set(\"authToken\", token);\r",
+											"        console.log(\"✅ Saved authToken to Globals:\", token);\r",
+											"    } else {\r",
+											"        console.error(\"❌ 'token' field not found in response:\", response);\r",
+											"    }\r",
+											"} catch (e) {\r",
+											"    console.error(\"❌ Failed to parse JSON:\", e);\r",
+											"}\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {},
+										"requests": {}
+									}
+								}
+							],
 							"request": {
 								"method": "POST",
 								"header": [],
@@ -2188,6 +2215,16 @@
 						{
 							"name": "Create Note",
 							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{authToken}}",
+											"type": "string"
+										}
+									]
+								},
 								"method": "POST",
 								"header": [
 									{
@@ -2230,6 +2267,16 @@
 						{
 							"name": "Get Note by ID",
 							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{authToken}}",
+											"type": "string"
+										}
+									]
+								},
 								"method": "GET",
 								"header": [
 									{
@@ -2266,6 +2313,16 @@
 						{
 							"name": "Get All User Notes (with Filters)",
 							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{authToken}}",
+											"type": "string"
+										}
+									]
+								},
 								"method": "GET",
 								"header": [
 									{
@@ -2275,7 +2332,7 @@
 									}
 								],
 								"url": {
-									"raw": "http://localhost:8010/api/v1/workplace-tracker-service/notes/user?page=0&limit=20&noteType=TEXT&color=YELLOW&category=WORK&priority=HIGH&status=ACTIVE&isPinned=true&isShared=false&searchTerm=important&sortBy=modifiedDate&sortOrder=desc",
+									"raw": "http://localhost:8010/api/v1/workplace-tracker-service/notes/user",
 									"protocol": "http",
 									"host": [
 										"localhost"
@@ -2292,62 +2349,74 @@
 										{
 											"key": "page",
 											"value": "0",
-											"description": "Page number for pagination (default: 0)"
+											"description": "Page number for pagination (default: 0)",
+											"disabled": true
 										},
 										{
 											"key": "limit",
 											"value": "20",
-											"description": "Number of items per page (default: 20)"
+											"description": "Number of items per page (default: 20)",
+											"disabled": true
 										},
 										{
 											"key": "noteType",
 											"value": "TEXT",
-											"description": "Filter by note type: TEXT, CHECKLIST, VOICE, IMAGE, LINK"
+											"description": "Filter by note type: TEXT, CHECKLIST, VOICE, IMAGE, LINK",
+											"disabled": true
 										},
 										{
 											"key": "color",
 											"value": "YELLOW",
-											"description": "Filter by color: DEFAULT, RED, ORANGE, YELLOW, GREEN, BLUE, PURPLE, PINK"
+											"description": "Filter by color: DEFAULT, RED, ORANGE, YELLOW, GREEN, BLUE, PURPLE, PINK",
+											"disabled": true
 										},
 										{
 											"key": "category",
 											"value": "WORK",
-											"description": "Filter by category: PERSONAL, WORK, STUDY, HEALTH, FINANCE, TRAVEL, SHOPPING, OTHER"
+											"description": "Filter by category: PERSONAL, WORK, STUDY, HEALTH, FINANCE, TRAVEL, SHOPPING, OTHER",
+											"disabled": true
 										},
 										{
 											"key": "priority",
 											"value": "HIGH",
-											"description": "Filter by priority: LOW, MEDIUM, HIGH, URGENT"
+											"description": "Filter by priority: LOW, MEDIUM, HIGH, URGENT",
+											"disabled": true
 										},
 										{
 											"key": "status",
 											"value": "ACTIVE",
-											"description": "Filter by status: ACTIVE, ARCHIVED, DELETED"
+											"description": "Filter by status: ACTIVE, ARCHIVED, DELETED",
+											"disabled": true
 										},
 										{
 											"key": "isPinned",
 											"value": "true",
-											"description": "Filter by pinned status (true/false)"
+											"description": "Filter by pinned status (true/false)",
+											"disabled": true
 										},
 										{
 											"key": "isShared",
 											"value": "false",
-											"description": "Filter by shared status (true/false)"
+											"description": "Filter by shared status (true/false)",
+											"disabled": true
 										},
 										{
 											"key": "searchTerm",
 											"value": "important",
-											"description": "Search term for title and content"
+											"description": "Search term for title and content",
+											"disabled": true
 										},
 										{
 											"key": "sortBy",
 											"value": "modifiedDate",
-											"description": "Sort field (default: modifiedDate)"
+											"description": "Sort field (default: modifiedDate)",
+											"disabled": true
 										},
 										{
 											"key": "sortOrder",
 											"value": "desc",
-											"description": "Sort order: asc or desc (default: desc)"
+											"description": "Sort order: asc or desc (default: desc)",
+											"disabled": true
 										},
 										{
 											"key": "startDate",
@@ -2419,6 +2488,16 @@
 						{
 							"name": "Delete Note",
 							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{authToken}}",
+											"type": "string"
+										}
+									]
+								},
 								"method": "DELETE",
 								"header": [
 									{
@@ -2428,7 +2507,7 @@
 									}
 								],
 								"url": {
-									"raw": "http://localhost:8010/api/v1/workplace-tracker-service/notes?noteId=1&permanent=false",
+									"raw": "http://localhost:8010/api/v1/workplace-tracker-service/notes?noteId=6&permanent=false",
 									"protocol": "http",
 									"host": [
 										"localhost"
@@ -2443,7 +2522,7 @@
 									"query": [
 										{
 											"key": "noteId",
-											"value": "1",
+											"value": "6",
 											"description": "The ID of the note to delete (required)"
 										},
 										{
@@ -2574,6 +2653,16 @@
 						{
 							"name": "Get Pinned Notes",
 							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{authToken}}",
+											"type": "string"
+										}
+									]
+								},
 								"method": "GET",
 								"header": [
 									{
