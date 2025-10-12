@@ -1,5 +1,7 @@
 package com.sid.app.controller;
 
+import com.sid.app.auth.JwtAuthenticationContext;
+import com.sid.app.auth.RequiredRole;
 import com.sid.app.constants.AppConstants;
 import com.sid.app.model.AuthResponse;
 import com.sid.app.model.LoginRequest;
@@ -27,6 +29,9 @@ public class AuthController {
 
     @Autowired
     private AuthService authService;
+
+    @Autowired
+    private JwtAuthenticationContext jwtAuthenticationContext;
 
     @PostMapping(AppConstants.USER_REGISTER_ENDPOINT)
     public ResponseEntity<AuthResponse> register(@RequestBody RegisterRequest request) {
@@ -108,16 +113,17 @@ public class AuthController {
      * Accepts userId in body (optional) or derive from JWT in production.
      */
     @PatchMapping(value = AppConstants.USER_CHANGE_PASSWORD_ENDPOINT, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ResponseDTO<Void>> changePassword(
-            @RequestBody @Valid PasswordChangeRequest request,
-            @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authorizationHeader) {
+    @RequiredRole({"USER", "ADMIN", "SUPER_ADMIN"})
+    public ResponseEntity<ResponseDTO<Void>> changePassword(@RequestBody @Valid PasswordChangeRequest request,
+                                                            @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authorizationHeader) {
+
+        Long userId = jwtAuthenticationContext.getCurrentUserId();
 
         log.info("changePassword() : Received request for userId={}",
-                request != null ? request.getUserId() : null);
+                request != null ? userId : null);
 
         try {
             assert request != null;
-            Long userId = request.getUserId();
             if (userId == null) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                         .body(new ResponseDTO<>(AppConstants.STATUS_FAILED,
@@ -129,13 +135,13 @@ public class AuthController {
             return ResponseEntity.ok(new ResponseDTO<>(AppConstants.STATUS_SUCCESS, "Password changed successfully.", null));
 
         } catch (UserNotFoundException ex) {
-            log.warn("changePassword() : User not found: {}", request.getUserId());
+            log.warn("changePassword() : User not found: {}", userId);
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(new ResponseDTO<>(AppConstants.STATUS_FAILED, ex.getMessage(), null));
 
         } catch (IllegalArgumentException ex) {
             log.info("changePassword() : Validation failed for userId={}: {}",
-                    request.getUserId(), ex.getMessage());
+                    userId, ex.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(new ResponseDTO<>(AppConstants.STATUS_FAILED, ex.getMessage(), null));
 

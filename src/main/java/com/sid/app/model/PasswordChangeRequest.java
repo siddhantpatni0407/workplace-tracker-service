@@ -8,19 +8,14 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * Request to change password.
- * - userId is optional for admin flows; in typical user flow you should derive userId from JWT.
+ * Request to change password for authenticated user.
+ * UserId is automatically extracted from JWT token.
  */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class PasswordChangeRequest {
-
-    /**
-     * Optional user id. If omitted, server should derive user id from auth token (recommended).
-     */
-    private Long userId;
 
     @NotBlank(message = "currentPassword is required")
     @Size(min = 6, message = "currentPassword must be at least 6 characters")
