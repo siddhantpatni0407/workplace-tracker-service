@@ -1,71 +1,38 @@
 # User Notes API Documentation
 
 ## Overview
-The User Notes API provides comprehensive functionality for creating, managing, and organizing user notes within the Workplace Tracker Service. This API supports various note types, categories, priorities, and advanced features like pinning, archiving, searching, and bulk operations.
+The User Notes API provides comprehensive CRUD operations, filtering, search, statistics, and bulk operations for user notes management in the workplace tracker service.
 
 ## Base URL
 ```
-http://localhost:8010/api/v1/workplace-tracker-service/notes
+http://localhost:8010/api/v1/workplace-tracker-service
 ```
 
 ## Authentication
-All endpoints require Bearer Token authentication. Include the token in the Authorization header:
-```
-Authorization: Bearer <your-jwt-token>
-```
-
----
-
-## Database Schema
-
-The User Notes functionality is built on the following database table structure:
-
-```sql
-CREATE TABLE IF NOT EXISTS user_notes (
-    user_note_id BIGSERIAL PRIMARY KEY,
-    user_id BIGINT NOT NULL,
-    note_title VARCHAR(500) NOT NULL,
-    note_content TEXT NOT NULL,
-    note_type VARCHAR(20) NOT NULL DEFAULT 'TEXT',
-    color VARCHAR(20) NOT NULL DEFAULT 'DEFAULT',
-    category VARCHAR(20) NOT NULL DEFAULT 'PERSONAL',
-    priority VARCHAR(20) NOT NULL DEFAULT 'MEDIUM',
-    status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE',
-    is_pinned BOOLEAN NOT NULL DEFAULT FALSE,
-    is_shared BOOLEAN NOT NULL DEFAULT FALSE,
-    reminder_date TIMESTAMP NULL,
-    version INT NOT NULL DEFAULT 1,
-    access_count INT NOT NULL DEFAULT 0,
-    last_accessed_date TIMESTAMP NULL,
-    created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    modified_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    CONSTRAINT fk_user_notes_user FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
-);
-```
+All endpoints require JWT Bearer token authentication with USER role.
 
 ---
 
 ## API Endpoints
 
-### 1. Create User Note
-
-**Method:** `POST`  
-**Endpoint:** `/notes`  
-**Authentication:** Required
+### 1. Create Note
+**Endpoint:** `POST /notes`  
+**Description:** Create a new note for the authenticated user  
+**Authentication:** Required (USER role)
 
 **Request Body:**
 ```json
 {
-    "noteTitle": "Project Meeting Notes",
-    "noteContent": "Discussed Q4 goals, budget allocation, and team restructuring plans. Key decisions made on technology stack migration.",
+    "noteTitle": "My Important Note",
+    "noteContent": "This is the content of my note",
     "noteType": "TEXT",
-    "color": "BLUE", 
+    "color": "YELLOW",
     "category": "WORK",
     "priority": "HIGH",
     "status": "ACTIVE",
     "isPinned": false,
     "isShared": false,
-    "reminderDate": "2025-10-15T10:00:00"
+    "reminderDate": "2025-12-31 10:00:00"
 }
 ```
 
@@ -73,376 +40,414 @@ CREATE TABLE IF NOT EXISTS user_notes (
 ```json
 {
     "status": "SUCCESS",
-    "message": "Note created successfully.",
+    "message": "Note created successfully",
     "data": {
         "userNoteId": 1,
         "userId": 123,
-        "noteTitle": "Project Meeting Notes",
-        "noteContent": "Discussed Q4 goals, budget allocation...",
+        "noteTitle": "My Important Note",
+        "noteContent": "This is the content of my note",
         "noteType": "TEXT",
-        "color": "BLUE",
-        "category": "WORK", 
-        "priority": "HIGH",
-        "status": "ACTIVE",
-        "isPinned": false,
-        "isShared": false,
-        "reminderDate": "2025-10-15T10:00:00",
-        "version": 1,
-        "accessCount": 0,
-        "lastAccessedDate": null,
-        "createdDate": "2025-10-12T14:30:00",
-        "modifiedDate": "2025-10-12T14:30:00"
-    }
-}
-```
-
----
-
-### 2. Get User Note by ID
-
-**Method:** `GET`  
-**Endpoint:** `/notes?noteId={noteId}`  
-**Authentication:** Required
-
-**Query Parameters:**
-- `noteId` (required): Long - The ID of the note to retrieve
-
-**Response (200 OK):**
-```json
-{
-    "status": "SUCCESS",
-    "message": "Note retrieved successfully.",
-    "data": {
-        "userNoteId": 1,
-        "userId": 123,
-        "noteTitle": "Project Meeting Notes",
-        "noteContent": "Discussed Q4 goals, budget allocation...",
-        "noteType": "TEXT",
-        "color": "BLUE",
+        "color": "YELLOW",
         "category": "WORK",
         "priority": "HIGH",
         "status": "ACTIVE",
         "isPinned": false,
         "isShared": false,
-        "reminderDate": "2025-10-15T10:00:00",
+        "reminderDate": "2025-12-31 10:00:00",
         "version": 1,
-        "accessCount": 5,
-        "lastAccessedDate": "2025-10-12T14:30:00",
-        "createdDate": "2025-10-12T14:30:00",
-        "modifiedDate": "2025-10-12T14:30:00"
+        "accessCount": 0,
+        "lastAccessedDate": null,
+        "createdDate": "2025-10-12 10:30:00",
+        "modifiedDate": "2025-10-12 10:30:00"
     }
 }
 ```
 
 ---
 
-### 3. Get All User Notes (Basic)
+### 2. Get Note by ID
+**Endpoint:** `GET /notes`  
+**Description:** Get a specific note by ID for the authenticated user  
+**Authentication:** Required (USER role)
 
-**Method:** `GET`  
-**Endpoint:** `/notes/user`  
-**Authentication:** Required
+**Query Parameters:**
+- `noteId` (required): The ID of the note to retrieve
+
+**Example:** `GET /notes?noteId=1`
 
 **Response (200 OK):**
 ```json
 {
     "status": "SUCCESS",
-    "message": "Notes retrieved successfully.",
+    "message": "Note retrieved successfully",
     "data": {
-        "notes": [
-            {
-                "userNoteId": 1,
-                "noteTitle": "Project Meeting Notes",
-                "noteContent": "Discussed Q4 goals...",
-                "noteType": "TEXT",
-                "color": "BLUE",
-                "category": "WORK",
-                "priority": "HIGH",
-                "status": "ACTIVE",
-                "isPinned": false,
-                "isShared": false,
-                "createdDate": "2025-10-12T14:30:00",
-                "modifiedDate": "2025-10-12T14:30:00"
-            }
-        ],
-        "totalCount": 15,
-        "page": 0,
-        "limit": 10,
-        "totalPages": 2
+        "userNoteId": 1,
+        "userId": 123,
+        "noteTitle": "My Important Note",
+        "noteContent": "This is the content of my note",
+        "noteType": "TEXT",
+        "color": "YELLOW",
+        "category": "WORK",
+        "priority": "HIGH",
+        "status": "ACTIVE",
+        "isPinned": false,
+        "isShared": false,
+        "reminderDate": "2025-12-31 10:00:00",
+        "version": 1,
+        "accessCount": 1,
+        "lastAccessedDate": "2025-10-12 11:00:00",
+        "createdDate": "2025-10-12 10:30:00",
+        "modifiedDate": "2025-10-12 10:30:00"
     }
 }
 ```
 
 ---
 
-### 4. Get User Notes with Pagination & Sorting
-
-**Method:** `GET`  
-**Endpoint:** `/notes/user?page={page}&limit={limit}&sortBy={sortBy}&sortOrder={sortOrder}`  
-**Authentication:** Required
+### 3. Get All User Notes (with Filters)
+**Endpoint:** `GET /notes/user`  
+**Description:** Get all notes for the authenticated user with pagination and optional filters  
+**Authentication:** Required (USER role)
 
 **Query Parameters:**
-- `page` (optional): Integer - Page number (default: 0)
-- `limit` (optional): Integer - Items per page (default: 10)
-- `sortBy` (optional): String - Sort field (createdDate, modifiedDate, noteTitle, priority)
-- `sortOrder` (optional): String - Sort direction (asc, desc)
+- `page` (optional, default: 0): Page number for pagination
+- `limit` (optional, default: 20): Number of items per page
+- `noteType` (optional): Filter by note type (TEXT, CHECKLIST, VOICE, IMAGE, LINK)
+- `color` (optional): Filter by color (DEFAULT, RED, ORANGE, YELLOW, GREEN, BLUE, PURPLE, PINK)
+- `category` (optional): Filter by category (PERSONAL, WORK, STUDY, HEALTH, FINANCE, TRAVEL, SHOPPING, OTHER)
+- `priority` (optional): Filter by priority (LOW, MEDIUM, HIGH, URGENT)
+- `status` (optional): Filter by status (ACTIVE, ARCHIVED, DELETED)
+- `isPinned` (optional): Filter by pinned status (true/false)
+- `isShared` (optional): Filter by shared status (true/false)
+- `searchTerm` (optional): Search term for title and content
+- `sortBy` (optional, default: modifiedDate): Sort field
+- `sortOrder` (optional, default: desc): Sort order (asc/desc)
+- `startDate` (optional): Filter by created date range start (ISO format)
+- `endDate` (optional): Filter by created date range end (ISO format)
 
-**Example URL:**
-```
-/notes/user?page=0&limit=10&sortBy=modifiedDate&sortOrder=desc
+**Example:** `GET /notes/user?page=0&limit=10&noteType=TEXT&color=YELLOW&category=WORK&priority=HIGH&isPinned=true&sortBy=createdDate&sortOrder=desc`
+
+**Response (200 OK):**
+```json
+{
+    "status": "SUCCESS",
+    "message": "Notes retrieved successfully",
+    "data": {
+        "data": [
+            {
+                "userNoteId": 1,
+                "userId": 123,
+                "noteTitle": "My Important Note",
+                "noteContent": "This is the content of my note",
+                "noteType": "TEXT",
+                "color": "YELLOW",
+                "category": "WORK",
+                "priority": "HIGH",
+                "status": "ACTIVE",
+                "isPinned": true,
+                "isShared": false,
+                "reminderDate": "2025-12-31 10:00:00",
+                "version": 1,
+                "accessCount": 5,
+                "lastAccessedDate": "2025-10-12 11:00:00",
+                "createdDate": "2025-10-12 10:30:00",
+                "modifiedDate": "2025-10-12 10:30:00"
+            }
+        ],
+        "totalElements": 1,
+        "totalPages": 1,
+        "currentPage": 0,
+        "pageSize": 10,
+        "hasNext": false,
+        "hasPrevious": false
+    }
+}
 ```
 
 ---
 
-### 5. Get User Notes with All Filters
-
-**Method:** `GET`  
-**Endpoint:** `/notes/user`  
-**Authentication:** Required
+### 4. Update Note
+**Endpoint:** `PUT /notes`  
+**Description:** Update an existing note for the authenticated user  
+**Authentication:** Required (USER role)
 
 **Query Parameters:**
-- `page`: Integer (default: 0)
-- `limit`: Integer (default: 20)
-- `noteType`: String - TEXT, CHECKLIST, DRAWING, VOICE, IMAGE, LINK
-- `color`: String - DEFAULT, YELLOW, ORANGE, RED, PINK, PURPLE, BLUE, TEAL, GREEN, BROWN, GREY
-- `category`: String - PERSONAL, WORK, IDEAS, REMINDERS, PROJECTS, MEETING_NOTES, SHOPPING, TRAVEL, HEALTH, FINANCE, LEARNING, INSPIRATION
-- `priority`: String - LOW, MEDIUM, HIGH, URGENT
-- `status`: String - ACTIVE, ARCHIVED, DELETED, PINNED
-- `isPinned`: Boolean
-- `isShared`: Boolean
-- `searchTerm`: String - Search in title and content
-- `sortBy`: String
-- `sortOrder`: String
-- `startDate`: String (ISO format)
-- `endDate`: String (ISO format)
-
-**Example URL:**
-```
-/notes/user?page=0&limit=20&noteType=TEXT&color=BLUE&category=WORK&priority=HIGH&status=ACTIVE&isPinned=true&isShared=false&searchTerm=meeting&sortBy=modifiedDate&sortOrder=desc&startDate=2025-10-01T00:00:00&endDate=2025-10-31T23:59:59
-```
-
----
-
-### 6. Update User Note
-
-**Method:** `PUT`  
-**Endpoint:** `/notes?noteId={noteId}`  
-**Authentication:** Required
+- `noteId` (required): The ID of the note to update
 
 **Request Body:**
 ```json
 {
-    "noteTitle": "Updated Project Meeting Notes",
-    "noteContent": "Updated: Discussed Q4 goals, budget allocation, team restructuring plans, and new client acquisition strategy.",
+    "noteTitle": "Updated Note Title",
+    "noteContent": "Updated content of my note",
     "noteType": "TEXT",
-    "color": "GREEN",
-    "category": "WORK",
-    "priority": "URGENT",
+    "color": "BLUE",
+    "category": "PERSONAL",
+    "priority": "MEDIUM",
     "status": "ACTIVE",
     "isPinned": true,
-    "isShared": true,
-    "reminderDate": "2025-10-16T14:00:00"
+    "isShared": false,
+    "reminderDate": "2025-12-31 15:00:00"
 }
 ```
+
+**Example:** `PUT /notes?noteId=1`
 
 **Response (200 OK):**
 ```json
 {
     "status": "SUCCESS",
-    "message": "Note updated successfully.",
+    "message": "Note updated successfully",
     "data": {
         "userNoteId": 1,
         "userId": 123,
-        "noteTitle": "Updated Project Meeting Notes",
-        "noteContent": "Updated: Discussed Q4 goals...",
+        "noteTitle": "Updated Note Title",
+        "noteContent": "Updated content of my note",
         "noteType": "TEXT",
-        "color": "GREEN",
-        "category": "WORK",
-        "priority": "URGENT",
+        "color": "BLUE",
+        "category": "PERSONAL",
+        "priority": "MEDIUM",
         "status": "ACTIVE",
         "isPinned": true,
-        "isShared": true,
-        "reminderDate": "2025-10-16T14:00:00",
+        "isShared": false,
+        "reminderDate": "2025-12-31 15:00:00",
         "version": 2,
         "accessCount": 5,
-        "lastAccessedDate": "2025-10-12T14:30:00",
-        "createdDate": "2025-10-12T14:30:00",
-        "modifiedDate": "2025-10-12T15:45:00"
+        "lastAccessedDate": "2025-10-12 11:00:00",
+        "createdDate": "2025-10-12 10:30:00",
+        "modifiedDate": "2025-10-12 12:00:00"
     }
 }
 ```
 
 ---
 
-### 7. Delete User Note (Soft Delete)
+### 5. Delete Note
+**Endpoint:** `DELETE /notes`  
+**Description:** Delete a note for the authenticated user  
+**Authentication:** Required (USER role)
 
-**Method:** `DELETE`  
-**Endpoint:** `/notes?noteId={noteId}`  
-**Authentication:** Required
+**Query Parameters:**
+- `noteId` (required): The ID of the note to delete
+- `permanent` (optional, default: false): Whether to permanently delete the note
+
+**Example:** `DELETE /notes?noteId=1&permanent=false`
 
 **Response (200 OK):**
 ```json
 {
     "status": "SUCCESS",
-    "message": "Note deleted successfully.",
+    "message": "Note deleted successfully",
     "data": null
 }
 ```
 
 ---
 
-### 8. Delete User Note (Permanent)
+### 6. Get Notes by Type
+**Endpoint:** `GET /notes/by-type`  
+**Description:** Get notes by specific type for the authenticated user  
+**Authentication:** Required (USER role)
 
-**Method:** `DELETE`  
-**Endpoint:** `/notes?noteId={noteId}&permanent=true`  
-**Authentication:** Required
+**Query Parameters:**
+- `noteType` (required): The type of notes to retrieve (TEXT, CHECKLIST, VOICE, IMAGE, LINK)
+- `page` (optional, default: 0): Page number
+- `limit` (optional, default: 20): Page size
+- `sortBy` (optional, default: modifiedDate): Sort field
+- `sortOrder` (optional, default: desc): Sort order
+
+**Example:** `GET /notes/by-type?noteType=TEXT&page=0&limit=10&sortBy=createdDate&sortOrder=desc`
+
+---
+
+### 7. Get Notes by Category
+**Endpoint:** `GET /notes/by-category`  
+**Description:** Get notes by specific category for the authenticated user  
+**Authentication:** Required (USER role)
+
+**Query Parameters:**
+- `category` (required): The category of notes to retrieve (PERSONAL, WORK, STUDY, HEALTH, FINANCE, TRAVEL, SHOPPING, OTHER)
+- `page` (optional, default: 0): Page number
+- `limit` (optional, default: 20): Page size
+- `sortBy` (optional, default: modifiedDate): Sort field
+- `sortOrder` (optional, default: desc): Sort order
+
+**Example:** `GET /notes/by-category?category=WORK&page=0&limit=10&sortBy=priority&sortOrder=desc`
+
+---
+
+### 8. Get Pinned Notes
+**Endpoint:** `GET /notes/pinned`  
+**Description:** Get all pinned notes for the authenticated user  
+**Authentication:** Required (USER role)
+
+**Query Parameters:**
+- `page` (optional, default: 0): Page number
+- `limit` (optional, default: 20): Page size
+- `sortBy` (optional, default: modifiedDate): Sort field
+- `sortOrder` (optional, default: desc): Sort order
+
+**Example:** `GET /notes/pinned?page=0&limit=10&sortBy=createdDate&sortOrder=desc`
+
+---
+
+### 9. Get Archived Notes
+**Endpoint:** `GET /notes/archived`  
+**Description:** Get all archived notes for the authenticated user  
+**Authentication:** Required (USER role)
+
+**Query Parameters:**
+- `page` (optional, default: 0): Page number
+- `limit` (optional, default: 20): Page size
+- `sortBy` (optional, default: modifiedDate): Sort field
+- `sortOrder` (optional, default: desc): Sort order
+
+**Example:** `GET /notes/archived?page=0&limit=10&sortBy=modifiedDate&sortOrder=desc`
+
+---
+
+### 10. Search Notes
+**Endpoint:** `GET /notes/search`  
+**Description:** Search notes by title and content for the authenticated user  
+**Authentication:** Required (USER role)
+
+**Query Parameters:**
+- `query` (required): Search query string
+- `page` (optional, default: 0): Page number
+- `limit` (optional, default: 20): Page size
+- `sortBy` (optional, default: modifiedDate): Sort field
+- `sortOrder` (optional, default: desc): Sort order
+
+**Example:** `GET /notes/search?query=important&page=0&limit=10&sortBy=createdDate&sortOrder=desc`
+
+---
+
+### 11. Update Note Status
+**Endpoint:** `PATCH /notes/status`  
+**Description:** Update note status for the authenticated user  
+**Authentication:** Required (USER role)
+
+**Query Parameters:**
+- `noteId` (required): The ID of the note to update
+- `status` (required): The new status (ACTIVE, ARCHIVED, DELETED)
+
+**Example:** `PATCH /notes/status?noteId=1&status=ARCHIVED`
 
 **Response (200 OK):**
 ```json
 {
     "status": "SUCCESS",
-    "message": "Note permanently deleted successfully.",
-    "data": null
-}
-```
-
----
-
-### 9. Get Notes by Type
-
-**Method:** `GET`  
-**Endpoint:** `/notes/by-type?noteType={noteType}&page={page}&limit={limit}&sortBy={sortBy}&sortOrder={sortOrder}`  
-**Authentication:** Required
-
-**Query Parameters:**
-- `noteType` (required): String - TEXT, CHECKLIST, DRAWING, VOICE, IMAGE, LINK
-- `page`, `limit`, `sortBy`, `sortOrder`: Same as pagination parameters
-
----
-
-### 10. Get Notes by Category
-
-**Method:** `GET`  
-**Endpoint:** `/notes/by-category?category={category}&page={page}&limit={limit}&sortBy={sortBy}&sortOrder={sortOrder}`  
-**Authentication:** Required
-
-**Query Parameters:**
-- `category` (required): String - PERSONAL, WORK, IDEAS, REMINDERS, etc.
-
----
-
-### 11. Get Pinned Notes
-
-**Method:** `GET`  
-**Endpoint:** `/notes/pinned?page={page}&limit={limit}&sortBy={sortBy}&sortOrder={sortOrder}`  
-**Authentication:** Required
-
----
-
-### 12. Get Archived Notes
-
-**Method:** `GET`  
-**Endpoint:** `/notes/archived?page={page}&limit={limit}&sortBy={sortBy}&sortOrder={sortOrder}`  
-**Authentication:** Required
-
----
-
-### 13. Search Notes
-
-**Method:** `GET`  
-**Endpoint:** `/notes/search?query={searchTerm}&page={page}&limit={limit}&sortBy={sortBy}&sortOrder={sortOrder}`  
-**Authentication:** Required
-
-**Query Parameters:**
-- `query` (required): String - Search term for title and content
-
----
-
-### 14. Update Note Status
-
-**Method:** `PATCH`  
-**Endpoint:** `/notes/status?noteId={noteId}&status={status}`  
-**Authentication:** Required
-
-**Query Parameters:**
-- `noteId` (required): Long
-- `status` (required): String - ACTIVE, ARCHIVED, DELETED, PINNED
-
-**Response (200 OK):**
-```json
-{
-    "status": "SUCCESS",
-    "message": "Note status updated successfully.",
-    "data": null
-}
-```
-
----
-
-### 15. Toggle Pin Status
-
-**Method:** `PATCH`  
-**Endpoint:** `/notes/pin?noteId={noteId}`  
-**Authentication:** Required
-
-**Response (200 OK):**
-```json
-{
-    "status": "SUCCESS",
-    "message": "Note pin status toggled successfully.",
+    "message": "Note status updated successfully",
     "data": {
-        "isPinned": true
+        "userNoteId": 1,
+        "userId": 123,
+        "noteTitle": "My Important Note",
+        "noteContent": "This is the content of my note",
+        "status": "ARCHIVED",
+        "modifiedDate": "2025-10-12 12:30:00"
     }
 }
 ```
 
 ---
 
-### 16. Update Note Color
-
-**Method:** `PATCH`  
-**Endpoint:** `/notes/color?noteId={noteId}&color={color}`  
-**Authentication:** Required
+### 12. Toggle Pin Status
+**Endpoint:** `PATCH /notes/pin`  
+**Description:** Toggle pin status for a note for the authenticated user  
+**Authentication:** Required (USER role)
 
 **Query Parameters:**
-- `noteId` (required): Long
-- `color` (required): String - DEFAULT, YELLOW, ORANGE, RED, PINK, PURPLE, BLUE, TEAL, GREEN, BROWN, GREY
+- `noteId` (required): The ID of the note to toggle pin status
 
----
-
-### 17. Get Note Statistics
-
-**Method:** `GET`  
-**Endpoint:** `/notes/stats`  
-**Authentication:** Required
+**Example:** `PATCH /notes/pin?noteId=1`
 
 **Response (200 OK):**
 ```json
 {
     "status": "SUCCESS",
-    "message": "Note statistics retrieved successfully.",
+    "message": "Note pin status toggled successfully",
     "data": {
-        "totalNotes": 45,
-        "activeNotes": 32,
-        "archivedNotes": 8,
+        "userNoteId": 1,
+        "userId": 123,
+        "noteTitle": "My Important Note",
+        "noteContent": "This is the content of my note",
+        "isPinned": true,
+        "modifiedDate": "2025-10-12 12:45:00"
+    }
+}
+```
+
+---
+
+### 13. Update Note Color
+**Endpoint:** `PATCH /notes/color`  
+**Description:** Update note color for the authenticated user  
+**Authentication:** Required (USER role)
+
+**Query Parameters:**
+- `noteId` (required): The ID of the note to update
+- `color` (required): The new color (DEFAULT, RED, ORANGE, YELLOW, GREEN, BLUE, PURPLE, PINK)
+
+**Example:** `PATCH /notes/color?noteId=1&color=GREEN`
+
+**Response (200 OK):**
+```json
+{
+    "status": "SUCCESS",
+    "message": "Note color updated successfully",
+    "data": {
+        "userNoteId": 1,
+        "userId": 123,
+        "noteTitle": "My Important Note",
+        "noteContent": "This is the content of my note",
+        "color": "GREEN",
+        "modifiedDate": "2025-10-12 13:00:00"
+    }
+}
+```
+
+---
+
+### 14. Get Note Statistics
+**Endpoint:** `GET /notes/stats`  
+**Description:** Get note statistics for the authenticated user  
+**Authentication:** Required (USER role)
+
+**Example:** `GET /notes/stats`
+
+**Response (200 OK):**
+```json
+{
+    "status": "SUCCESS",
+    "message": "Note statistics retrieved successfully",
+    "data": {
+        "totalNotes": 25,
+        "activeNotes": 20,
+        "archivedNotes": 4,
+        "deletedNotes": 1,
         "pinnedNotes": 5,
-        "notesByCategory": {
-            "WORK": 20,
-            "PERSONAL": 15,
-            "IDEAS": 5,
-            "REMINDERS": 3,
-            "PROJECTS": 2
-        },
-        "notesByPriority": {
-            "HIGH": 10,
-            "MEDIUM": 25,
-            "LOW": 8,
-            "URGENT": 2
-        },
+        "sharedNotes": 3,
         "notesByType": {
-            "TEXT": 40,
+            "TEXT": 20,
             "CHECKLIST": 3,
             "VOICE": 1,
-            "IMAGE": 1
+            "IMAGE": 1,
+            "LINK": 0
+        },
+        "notesByCategory": {
+            "WORK": 15,
+            "PERSONAL": 8,
+            "STUDY": 2,
+            "HEALTH": 0,
+            "FINANCE": 0,
+            "TRAVEL": 0,
+            "SHOPPING": 0,
+            "OTHER": 0
+        },
+        "notesByPriority": {
+            "LOW": 5,
+            "MEDIUM": 12,
+            "HIGH": 7,
+            "URGENT": 1
         }
     }
 }
@@ -450,22 +455,21 @@ CREATE TABLE IF NOT EXISTS user_notes (
 
 ---
 
-### 18. Bulk Update Notes
-
-**Method:** `PUT`  
-**Endpoint:** `/notes/bulk-update`  
-**Authentication:** Required
+### 15. Bulk Update Notes
+**Endpoint:** `PUT /notes/bulk-update`  
+**Description:** Bulk update multiple notes for the authenticated user  
+**Authentication:** Required (USER role)
 
 **Request Body:**
 ```json
 {
     "noteIds": [1, 2, 3],
-    "status": "ARCHIVED",
-    "color": "GREY",
-    "category": "WORK",
-    "priority": "LOW",
-    "isPinned": false,
-    "isShared": false
+    "updates": {
+        "category": "WORK",
+        "priority": "HIGH",
+        "color": "YELLOW",
+        "status": "ACTIVE"
+    }
 }
 ```
 
@@ -473,21 +477,36 @@ CREATE TABLE IF NOT EXISTS user_notes (
 ```json
 {
     "status": "SUCCESS",
-    "message": "3 notes updated successfully.",
-    "data": {
-        "updatedCount": 3,
-        "failedCount": 0
-    }
+    "message": "Notes bulk updated successfully",
+    "data": [
+        {
+            "userNoteId": 1,
+            "userId": 123,
+            "noteTitle": "Note 1",
+            "category": "WORK",
+            "priority": "HIGH",
+            "color": "YELLOW",
+            "status": "ACTIVE"
+        },
+        {
+            "userNoteId": 2,
+            "userId": 123,
+            "noteTitle": "Note 2",
+            "category": "WORK",
+            "priority": "HIGH",
+            "color": "YELLOW",
+            "status": "ACTIVE"
+        }
+    ]
 }
 ```
 
 ---
 
-### 19. Bulk Delete Notes
-
-**Method:** `DELETE`  
-**Endpoint:** `/notes/bulk-delete`  
-**Authentication:** Required
+### 16. Bulk Delete Notes
+**Endpoint:** `DELETE /notes/bulk-delete`  
+**Description:** Bulk delete multiple notes for the authenticated user  
+**Authentication:** Required (USER role)
 
 **Request Body:**
 ```json
@@ -501,34 +520,35 @@ CREATE TABLE IF NOT EXISTS user_notes (
 ```json
 {
     "status": "SUCCESS",
-    "message": "3 notes deleted successfully.",
-    "data": {
-        "deletedCount": 3,
-        "failedCount": 0
-    }
+    "message": "Notes bulk deleted successfully",
+    "data": null
 }
 ```
 
 ---
 
-### 20. Duplicate Note
+### 17. Duplicate Note
+**Endpoint:** `POST /notes/duplicate`  
+**Description:** Duplicate a note for the authenticated user  
+**Authentication:** Required (USER role)
 
-**Method:** `POST`  
-**Endpoint:** `/notes/duplicate?noteId={noteId}`  
-**Authentication:** Required
+**Query Parameters:**
+- `noteId` (required): The ID of the note to duplicate
+
+**Example:** `POST /notes/duplicate?noteId=1`
 
 **Response (201 Created):**
 ```json
 {
     "status": "SUCCESS",
-    "message": "Note duplicated successfully.",
+    "message": "Note duplicated successfully",
     "data": {
-        "userNoteId": 46,
+        "userNoteId": 26,
         "userId": 123,
-        "noteTitle": "Copy of Project Meeting Notes",
-        "noteContent": "Discussed Q4 goals...",
+        "noteTitle": "Copy of My Important Note",
+        "noteContent": "This is the content of my note",
         "noteType": "TEXT",
-        "color": "BLUE",
+        "color": "YELLOW",
         "category": "WORK",
         "priority": "HIGH",
         "status": "ACTIVE",
@@ -538,8 +558,8 @@ CREATE TABLE IF NOT EXISTS user_notes (
         "version": 1,
         "accessCount": 0,
         "lastAccessedDate": null,
-        "createdDate": "2025-10-12T15:30:00",
-        "modifiedDate": "2025-10-12T15:30:00"
+        "createdDate": "2025-10-12 14:00:00",
+        "modifiedDate": "2025-10-12 14:00:00"
     }
 }
 ```
@@ -548,170 +568,85 @@ CREATE TABLE IF NOT EXISTS user_notes (
 
 ## Data Models
 
-### UserNotesDTO (Complete)
+### UserNotesDTO Structure
 ```json
 {
-    "userNoteId": "Long",
-    "userId": "Long", 
-    "noteTitle": "String (max 500 chars)",
-    "noteContent": "String (text)",
-    "noteType": "String (enum)",
-    "color": "String (enum)",
-    "category": "String (enum)",
-    "priority": "String (enum)", 
-    "status": "String (enum)",
-    "isPinned": "Boolean",
-    "isShared": "Boolean",
-    "reminderDate": "String (ISO datetime)",
-    "version": "Integer",
-    "accessCount": "Integer",
-    "lastAccessedDate": "String (ISO datetime)",
-    "createdDate": "String (ISO datetime)",
-    "modifiedDate": "String (ISO datetime)"
+    "userNoteId": "Long - Unique identifier for the note",
+    "userId": "Long - ID of the user who owns the note",
+    "noteTitle": "String - Title of the note (max 500 characters, required)",
+    "noteContent": "String - Content of the note (required)",
+    "noteType": "Enum - Type of note (TEXT, CHECKLIST, VOICE, IMAGE, LINK)",
+    "color": "Enum - Color of the note (DEFAULT, RED, ORANGE, YELLOW, GREEN, BLUE, PURPLE, PINK)",
+    "category": "Enum - Category of the note (PERSONAL, WORK, STUDY, HEALTH, FINANCE, TRAVEL, SHOPPING, OTHER)",
+    "priority": "Enum - Priority level (LOW, MEDIUM, HIGH, URGENT)",
+    "status": "Enum - Status of the note (ACTIVE, ARCHIVED, DELETED)",
+    "isPinned": "Boolean - Whether the note is pinned",
+    "isShared": "Boolean - Whether the note is shared",
+    "reminderDate": "DateTime - Reminder date and time (ISO format)",
+    "version": "Integer - Version number for optimistic locking",
+    "accessCount": "Integer - Number of times the note was accessed",
+    "lastAccessedDate": "DateTime - Last access date and time",
+    "createdDate": "DateTime - Creation date and time",
+    "modifiedDate": "DateTime - Last modification date and time"
 }
 ```
 
-### UserNotesListResponseDTO
-```json
-{
-    "notes": "Array of UserNotesDTO",
-    "totalCount": "Integer",
-    "page": "Integer",
-    "limit": "Integer",
-    "totalPages": "Integer"
-}
-```
+### Enums
 
-### UserNotesStatsDTO
-```json
-{
-    "totalNotes": "Integer",
-    "activeNotes": "Integer",
-    "archivedNotes": "Integer",
-    "pinnedNotes": "Integer",
-    "notesByCategory": "Map<String, Integer>",
-    "notesByPriority": "Map<String, Integer>",
-    "notesByType": "Map<String, Integer>"
-}
-```
-
-### UserNotesBulkUpdateRequest
-```json
-{
-    "noteIds": "Array of Long",
-    "status": "String (optional)",
-    "color": "String (optional)",
-    "category": "String (optional)",
-    "priority": "String (optional)",
-    "isPinned": "Boolean (optional)",
-    "isShared": "Boolean (optional)"
-}
-```
-
-### UserNotesBulkDeleteRequest
-```json
-{
-    "noteIds": "Array of Long",
-    "permanentDelete": "Boolean (default: false)"
-}
-```
-
----
-
-## Enum Values
-
-### Note Type
+#### NoteType
 - `TEXT` - Plain text note
-- `CHECKLIST` - Checklist/todo note
-- `DRAWING` - Drawing/sketch note
-- `VOICE` - Voice memo note
+- `CHECKLIST` - Checklist note
+- `VOICE` - Voice note
 - `IMAGE` - Image note
-- `LINK` - Link/bookmark note
+- `LINK` - Link/URL note
 
-### Color
+#### NoteColor
 - `DEFAULT` - Default color
-- `YELLOW` - Yellow background
-- `ORANGE` - Orange background
-- `RED` - Red background
-- `PINK` - Pink background
-- `PURPLE` - Purple background
-- `BLUE` - Blue background
-- `TEAL` - Teal background
-- `GREEN` - Green background
-- `BROWN` - Brown background
-- `GREY` - Grey background
+- `RED` - Red color
+- `ORANGE` - Orange color
+- `YELLOW` - Yellow color
+- `GREEN` - Green color
+- `BLUE` - Blue color
+- `PURPLE` - Purple color
+- `PINK` - Pink color
 
-### Category
+#### NoteCategory
 - `PERSONAL` - Personal notes
 - `WORK` - Work-related notes
-- `IDEAS` - Ideas and brainstorming
-- `REMINDERS` - Reminder notes
-- `PROJECTS` - Project-related notes
-- `MEETING_NOTES` - Meeting notes
-- `SHOPPING` - Shopping lists
-- `TRAVEL` - Travel notes
+- `STUDY` - Study/educational notes
 - `HEALTH` - Health-related notes
-- `FINANCE` - Finance-related notes
-- `LEARNING` - Learning and education
-- `INSPIRATION` - Inspirational content
+- `FINANCE` - Financial notes
+- `TRAVEL` - Travel notes
+- `SHOPPING` - Shopping lists/notes
+- `OTHER` - Other categories
 
-### Priority
+#### NotePriority
 - `LOW` - Low priority
-- `MEDIUM` - Medium priority (default)
+- `MEDIUM` - Medium priority
 - `HIGH` - High priority
 - `URGENT` - Urgent priority
 
-### Status
-- `ACTIVE` - Active note (default)
+#### NoteStatus
+- `ACTIVE` - Active note
 - `ARCHIVED` - Archived note
-- `DELETED` - Soft deleted note
-- `PINNED` - Pinned note
+- `DELETED` - Deleted note (soft delete)
 
 ---
 
-## Common Error Responses
+## Error Responses
 
-### 404 Not Found
+### Common Error Codes
+- `400 Bad Request` - Invalid request parameters or missing required fields
+- `401 Unauthorized` - Authentication required or invalid token
+- `403 Forbidden` - Insufficient permissions
+- `404 Not Found` - Note not found or no notes found matching criteria
+- `500 Internal Server Error` - Server error
+
+### Error Response Format
 ```json
 {
-    "status": "FAILURE",
-    "message": "Note not found with ID: 123",
-    "data": null
-}
-```
-
-### 400 Bad Request
-```json
-{
-    "status": "FAILURE", 
-    "message": "Invalid note type. Allowed values: TEXT, CHECKLIST, DRAWING, VOICE, IMAGE, LINK",
-    "data": null
-}
-```
-
-### 401 Unauthorized
-```json
-{
-    "status": "FAILURE",
-    "message": "Authentication required. Please provide a valid Bearer token.",
-    "data": null
-}
-```
-
-### 403 Forbidden
-```json
-{
-    "status": "FAILURE",
-    "message": "Access denied. You can only access your own notes.",
-    "data": null
-}
-```
-
-### 500 Internal Server Error
-```json
-{
-    "status": "FAILURE",
-    "message": "An internal server error occurred. Please try again later.",
+    "status": "FAILED",
+    "message": "Error description",
     "data": null
 }
 ```
@@ -723,7 +658,7 @@ CREATE TABLE IF NOT EXISTS user_notes (
 ### Creating a Simple Text Note
 ```bash
 curl -X POST "http://localhost:8010/api/v1/workplace-tracker-service/notes" \
-  -H "Authorization: Bearer <your-token>" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
     "noteTitle": "Meeting Notes",
@@ -736,76 +671,22 @@ curl -X POST "http://localhost:8010/api/v1/workplace-tracker-service/notes" \
 
 ### Searching Notes
 ```bash
-curl -X GET "http://localhost:8010/api/v1/workplace-tracker-service/notes/search?query=project&page=0&limit=10" \
-  -H "Authorization: Bearer <your-token>"
+curl -X GET "http://localhost:8010/api/v1/workplace-tracker-service/notes/search?query=meeting&page=0&limit=10" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
 ```
 
-### Getting Pinned Notes
+### Getting User's Work Notes
 ```bash
-curl -X GET "http://localhost:8010/api/v1/workplace-tracker-service/notes/pinned?page=0&limit=10" \
-  -H "Authorization: Bearer <your-token>"
-```
-
-### Bulk Update Notes
-```bash
-curl -X PUT "http://localhost:8010/api/v1/workplace-tracker-service/notes/bulk-update" \
-  -H "Authorization: Bearer <your-token>" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "noteIds": [1, 2, 3],
-    "status": "ARCHIVED",
-    "color": "GREY"
-  }'
+curl -X GET "http://localhost:8010/api/v1/workplace-tracker-service/notes/user?category=WORK&priority=HIGH&page=0&limit=20" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
 ```
 
 ---
 
-## Performance Considerations
-
-1. **Pagination**: Always use pagination for large datasets to improve performance
-2. **Indexing**: The database includes indexes on frequently queried fields (user_id, note_type, category, status, is_pinned, created_date, modified_date)
-3. **Search**: Full-text search is performed on note_title and note_content fields
-4. **Caching**: Consider implementing caching for frequently accessed notes
-5. **Bulk Operations**: Use bulk endpoints when performing operations on multiple notes
-
----
-
-## Security Notes
-
-1. **Authentication**: All endpoints require valid JWT authentication
-2. **Authorization**: Users can only access their own notes
-3. **Data Validation**: All input data is validated according to the defined constraints
-4. **SQL Injection Prevention**: All database queries use parameterized statements
-5. **XSS Prevention**: All user input is properly sanitized
-
----
-
-## Rate Limiting
-
-Consider implementing rate limiting for the following endpoints:
-- Create Note: 100 requests per minute per user
-- Search Notes: 50 requests per minute per user
-- Bulk Operations: 10 requests per minute per user
-
----
-
-## Future Enhancements
-
-1. **File Attachments**: Support for attaching files to notes
-2. **Collaboration**: Real-time collaborative editing
-3. **Note Templates**: Pre-defined note templates
-4. **Export Features**: Export notes to PDF, Word, etc.
-5. **Advanced Search**: Full-text search with filters and sorting
-6. **Note Sharing**: Share notes with other users or make them public
-7. **Mobile Sync**: Offline support and synchronization
-8. **Rich Text Editor**: Support for formatted text, images, and links
-
----
-
-## Support
-
-For any questions or issues regarding the User Notes API, please contact the development team or refer to the main project documentation.
-
-**Author:** Siddhant Patni  
-**Last Updated:** October 12, 2025  
-**Version:** 1.0.0
+## Notes
+- All date fields use ISO 8601 format: `YYYY-MM-DD HH:MM:SS`
+- Pagination starts from page 0
+- Soft delete is used by default (permanent=false)
+- All endpoints require valid JWT authentication
+- Maximum note title length is 500 characters
+- Note content supports LONGTEXT (MySQL) for large content
