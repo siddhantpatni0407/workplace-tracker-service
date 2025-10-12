@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "244d21fe-5cb4-4f74-8e02-ae4383c0b71d",
+		"_postman_id": "e328debb-a8c3-4109-a66d-2941645a3171",
 		"name": "workplace-tracker-service",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "6002209"
@@ -2181,6 +2181,833 @@
 							"response": []
 						}
 					]
+				},
+				{
+					"name": "User Notes",
+					"item": [
+						{
+							"name": "Create Note",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer {{jwt_token}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"noteTitle\": \"My Important Note\",\n    \"noteContent\": \"This is the content of my note with detailed information\",\n    \"noteType\": \"TEXT\",\n    \"color\": \"YELLOW\",\n    \"category\": \"WORK\",\n    \"priority\": \"HIGH\",\n    \"status\": \"ACTIVE\",\n    \"isPinned\": false,\n    \"isShared\": false,\n    \"reminderDate\": \"2025-12-31 10:00:00\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8010/api/v1/workplace-tracker-service/notes",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8010",
+									"path": [
+										"api",
+										"v1",
+										"workplace-tracker-service",
+										"notes"
+									]
+								},
+								"description": "Create a new note for the authenticated user. All fields except noteTitle and noteContent are optional."
+							},
+							"response": []
+						},
+						{
+							"name": "Get Note by ID",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{jwt_token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "http://localhost:8010/api/v1/workplace-tracker-service/notes?noteId=1",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8010",
+									"path": [
+										"api",
+										"v1",
+										"workplace-tracker-service",
+										"notes"
+									],
+									"query": [
+										{
+											"key": "noteId",
+											"value": "1",
+											"description": "The ID of the note to retrieve (required)"
+										}
+									]
+								},
+								"description": "Get a specific note by ID for the authenticated user."
+							},
+							"response": []
+						},
+						{
+							"name": "Get All User Notes (with Filters)",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{jwt_token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "http://localhost:8010/api/v1/workplace-tracker-service/notes/user?page=0&limit=20&noteType=TEXT&color=YELLOW&category=WORK&priority=HIGH&status=ACTIVE&isPinned=true&isShared=false&searchTerm=important&sortBy=modifiedDate&sortOrder=desc",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8010",
+									"path": [
+										"api",
+										"v1",
+										"workplace-tracker-service",
+										"notes",
+										"user"
+									],
+									"query": [
+										{
+											"key": "page",
+											"value": "0",
+											"description": "Page number for pagination (default: 0)"
+										},
+										{
+											"key": "limit",
+											"value": "20",
+											"description": "Number of items per page (default: 20)"
+										},
+										{
+											"key": "noteType",
+											"value": "TEXT",
+											"description": "Filter by note type: TEXT, CHECKLIST, VOICE, IMAGE, LINK"
+										},
+										{
+											"key": "color",
+											"value": "YELLOW",
+											"description": "Filter by color: DEFAULT, RED, ORANGE, YELLOW, GREEN, BLUE, PURPLE, PINK"
+										},
+										{
+											"key": "category",
+											"value": "WORK",
+											"description": "Filter by category: PERSONAL, WORK, STUDY, HEALTH, FINANCE, TRAVEL, SHOPPING, OTHER"
+										},
+										{
+											"key": "priority",
+											"value": "HIGH",
+											"description": "Filter by priority: LOW, MEDIUM, HIGH, URGENT"
+										},
+										{
+											"key": "status",
+											"value": "ACTIVE",
+											"description": "Filter by status: ACTIVE, ARCHIVED, DELETED"
+										},
+										{
+											"key": "isPinned",
+											"value": "true",
+											"description": "Filter by pinned status (true/false)"
+										},
+										{
+											"key": "isShared",
+											"value": "false",
+											"description": "Filter by shared status (true/false)"
+										},
+										{
+											"key": "searchTerm",
+											"value": "important",
+											"description": "Search term for title and content"
+										},
+										{
+											"key": "sortBy",
+											"value": "modifiedDate",
+											"description": "Sort field (default: modifiedDate)"
+										},
+										{
+											"key": "sortOrder",
+											"value": "desc",
+											"description": "Sort order: asc or desc (default: desc)"
+										},
+										{
+											"key": "startDate",
+											"value": "2025-01-01T00:00:00",
+											"description": "Filter by created date range start (ISO format)",
+											"disabled": true
+										},
+										{
+											"key": "endDate",
+											"value": "2025-12-31T23:59:59",
+											"description": "Filter by created date range end (ISO format)",
+											"disabled": true
+										}
+									]
+								},
+								"description": "Get all notes for the authenticated user with comprehensive filtering, searching, sorting and pagination options."
+							},
+							"response": []
+						},
+						{
+							"name": "Update Note",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer {{jwt_token}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"noteTitle\": \"Updated Note Title\",\n    \"noteContent\": \"Updated content of my note with more details\",\n    \"noteType\": \"TEXT\",\n    \"color\": \"BLUE\",\n    \"category\": \"PERSONAL\",\n    \"priority\": \"MEDIUM\",\n    \"status\": \"ACTIVE\",\n    \"isPinned\": true,\n    \"isShared\": false,\n    \"reminderDate\": \"2025-12-31 15:00:00\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8010/api/v1/workplace-tracker-service/notes?noteId=1",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8010",
+									"path": [
+										"api",
+										"v1",
+										"workplace-tracker-service",
+										"notes"
+									],
+									"query": [
+										{
+											"key": "noteId",
+											"value": "1",
+											"description": "The ID of the note to update (required)"
+										}
+									]
+								},
+								"description": "Update an existing note for the authenticated user."
+							},
+							"response": []
+						},
+						{
+							"name": "Delete Note",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{jwt_token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "http://localhost:8010/api/v1/workplace-tracker-service/notes?noteId=1&permanent=false",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8010",
+									"path": [
+										"api",
+										"v1",
+										"workplace-tracker-service",
+										"notes"
+									],
+									"query": [
+										{
+											"key": "noteId",
+											"value": "1",
+											"description": "The ID of the note to delete (required)"
+										},
+										{
+											"key": "permanent",
+											"value": "false",
+											"description": "Whether to permanently delete the note (default: false for soft delete)"
+										}
+									]
+								},
+								"description": "Delete a note for the authenticated user. By default performs soft delete unless permanent=true."
+							},
+							"response": []
+						},
+						{
+							"name": "Get Notes by Type",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{jwt_token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "http://localhost:8010/api/v1/workplace-tracker-service/notes/by-type?noteType=TEXT&page=0&limit=20&sortBy=createdDate&sortOrder=desc",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8010",
+									"path": [
+										"api",
+										"v1",
+										"workplace-tracker-service",
+										"notes",
+										"by-type"
+									],
+									"query": [
+										{
+											"key": "noteType",
+											"value": "TEXT",
+											"description": "The type of notes to retrieve: TEXT, CHECKLIST, VOICE, IMAGE, LINK (required)"
+										},
+										{
+											"key": "page",
+											"value": "0",
+											"description": "Page number (default: 0)"
+										},
+										{
+											"key": "limit",
+											"value": "20",
+											"description": "Page size (default: 20)"
+										},
+										{
+											"key": "sortBy",
+											"value": "createdDate",
+											"description": "Sort field (default: modifiedDate)"
+										},
+										{
+											"key": "sortOrder",
+											"value": "desc",
+											"description": "Sort order: asc or desc (default: desc)"
+										}
+									]
+								},
+								"description": "Get notes filtered by specific type for the authenticated user."
+							},
+							"response": []
+						},
+						{
+							"name": "Get Notes by Category",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{jwt_token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "http://localhost:8010/api/v1/workplace-tracker-service/notes/by-category?category=WORK&page=0&limit=20&sortBy=priority&sortOrder=desc",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8010",
+									"path": [
+										"api",
+										"v1",
+										"workplace-tracker-service",
+										"notes",
+										"by-category"
+									],
+									"query": [
+										{
+											"key": "category",
+											"value": "WORK",
+											"description": "The category of notes to retrieve: PERSONAL, WORK, STUDY, HEALTH, FINANCE, TRAVEL, SHOPPING, OTHER (required)"
+										},
+										{
+											"key": "page",
+											"value": "0",
+											"description": "Page number (default: 0)"
+										},
+										{
+											"key": "limit",
+											"value": "20",
+											"description": "Page size (default: 20)"
+										},
+										{
+											"key": "sortBy",
+											"value": "priority",
+											"description": "Sort field (default: modifiedDate)"
+										},
+										{
+											"key": "sortOrder",
+											"value": "desc",
+											"description": "Sort order: asc or desc (default: desc)"
+										}
+									]
+								},
+								"description": "Get notes filtered by specific category for the authenticated user."
+							},
+							"response": []
+						},
+						{
+							"name": "Get Pinned Notes",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{jwt_token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "http://localhost:8010/api/v1/workplace-tracker-service/notes/pinned?page=0&limit=20&sortBy=modifiedDate&sortOrder=desc",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8010",
+									"path": [
+										"api",
+										"v1",
+										"workplace-tracker-service",
+										"notes",
+										"pinned"
+									],
+									"query": [
+										{
+											"key": "page",
+											"value": "0",
+											"description": "Page number (default: 0)"
+										},
+										{
+											"key": "limit",
+											"value": "20",
+											"description": "Page size (default: 20)"
+										},
+										{
+											"key": "sortBy",
+											"value": "modifiedDate",
+											"description": "Sort field (default: modifiedDate)"
+										},
+										{
+											"key": "sortOrder",
+											"value": "desc",
+											"description": "Sort order: asc or desc (default: desc)"
+										}
+									]
+								},
+								"description": "Get all pinned notes for the authenticated user."
+							},
+							"response": []
+						},
+						{
+							"name": "Get Archived Notes",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{jwt_token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "http://localhost:8010/api/v1/workplace-tracker-service/notes/archived?page=0&limit=20&sortBy=modifiedDate&sortOrder=desc",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8010",
+									"path": [
+										"api",
+										"v1",
+										"workplace-tracker-service",
+										"notes",
+										"archived"
+									],
+									"query": [
+										{
+											"key": "page",
+											"value": "0",
+											"description": "Page number (default: 0)"
+										},
+										{
+											"key": "limit",
+											"value": "20",
+											"description": "Page size (default: 20)"
+										},
+										{
+											"key": "sortBy",
+											"value": "modifiedDate",
+											"description": "Sort field (default: modifiedDate)"
+										},
+										{
+											"key": "sortOrder",
+											"value": "desc",
+											"description": "Sort order: asc or desc (default: desc)"
+										}
+									]
+								},
+								"description": "Get all archived notes for the authenticated user."
+							},
+							"response": []
+						},
+						{
+							"name": "Search Notes",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{jwt_token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "http://localhost:8010/api/v1/workplace-tracker-service/notes/search?query=important&page=0&limit=20&sortBy=createdDate&sortOrder=desc",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8010",
+									"path": [
+										"api",
+										"v1",
+										"workplace-tracker-service",
+										"notes",
+										"search"
+									],
+									"query": [
+										{
+											"key": "query",
+											"value": "important",
+											"description": "Search query string to search in title and content (required)"
+										},
+										{
+											"key": "page",
+											"value": "0",
+											"description": "Page number (default: 0)"
+										},
+										{
+											"key": "limit",
+											"value": "20",
+											"description": "Page size (default: 20)"
+										},
+										{
+											"key": "sortBy",
+											"value": "createdDate",
+											"description": "Sort field (default: modifiedDate)"
+										},
+										{
+											"key": "sortOrder",
+											"value": "desc",
+											"description": "Sort order: asc or desc (default: desc)"
+										}
+									]
+								},
+								"description": "Search notes by title and content for the authenticated user."
+							},
+							"response": []
+						},
+						{
+							"name": "Update Note Status",
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{jwt_token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "http://localhost:8010/api/v1/workplace-tracker-service/notes/status?noteId=1&status=ARCHIVED",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8010",
+									"path": [
+										"api",
+										"v1",
+										"workplace-tracker-service",
+										"notes",
+										"status"
+									],
+									"query": [
+										{
+											"key": "noteId",
+											"value": "1",
+											"description": "The ID of the note to update (required)"
+										},
+										{
+											"key": "status",
+											"value": "ARCHIVED",
+											"description": "The new status: ACTIVE, ARCHIVED, DELETED (required)"
+										}
+									]
+								},
+								"description": "Update note status for the authenticated user."
+							},
+							"response": []
+						},
+						{
+							"name": "Toggle Pin Status",
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{jwt_token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "http://localhost:8010/api/v1/workplace-tracker-service/notes/pin?noteId=1",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8010",
+									"path": [
+										"api",
+										"v1",
+										"workplace-tracker-service",
+										"notes",
+										"pin"
+									],
+									"query": [
+										{
+											"key": "noteId",
+											"value": "1",
+											"description": "The ID of the note to toggle pin status (required)"
+										}
+									]
+								},
+								"description": "Toggle pin status for a note for the authenticated user. If pinned, it will be unpinned and vice versa."
+							},
+							"response": []
+						},
+						{
+							"name": "Update Note Color",
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{jwt_token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "http://localhost:8010/api/v1/workplace-tracker-service/notes/color?noteId=1&color=GREEN",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8010",
+									"path": [
+										"api",
+										"v1",
+										"workplace-tracker-service",
+										"notes",
+										"color"
+									],
+									"query": [
+										{
+											"key": "noteId",
+											"value": "1",
+											"description": "The ID of the note to update (required)"
+										},
+										{
+											"key": "color",
+											"value": "GREEN",
+											"description": "The new color: DEFAULT, RED, ORANGE, YELLOW, GREEN, BLUE, PURPLE, PINK (required)"
+										}
+									]
+								},
+								"description": "Update note color for the authenticated user."
+							},
+							"response": []
+						},
+						{
+							"name": "Get Note Statistics",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{jwt_token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "http://localhost:8010/api/v1/workplace-tracker-service/notes/stats",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8010",
+									"path": [
+										"api",
+										"v1",
+										"workplace-tracker-service",
+										"notes",
+										"stats"
+									]
+								},
+								"description": "Get comprehensive note statistics for the authenticated user including counts by type, category, priority, and status."
+							},
+							"response": []
+						},
+						{
+							"name": "Bulk Update Notes",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer {{jwt_token}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"noteIds\": [1, 2, 3],\n    \"updates\": {\n        \"category\": \"WORK\",\n        \"priority\": \"HIGH\",\n        \"color\": \"YELLOW\",\n        \"status\": \"ACTIVE\"\n    }\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8010/api/v1/workplace-tracker-service/notes/bulk-update",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8010",
+									"path": [
+										"api",
+										"v1",
+										"workplace-tracker-service",
+										"notes",
+										"bulk-update"
+									]
+								},
+								"description": "Bulk update multiple notes for the authenticated user. Provide array of note IDs and the fields to update."
+							},
+							"response": []
+						},
+						{
+							"name": "Bulk Delete Notes",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer {{jwt_token}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"noteIds\": [1, 2, 3],\n    \"permanentDelete\": false\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8010/api/v1/workplace-tracker-service/notes/bulk-delete",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8010",
+									"path": [
+										"api",
+										"v1",
+										"workplace-tracker-service",
+										"notes",
+										"bulk-delete"
+									]
+								},
+								"description": "Bulk delete multiple notes for the authenticated user. By default performs soft delete unless permanentDelete=true."
+							},
+							"response": []
+						},
+						{
+							"name": "Duplicate Note",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{jwt_token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "http://localhost:8010/api/v1/workplace-tracker-service/notes/duplicate?noteId=1",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8010",
+									"path": [
+										"api",
+										"v1",
+										"workplace-tracker-service",
+										"notes",
+										"duplicate"
+									],
+									"query": [
+										{
+											"key": "noteId",
+											"value": "1",
+											"description": "The ID of the note to duplicate (required)"
+										}
+									]
+								},
+								"description": "Duplicate a note for the authenticated user. Creates a copy with 'Copy of' prefix in the title."
+							},
+							"response": []
+						}
+					],
+					"description": "Comprehensive User Notes API collection with CRUD operations, filtering, search, statistics, and bulk operations"
 				}
 			],
 			"auth": {
