@@ -61,7 +61,7 @@ public class UserTasksDTO {
     private LocalDate dueDate;
 
     @JsonProperty("reminderDate")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime reminderDate;
 
     @JsonProperty("tags")
@@ -92,14 +92,14 @@ public class UserTasksDTO {
     private Integer accessCount = 0;
 
     @JsonProperty("lastAccessedDate")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime lastAccessedDate;
 
     @JsonProperty("createdDate")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime createdDate;
 
     @JsonProperty("modifiedDate")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime modifiedDate;
 }
