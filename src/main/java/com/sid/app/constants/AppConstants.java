@@ -65,6 +65,23 @@ public class AppConstants {
     public static final String NOTES_COLOR_ENDPOINT = "/api/v1/workplace-tracker-service/notes/color";
     public static final String NOTES_DUPLICATE_ENDPOINT = "/api/v1/workplace-tracker-service/notes/duplicate";
 
+    // UserTasks endpoints
+    public static final String TASKS_ENDPOINT = "/api/v1/workplace-tracker-service/tasks";
+    public static final String TASKS_USER_ENDPOINT = "/api/v1/workplace-tracker-service/tasks/user";
+    public static final String TASKS_DETAILS_ENDPOINT = "/api/v1/workplace-tracker-service/tasks/details";
+    public static final String TASKS_UPDATE_ENDPOINT = "/api/v1/workplace-tracker-service/tasks/update";
+    public static final String TASKS_DELETE_ENDPOINT = "/api/v1/workplace-tracker-service/tasks/delete";
+    public static final String TASKS_STATUS_UPDATE_ENDPOINT = "/api/v1/workplace-tracker-service/tasks/status/update";
+    public static final String TASKS_PRIORITY_UPDATE_ENDPOINT = "/api/v1/workplace-tracker-service/tasks/priority/update";
+    public static final String TASKS_STATS_ENDPOINT = "/api/v1/workplace-tracker-service/tasks/stats";
+    public static final String TASKS_SEARCH_ENDPOINT = "/api/v1/workplace-tracker-service/tasks/search";
+    public static final String TASKS_OVERDUE_ENDPOINT = "/api/v1/workplace-tracker-service/tasks/overdue";
+    public static final String TASKS_BY_STATUS_ENDPOINT = "/api/v1/workplace-tracker-service/tasks/by-status";
+    public static final String TASKS_BY_PRIORITY_ENDPOINT = "/api/v1/workplace-tracker-service/tasks/by-priority";
+    public static final String TASKS_BULK_UPDATE_ENDPOINT = "/api/v1/workplace-tracker-service/tasks/bulk-update";
+    public static final String TASKS_BULK_DELETE_ENDPOINT = "/api/v1/workplace-tracker-service/tasks/bulk-delete";
+    public static final String TASKS_DUPLICATE_ENDPOINT = "/api/v1/workplace-tracker-service/tasks/duplicate";
+
     // Holidays messages
     public static final String SUCCESS_HOLIDAYS_RETRIEVED = "Holidays retrieved";
     public static final String ERROR_NO_HOLIDAYS_FOUND = "No holidays found";

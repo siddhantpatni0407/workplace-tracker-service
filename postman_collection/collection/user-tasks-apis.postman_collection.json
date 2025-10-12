@@ -1,0 +1,753 @@
+{
+	"info": {
+		"_postman_id": "user-tasks-collection-id",
+		"name": "User Tasks APIs - Updated",
+		"description": "Complete collection for User Tasks API endpoints with comprehensive task management features using query parameters design",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "user-tasks-exporter"
+	},
+	"item": [
+		{
+			"name": "User Tasks Management",
+			"description": "Comprehensive User Tasks API collection with CRUD operations, filtering, search, statistics, and bulk operations",
+			"item": [
+				{
+					"name": "1. Create Task",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"taskTitle\": \"Implement User Authentication Module\",\n    \"taskDescription\": \"Design and develop JWT-based authentication system with role-based access control. Include password reset functionality and session management.\",\n    \"taskDate\": \"2025-10-12\",\n    \"status\": \"NOT_STARTED\",\n    \"priority\": \"HIGH\",\n    \"category\": \"PROJECT\",\n    \"taskType\": \"FEATURE\",\n    \"dueDate\": \"2025-10-20\",\n    \"reminderDate\": \"2025-10-19T09:00:00\",\n    \"tags\": [\"authentication\", \"security\", \"backend\"],\n    \"parentTaskId\": null,\n    \"remarks\": \"Coordinate with security team for compliance review\",\n    \"isRecurring\": false,\n    \"recurringPattern\": null\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/tasks",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tasks"
+							]
+						},
+						"description": "Create a new task for the authenticated user. All fields except taskTitle and taskDate are optional."
+					},
+					"response": []
+				},
+				{
+					"name": "2. Get Tasks by User",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/tasks/user?page=0&limit=50&status=IN_PROGRESS&priority=HIGH&category=PROJECT&taskType=FEATURE&sortBy=createdDate&sortOrder=ASC",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tasks",
+								"user"
+							],
+							"query": [
+								{
+									"key": "status",
+									"value": "IN_PROGRESS",
+									"description": "Filter by task status: NOT_STARTED, IN_PROGRESS, COMPLETED, ON_HOLD, CANCELLED"
+								},
+								{
+									"key": "priority",
+									"value": "HIGH",
+									"description": "Filter by priority: LOW, MEDIUM, HIGH, URGENT"
+								},
+								{
+									"key": "category",
+									"value": "PROJECT",
+									"description": "Filter by category: WORK, PERSONAL, PROJECT, MEETING, LEARNING, ADMIN, OTHER"
+								},
+								{
+									"key": "taskType",
+									"value": "FEATURE",
+									"description": "Filter by task type: TASK, SUBTASK, MILESTONE, BUG, FEATURE"
+								},
+								{
+									"key": "startDate",
+									"value": "2025-10-01",
+									"description": "Filter by task date range start (YYYY-MM-DD)",
+									"disabled": true
+								},
+								{
+									"key": "endDate",
+									"value": "2025-10-31",
+									"description": "Filter by task date range end (YYYY-MM-DD)",
+									"disabled": true
+								},
+								{
+									"key": "dueDateStart",
+									"value": "2025-10-15",
+									"description": "Filter by due date range start (YYYY-MM-DD)",
+									"disabled": true
+								},
+								{
+									"key": "dueDateEnd",
+									"value": "2025-10-31",
+									"description": "Filter by due date range end (YYYY-MM-DD)",
+									"disabled": true
+								},
+								{
+									"key": "isOverdue",
+									"value": "true",
+									"description": "Filter overdue tasks (true/false)",
+									"disabled": true
+								},
+								{
+									"key": "searchTerm",
+									"value": "authentication",
+									"description": "Search term for title, description, and tags",
+									"disabled": true
+								},
+								{
+									"key": "tags",
+									"value": "authentication,security",
+									"description": "Filter by tags (comma-separated)",
+									"disabled": true
+								},
+								{
+									"key": "page",
+									"value": "0",
+									"description": "Page number for pagination (default: 0)"
+								},
+								{
+									"key": "limit",
+									"value": "50",
+									"description": "Number of items per page (default: 50, max: 100)"
+								},
+								{
+									"key": "sortBy",
+									"value": "createdDate",
+									"description": "Sort field: dueDate, priority, status, createdDate, taskTitle"
+								},
+								{
+									"key": "sortOrder",
+									"value": "ASC",
+									"description": "Sort order: ASC or DESC"
+								}
+							]
+						},
+						"description": "Get all tasks for the authenticated user with comprehensive filtering, searching, sorting and pagination options."
+					},
+					"response": []
+				},
+				{
+					"name": "3. Get Task by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/tasks/details?userTaskId={{task_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tasks",
+								"details"
+							],
+							"query": [
+								{
+									"key": "userTaskId",
+									"value": "{{task_id}}",
+									"description": "The ID of the task to retrieve"
+								}
+							]
+						},
+						"description": "Get a specific task by ID for the authenticated user."
+					},
+					"response": []
+				},
+				{
+					"name": "4. Update Task",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"userTaskId\": {{task_id}},\n    \"taskTitle\": \"Implement User Authentication Module - Updated\",\n    \"taskDescription\": \"Updated description with new requirements for OAuth2 integration\",\n    \"taskDate\": \"2025-10-12\",\n    \"status\": \"IN_PROGRESS\",\n    \"priority\": \"URGENT\",\n    \"category\": \"PROJECT\",\n    \"taskType\": \"FEATURE\",\n    \"dueDate\": \"2025-10-18\",\n    \"reminderDate\": \"2025-10-17T09:00:00\",\n    \"tags\": [\"authentication\", \"security\", \"backend\", \"oauth2\"],\n    \"remarks\": \"Updated timeline due to OAuth2 integration requirements\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/tasks/update?userTaskId={{task_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tasks",
+								"update"
+							],
+							"query": [
+								{
+									"key": "userTaskId",
+									"value": "{{task_id}}",
+									"description": "The ID of the task to update"
+								}
+							]
+						},
+						"description": "Update an existing task for the authenticated user."
+					},
+					"response": []
+				},
+				{
+					"name": "5. Delete Task",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/tasks/delete?userTaskId={{task_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tasks",
+								"delete"
+							],
+							"query": [
+								{
+									"key": "userTaskId",
+									"value": "{{task_id}}",
+									"description": "The ID of the task to delete"
+								}
+							]
+						},
+						"description": "Delete a task for the authenticated user. Note: Cannot delete tasks with active subtasks."
+					},
+					"response": []
+				},
+				{
+					"name": "6. Update Task Status",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"status\": \"COMPLETED\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/tasks/status/update?userTaskId={{task_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tasks",
+								"status",
+								"update"
+							],
+							"query": [
+								{
+									"key": "userTaskId",
+									"value": "{{task_id}}",
+									"description": "The ID of the task to update status for"
+								}
+							]
+						},
+						"description": "Update only the status of a specific task."
+					},
+					"response": []
+				},
+				{
+					"name": "7. Update Task Priority",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"priority\": \"URGENT\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/tasks/priority/update?userTaskId={{task_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tasks",
+								"priority",
+								"update"
+							],
+							"query": [
+								{
+									"key": "userTaskId",
+									"value": "{{task_id}}",
+									"description": "The ID of the task to update priority for"
+								}
+							]
+						},
+						"description": "Update only the priority of a specific task."
+					},
+					"response": []
+				},
+				{
+					"name": "8. Get Task Statistics",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/tasks/stats?status=COMPLETED&priority=HIGH",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tasks",
+								"stats"
+							],
+							"query": [
+								{
+									"key": "status",
+									"value": "COMPLETED",
+									"description": "Filter stats by task status",
+									"disabled": true
+								},
+								{
+									"key": "priority",
+									"value": "HIGH",
+									"description": "Filter stats by priority",
+									"disabled": true
+								},
+								{
+									"key": "category",
+									"value": "PROJECT",
+									"description": "Filter stats by category",
+									"disabled": true
+								},
+								{
+									"key": "startDate",
+									"value": "2025-10-01",
+									"description": "Filter stats by date range start",
+									"disabled": true
+								},
+								{
+									"key": "endDate",
+									"value": "2025-10-31",
+									"description": "Filter stats by date range end",
+									"disabled": true
+								}
+							]
+						},
+						"description": "Get comprehensive statistics about user tasks including counts by status, priority, category, and completion rate."
+					},
+					"response": []
+				},
+				{
+					"name": "9. Search Tasks",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/tasks/search?searchTerm=authentication&status=IN_PROGRESS&priority=HIGH&page=0&limit=20",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tasks",
+								"search"
+							],
+							"query": [
+								{
+									"key": "searchTerm",
+									"value": "authentication",
+									"description": "Search term to look for in title, description, and tags"
+								},
+								{
+									"key": "status",
+									"value": "IN_PROGRESS",
+									"description": "Filter search results by status"
+								},
+								{
+									"key": "priority",
+									"value": "HIGH",
+									"description": "Filter search results by priority"
+								},
+								{
+									"key": "category",
+									"value": "PROJECT",
+									"description": "Filter search results by category",
+									"disabled": true
+								},
+								{
+									"key": "page",
+									"value": "0",
+									"description": "Page number for pagination"
+								},
+								{
+									"key": "limit",
+									"value": "20",
+									"description": "Number of results per page"
+								}
+							]
+						},
+						"description": "Search tasks by term in title, description, and tags with additional filtering options."
+					},
+					"response": []
+				},
+				{
+					"name": "10. Get Overdue Tasks",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/tasks/overdue",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tasks",
+								"overdue"
+							]
+						},
+						"description": "Get all overdue tasks for the authenticated user."
+					},
+					"response": []
+				},
+				{
+					"name": "11. Get Tasks by Status",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/tasks/by-status?status=IN_PROGRESS&page=0&limit=20&sortBy=createdDate&sortOrder=ASC",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tasks",
+								"by-status"
+							],
+							"query": [
+								{
+									"key": "status",
+									"value": "IN_PROGRESS",
+									"description": "TaskStatus enum value: NOT_STARTED, IN_PROGRESS, COMPLETED, ON_HOLD, CANCELLED"
+								},
+								{
+									"key": "page",
+									"value": "0",
+									"description": "Page number for pagination (default: 0)"
+								},
+								{
+									"key": "limit",
+									"value": "20",
+									"description": "Number of results per page (default: 50)"
+								},
+								{
+									"key": "sortBy",
+									"value": "createdDate",
+									"description": "Sort field (default: createdDate)"
+								},
+								{
+									"key": "sortOrder",
+									"value": "ASC",
+									"description": "Sort direction (ASC, DESC, default: ASC)"
+								}
+							]
+						},
+						"description": "Get tasks filtered by specific status with pagination and sorting."
+					},
+					"response": []
+				},
+				{
+					"name": "12. Get Tasks by Priority",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/tasks/by-priority?priority=HIGH&page=0&limit=20&sortBy=createdDate&sortOrder=ASC",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tasks",
+								"by-priority"
+							],
+							"query": [
+								{
+									"key": "priority",
+									"value": "HIGH",
+									"description": "TaskPriority enum value: LOW, MEDIUM, HIGH, URGENT"
+								},
+								{
+									"key": "page",
+									"value": "0",
+									"description": "Page number for pagination (default: 0)"
+								},
+								{
+									"key": "limit",
+									"value": "20",
+									"description": "Number of results per page (default: 50)"
+								},
+								{
+									"key": "sortBy",
+									"value": "createdDate",
+									"description": "Sort field (default: createdDate)"
+								},
+								{
+									"key": "sortOrder",
+									"value": "ASC",
+									"description": "Sort direction (ASC, DESC, default: ASC)"
+								}
+							]
+						},
+						"description": "Get tasks filtered by specific priority with pagination and sorting."
+					},
+					"response": []
+				},
+				{
+					"name": "13. Bulk Update Tasks",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"userTaskIds\": [1, 2, 3, 4],\n    \"updates\": {\n        \"status\": \"IN_PROGRESS\",\n        \"priority\": \"HIGH\",\n        \"category\": \"PROJECT\"\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/tasks/bulk-update",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tasks",
+								"bulk-update"
+							]
+						},
+						"description": "Update multiple tasks at once with the same changes."
+					},
+					"response": []
+				},
+				{
+					"name": "14. Bulk Delete Tasks",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"userTaskIds\": [1, 2, 3]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/tasks/bulk-delete",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tasks",
+								"bulk-delete"
+							]
+						},
+						"description": "Delete multiple tasks at once."
+					},
+					"response": []
+				},
+				{
+					"name": "15. Duplicate Task",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/tasks/duplicate?userTaskId={{task_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tasks",
+								"duplicate"
+							],
+							"query": [
+								{
+									"key": "userTaskId",
+									"value": "{{task_id}}",
+									"description": "The ID of the task to duplicate"
+								}
+							]
+						},
+						"description": "Create a duplicate copy of an existing task."
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8010/api/v1/workplace-tracker-service",
+			"type": "string"
+		},
+		{
+			"key": "jwt_token",
+			"value": "your-jwt-token-here",
+			"type": "string"
+		},
+		{
+			"key": "task_id",
+			"value": "1",
+			"type": "string"
+		}
+	]
+}

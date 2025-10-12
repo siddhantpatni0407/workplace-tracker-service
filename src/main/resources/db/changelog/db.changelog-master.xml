@@ -19,4 +19,7 @@
     <changeSet id="5" author="sid">
         <sqlFile path="db/scripts/add-user-notes-table.sql"/>
     </changeSet>
+    <changeSet id="6" author="sid">
+        <sqlFile path="db/scripts/add-user-tasks-table.sql"/>
+    </changeSet>
 </databaseChangeLog>
