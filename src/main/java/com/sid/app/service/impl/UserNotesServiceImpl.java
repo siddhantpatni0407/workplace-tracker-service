@@ -52,7 +52,7 @@ public class UserNotesServiceImpl implements UserNotesService {
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public UserNotesDTO getNoteById(Long userId, Long noteId) {
         log.info("Fetching note {} for user {}", noteId, userId);
 
