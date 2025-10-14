@@ -2,10 +2,14 @@ package com.sid.app.service;
 
 import com.sid.app.entity.User;
 import com.sid.app.entity.UserRole;
+import com.sid.app.entity.TenantUser;
+import com.sid.app.entity.Tenant;
 import com.sid.app.model.UserDTO;
 import com.sid.app.model.UserStatusUpdateRequest;
 import com.sid.app.repository.UserRepository;
 import com.sid.app.repository.UserRoleRepository;
+import com.sid.app.repository.TenantUserRepository;
+import com.sid.app.repository.TenantRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +23,7 @@ import java.util.stream.Collectors;
 
 /**
  * Service for managing users, including retrieval, update, and deletion operations.
+ * Updated to support multi-tenant architecture with tenant_user_id relationships.
  */
 @Service
 @Slf4j
@@ -27,13 +32,40 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final UserRoleRepository userRoleRepository;
+    private final TenantUserRepository tenantUserRepository;
+    private final TenantRepository tenantRepository;
 
+    /**
+     * Get all users with tenant information
+     */
     public List<UserDTO> getAllUsers() {
-        log.info("Fetching all users from the database.");
+        log.info("Fetching all users from the database with tenant information.");
         List<User> users = userRepository.findAll();
         if (users.isEmpty()) {
             log.warn("No users found in the database.");
         }
+        return users.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Get users by tenant ID
+     */
+    public List<UserDTO> getUsersByTenantId(Long tenantId) {
+        log.info("Fetching users for tenant ID: {}", tenantId);
+        List<User> users = userRepository.findByTenantId(tenantId);
+        return users.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Get active users by tenant ID
+     */
+    public List<UserDTO> getActiveUsersByTenantId(Long tenantId) {
+        log.info("Fetching active users for tenant ID: {}", tenantId);
+        List<User> users = userRepository.findActiveByTenantId(tenantId);
         return users.stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
@@ -54,19 +86,18 @@ public class UserService {
         log.info("Updating user with ID: {}", userId);
         return userRepository.findById(userId)
                 .map(user -> {
-                    if (updatedUserDTO.getUsername() == null || updatedUserDTO.getEmail() == null) {
-                        throw new IllegalArgumentException("Username and email cannot be null.");
+                    if (updatedUserDTO.getName() == null || updatedUserDTO.getEmail() == null) {
+                        throw new IllegalArgumentException("Name and email cannot be null.");
                     }
 
-                    // map fields
-                    user.setName(updatedUserDTO.getUsername());
+                    // Update basic user fields
+                    user.setName(updatedUserDTO.getName());
                     user.setEmail(updatedUserDTO.getEmail());
                     user.setMobileNumber(updatedUserDTO.getMobileNumber());
 
                     // If role (string) provided in DTO, map it to role_id
                     String requestedRole = updatedUserDTO.getRole();
                     if (requestedRole != null && !requestedRole.isBlank()) {
-                        // Normalize role value (e.g., uppercase) depending on how roles are stored
                         String normalized = requestedRole.trim();
                         Optional<UserRole> roleOpt = userRoleRepository.findByRole(normalized);
                         if (roleOpt.isEmpty()) {
@@ -109,10 +140,7 @@ public class UserService {
 
         if (changed) {
             userRepository.save(user);
-            log.info("updateUserStatus() : Updated userId={} isActive={} accountLocked={}",
-                    userId, user.getIsActive(), user.getAccountLocked());
-        } else {
-            log.info("updateUserStatus() : No changes requested for userId={}", userId);
+            log.info("User status updated for ID: {}", userId);
         }
 
         return convertToDTO(user);
@@ -120,35 +148,65 @@ public class UserService {
 
     @Transactional
     public void deleteUser(Long userId) {
-        log.info("Attempting to delete user with ID: {}", userId);
+        log.info("Deleting user with ID: {}", userId);
         if (!userRepository.existsById(userId)) {
-            log.warn("User with ID {} not found, deletion aborted.", userId);
             throw new EntityNotFoundException("User not found with ID: " + userId);
         }
         userRepository.deleteById(userId);
         log.info("User with ID {} deleted successfully.", userId);
     }
 
-    private UserDTO convertToDTO(User user) {
-        // find role name from roleId; if not found, fallback to null or empty string
-        String roleName = null;
-        if (user.getRoleId() != null) {
-            roleName = userRoleRepository.findById(user.getRoleId())
-                    .map(UserRole::getRole)
-                    .orElse(null);
-        }
+    /**
+     * Search users by name or email within a tenant
+     */
+    public List<UserDTO> searchUsersByTenant(Long tenantId, String searchTerm) {
+        log.info("Searching users in tenant {} with term: {}", tenantId, searchTerm);
+        List<User> users = userRepository.searchUsersByTenant(tenantId, searchTerm);
+        return users.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
 
-        return UserDTO.builder()
+    /**
+     * Convert User entity to UserDTO with tenant information
+     */
+    private UserDTO convertToDTO(User user) {
+        UserDTO.UserDTOBuilder builder = UserDTO.builder()
                 .userId(user.getUserId())
-                .username(user.getName())
+                .tenantUserId(user.getTenantUserId())
+                .name(user.getName())
                 .email(user.getEmail())
                 .mobileNumber(user.getMobileNumber())
-                .role(roleName)                       // <-- still returns role name string
+                .roleId(user.getRoleId())
                 .lastLoginTime(user.getLastLoginTime())
                 .loginAttempts(user.getLoginAttempts())
                 .isAccountLocked(user.getAccountLocked())
                 .isActive(user.getIsActive())
-                .build();
-    }
+                .createdDate(user.getCreatedDate())
+                .modifiedDate(user.getModifiedDate())
+                .username(user.getName()); // For backward compatibility
 
+        // Fetch role name
+        if (user.getRoleId() != null) {
+            userRoleRepository.findById(user.getRoleId())
+                    .ifPresent(role -> builder.role(role.getRole()));
+        }
+
+        // Fetch tenant information through tenant_user relationship
+        if (user.getTenantUserId() != null) {
+            tenantUserRepository.findById(user.getTenantUserId())
+                    .ifPresent(tenantUser -> {
+                        builder.platformUserId(tenantUser.getPlatformUserId());
+                        builder.tenantId(tenantUser.getTenantId());
+
+                        // Fetch tenant name
+                        if (tenantUser.getTenantId() != null) {
+                            tenantRepository.findById(tenantUser.getTenantId())
+                                    .ifPresent(tenant -> builder.tenantName(tenant.getTenantName()));
+                        }
+                    });
+        }
+
+        return builder.build();
+    }
 }

@@ -19,8 +19,11 @@ public class UserDTO {
     @JsonProperty("userId")
     private Long userId;
 
-    @JsonProperty("username")
-    private String username;
+    @JsonProperty("tenantUserId")
+    private Long tenantUserId;
+
+    @JsonProperty("name")
+    private String name;
 
     @JsonProperty("email")
     private String email;
@@ -30,6 +33,9 @@ public class UserDTO {
 
     @JsonProperty("role")
     private String role;
+
+    @JsonProperty("roleId")
+    private Long roleId;
 
     @JsonProperty("lastLoginTime")
     private LocalDateTime lastLoginTime;
@@ -43,4 +49,24 @@ public class UserDTO {
     @JsonProperty("isActive")
     private Boolean isActive;
 
+    @JsonProperty("createdDate")
+    private LocalDateTime createdDate;
+
+    @JsonProperty("modifiedDate")
+    private LocalDateTime modifiedDate;
+
+    // Multi-tenant related fields (from relationships)
+    @JsonProperty("tenantId")
+    private Long tenantId;
+
+    @JsonProperty("tenantName")
+    private String tenantName;
+
+    @JsonProperty("platformUserId")
+    private Long platformUserId;
+
+    // Deprecated field - keeping for backward compatibility
+    @JsonProperty("username")
+    @Deprecated
+    private String username;
 }

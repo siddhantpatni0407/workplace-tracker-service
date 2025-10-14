@@ -17,6 +17,17 @@ spring:
       password: ${ADMIN_PASSWORD:admin}
       roles: ${ADMIN_ROLES:ACTUATOR_ADMIN}
 
+  # Jackson configuration for date/time handling
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+      write-date-timestamps-as-nanoseconds: false
+    deserialization:
+      read-date-timestamps-as-nanoseconds: false
+    default-property-inclusion: non_null
+    date-format: yyyy-MM-dd'T'HH:mm:ss
+    time-zone: ${JACKSON_TIME_ZONE:UTC}
+
   liquibase:
     change-log: ${LIQUIBASE_CHANGE_LOG:classpath:db/changelog/db.changelog-master.xml}
     enabled: ${LIQUIBASE_ENABLED:true}
@@ -35,13 +46,13 @@ spring:
       pool-name: ${HIKARI_POOL_NAME:HikariCP}
       max-lifetime: ${HIKARI_MAX_LIFETIME:7200000}
       connection-timeout: ${HIKARI_CONNECTION_TIMEOUT:30000}
-      schema: ${HIKARI_SCHEMA:dev}
+      schema: ${HIKARI_SCHEMA:test}
 
   jpa:
     show-sql: ${JPA_SHOW_SQL:false}
     properties:
       hibernate:
-        default_schema: ${JPA_DEFAULT_SCHEMA:dev}
+        default_schema: ${JPA_DEFAULT_SCHEMA:test}
         globally_quoted_identifiers: ${JPA_GLOBALLY_QUOTED_IDENTIFIERS:true}
         dialect: ${JPA_DIALECT:org.hibernate.dialect.PostgreSQLDialect}
         format_sql: ${JPA_FORMAT_SQL:true}

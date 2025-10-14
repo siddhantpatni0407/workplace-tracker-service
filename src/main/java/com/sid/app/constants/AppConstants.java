@@ -16,7 +16,10 @@ public class AppConstants {
     public static final String USER_ENDPOINT = "/api/v1/workplace-tracker-service/user";
     public static final String USER_STATUS_ENDPOINT = "/api/v1/workplace-tracker-service/user/status";
     public static final String USER_SETTINGS_ENDPOINT = "/api/v1/workplace-tracker-service/user/settings";
-    public static final String USER_PROFILE_ENDPOINT = "/api/v1/workplace-tracker-service/user/profile";;
+    public static final String USER_PROFILE_ENDPOINT = "/api/v1/workplace-tracker-service/user/profile";
+    public static final String USERS_BY_TENANT_ENDPOINT = "/api/v1/workplace-tracker-service/user/by-tenant";
+    public static final String ACTIVE_USERS_BY_TENANT_ENDPOINT = "/api/v1/workplace-tracker-service/user/active-by-tenant";
+    public static final String SEARCH_USERS_BY_TENANT_ENDPOINT = "/api/v1/workplace-tracker-service/user/search-by-tenant";
 
     // DB endpoints
     public static final String DB_BACKUP_ENDPOINT = "/api/v1/workplace-tracker-service/db-backup";
@@ -81,6 +84,12 @@ public class AppConstants {
     public static final String TASKS_BULK_UPDATE_ENDPOINT = "/api/v1/workplace-tracker-service/tasks/bulk-update";
     public static final String TASKS_BULK_DELETE_ENDPOINT = "/api/v1/workplace-tracker-service/tasks/bulk-delete";
     public static final String TASKS_DUPLICATE_ENDPOINT = "/api/v1/workplace-tracker-service/tasks/duplicate";
+
+    // Platform User Auth endpoints
+    public static final String PLATFORM_AUTH_SIGNUP_ENDPOINT = "/api/v1/workplace-tracker-service/platform-auth/signup";
+    public static final String PLATFORM_AUTH_LOGIN_ENDPOINT = "/api/v1/workplace-tracker-service/platform-auth/login";
+    public static final String PLATFORM_AUTH_REFRESH_ENDPOINT = "/api/v1/workplace-tracker-service/platform-auth/refresh-token";
+    public static final String PLATFORM_AUTH_PROFILE_ENDPOINT = "/api/v1/workplace-tracker-service/platform-auth/profile";
 
     // Holidays messages
     public static final String SUCCESS_HOLIDAYS_RETRIEVED = "Holidays retrieved";

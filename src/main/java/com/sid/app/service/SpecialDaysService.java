@@ -211,9 +211,9 @@ public class SpecialDaysService {
     }
 
     private Page<User> getUsersWithFilters(String department, String location, Pageable pageable) {
-        // For now, returning all active users with profiles and addresses
+        // For now, returning all active users with profiles
         // This can be enhanced with actual filtering logic when needed
-        return userRepository.findActiveUsersWithProfilesAndAddresses(pageable);
+        return userRepository.findActiveUsersWithProfiles(pageable);
     }
 
     private boolean shouldIncludeBirthday(String type, Integer month, LocalDate dateOfBirth) {

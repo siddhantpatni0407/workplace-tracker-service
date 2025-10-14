@@ -23,14 +23,17 @@ public class User extends Auditable {
     @Column(name = "user_id")
     private Long userId;
 
+    @Column(name = "tenant_user_id", nullable = false)
+    private Long tenantUserId;
+
     @Column(name = "name", length = 50, nullable = false)
     private String name;
 
-    @Column(name = "mobile_number", length = 15, nullable = false, unique = true)
-    private String mobileNumber;
-
     @Column(name = "email", length = 30, nullable = false, unique = true)
     private String email;
+
+    @Column(name = "mobile_number", length = 15, nullable = false, unique = true)
+    private String mobileNumber;
 
     @Column(name = "password", length = 50, nullable = false)
     private String password;
@@ -53,4 +56,11 @@ public class User extends Auditable {
     @Column(name = "account_locked", nullable = false)
     private Boolean accountLocked = false;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "role_id", insertable = false, updatable = false)
+    private UserRole role;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "tenant_user_id", insertable = false, updatable = false)
+    private TenantUser tenantUser;
 }

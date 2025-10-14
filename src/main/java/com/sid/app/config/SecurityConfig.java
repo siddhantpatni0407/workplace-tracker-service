@@ -47,7 +47,11 @@ public class SecurityConfig {
                                 AppConstants.USER_REGISTER_ENDPOINT,
                                 AppConstants.USER_LOGIN_ENDPOINT,
                                 AppConstants.FORGOT_PASSWORD_RESET_ENDPOINT,
-                                AppConstants.AUTH_REFRESH_ENDPOINT
+                                AppConstants.AUTH_REFRESH_ENDPOINT,
+                                // Platform User Authentication endpoints
+                                AppConstants.PLATFORM_AUTH_SIGNUP_ENDPOINT,
+                                AppConstants.PLATFORM_AUTH_LOGIN_ENDPOINT,
+                                AppConstants.PLATFORM_AUTH_REFRESH_ENDPOINT
                         ).permitAll()
                         // Require authentication for all other endpoints
                         .anyRequest().authenticated()

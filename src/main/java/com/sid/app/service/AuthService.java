@@ -4,6 +4,8 @@ import com.sid.app.auth.JwtUtil;
 import com.sid.app.constants.AppConstants;
 import com.sid.app.entity.User;
 import com.sid.app.entity.UserRole;
+import com.sid.app.entity.Tenant;
+import com.sid.app.entity.TenantUser;
 import com.sid.app.exception.UserNotFoundException;
 import com.sid.app.model.AuthResponse;
 import com.sid.app.model.LoginRequest;
@@ -12,6 +14,8 @@ import com.sid.app.model.ForgotPasswordResetRequest;
 import com.sid.app.model.ResponseDTO;
 import com.sid.app.repository.UserRepository;
 import com.sid.app.repository.UserRoleRepository;
+import com.sid.app.repository.TenantRepository;
+import com.sid.app.repository.TenantUserRepository;
 import com.sid.app.utils.AESUtils;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
@@ -30,7 +34,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * AuthService - handles registration, login, refresh token, password reset, etc.
- * Updated to use role_id on User and resolve role names via UserRoleRepository.
+ * Enhanced with tenant-based user support for SUPER_ADMIN, ADMIN, and USER roles.
  */
 @Service
 @RequiredArgsConstructor
@@ -39,18 +43,224 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final UserRoleRepository userRoleRepository;
+    private final TenantRepository tenantRepository;
+    private final TenantUserRepository tenantUserRepository;
     private final JwtUtil jwtUtil;
     private final BCryptPasswordEncoder passwordEncoder;
     private final AESUtils aesUtils;
     private final EncryptionKeyService encryptionKeyService;
+    private final CodeGenerationService codeGenerationService;
+    private final PlatformUserRepository platformUserRepository;
 
     private static final ConcurrentHashMap<String, String> otpStore = new ConcurrentHashMap<>();
 
     /**
-     * Register new user. Expects RegisterRequest to contain role (string) optionally.
-     * Maps role name -> role_id and stores role_id on User.
+     * Register new user with tenant support.
+     * - SUPER_ADMIN, ADMIN: saves to tenant_user table + requires tenantCode
+     * - USER: saves to users table + tenant_user table + requires tenantCode
+     * - Other roles: saves to users table without tenant validation (existing behavior)
      */
     public AuthResponse register(RegisterRequest request) {
+        // Validate tenant code for tenant-based roles
+        if (isTenantBasedRole(request.getRole())) {
+            if (request.getTenantCode() == null || request.getTenantCode().trim().isEmpty()) {
+                return new AuthResponse(null, null, null, null,
+                        AppConstants.STATUS_FAILED,
+                        "Tenant code is required for " + request.getRole() + " role registration",
+                        null, null, null, null);
+            }
+
+            // Validate tenant exists and is active
+            Optional<Tenant> tenantOpt = tenantRepository.findActiveByTenantCode(request.getTenantCode());
+            if (tenantOpt.isEmpty()) {
+                return new AuthResponse(null, null, null, null,
+                        AppConstants.STATUS_FAILED,
+                        "Invalid or inactive tenant code: " + request.getTenantCode(),
+                        null, null, null, null);
+            }
+
+            return registerTenantBasedUser(request, tenantOpt.get());
+        }
+
+        // Existing user registration logic for non-tenant roles
+        return registerRegularUser(request);
+    }
+
+    /**
+     * Register tenant-based users (SUPER_ADMIN, ADMIN, USER)
+     */
+    private AuthResponse registerTenantBasedUser(RegisterRequest request, Tenant tenant) {
+        try {
+            // Get role information
+            Optional<UserRole> roleOpt = userRoleRepository.findByRoleIgnoreCase(request.getRole());
+            if (roleOpt.isEmpty()) {
+                return new AuthResponse(null, null, null, null,
+                        AppConstants.STATUS_FAILED,
+                        "Role not found: " + request.getRole(),
+                        null, null, null, null);
+            }
+
+            UserRole role = roleOpt.get();
+
+            // Check for existing users in both tables
+            if (tenantUserRepository.existsByEmail(request.getEmail())) {
+                return new AuthResponse(null, null, null, null,
+                        AppConstants.STATUS_FAILED,
+                        AppConstants.ERROR_MESSAGE_EMAIL_EXISTS,
+                        null, null, null, null);
+            }
+
+            if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+                return new AuthResponse(null, null, null, null,
+                        AppConstants.STATUS_FAILED,
+                        AppConstants.ERROR_MESSAGE_EMAIL_EXISTS,
+                        null, null, null, null);
+            }
+
+            if (request.getMobileNumber() != null && tenantUserRepository.existsByMobileNumber(request.getMobileNumber())) {
+                return new AuthResponse(null, null, null, null,
+                        AppConstants.STATUS_FAILED,
+                        AppConstants.ERROR_MESSAGE_MOBILE_EXISTS,
+                        null, null, null, null);
+            }
+
+            // Encrypt password
+            String encryptedPassword = aesUtils.encrypt(request.getPassword());
+
+            if ("SUPER_ADMIN".equalsIgnoreCase(request.getRole()) || "ADMIN".equalsIgnoreCase(request.getRole())) {
+                return registerToTenantUserTable(request, tenant, role, encryptedPassword);
+            } else if ("USER".equalsIgnoreCase(request.getRole())) {
+                return registerToUsersTableWithTenant(request, tenant, role, encryptedPassword);
+            }
+
+            return new AuthResponse(null, null, null, null,
+                    AppConstants.STATUS_FAILED,
+                    "Unsupported tenant role: " + request.getRole(),
+                    null, null, null, null);
+
+        } catch (Exception e) {
+            log.error("Error during tenant-based user registration: {}", e.getMessage(), e);
+            return new AuthResponse(null, null, null, null,
+                    AppConstants.STATUS_FAILED,
+                    AppConstants.ERROR_MESSAGE_REGISTRATION,
+                    null, null, null, null);
+        }
+    }
+
+    /**
+     * Register SUPER_ADMIN and ADMIN to tenant_user table
+     */
+    private AuthResponse registerToTenantUserTable(RegisterRequest request, Tenant tenant, UserRole role, String encryptedPassword) {
+        // Check if SUPER_ADMIN already exists for this tenant
+        if ("SUPER_ADMIN".equalsIgnoreCase(request.getRole())) {
+            if (!tenantUserRepository.findByTenantIdAndRoleId(tenant.getTenantId(), role.getRoleId()).isEmpty()) {
+                return new AuthResponse(null, null, null, null,
+                        AppConstants.STATUS_FAILED,
+                        "A SUPER_ADMIN already exists for this tenant",
+                        null, null, null, null);
+            }
+        }
+
+        TenantUser tenantUser = new TenantUser();
+        tenantUser.setTenantId(tenant.getTenantId());
+        tenantUser.setPlatformUserId(1L); // Default platform user ID
+        tenantUser.setRoleId(role.getRoleId());
+        tenantUser.setName(request.getName());
+        tenantUser.setEmail(request.getEmail());
+        tenantUser.setMobileNumber(request.getMobileNumber());
+        tenantUser.setPassword(encryptedPassword);
+        tenantUser.setPasswordEncryptionKeyVersion(encryptionKeyService.getLatestKey().getKeyVersion());
+        tenantUser.setIsActive(true);
+        tenantUser.setLoginAttempts(0);
+        tenantUser.setAccountLocked(false);
+
+        tenantUser = tenantUserRepository.save(tenantUser);
+
+        String jwtToken = jwtUtil.generateTokenWithUserDetails(
+                tenantUser.getEmail(),
+                tenantUser.getTenantUserId(),
+                tenantUser.getName(),
+                role.getRole()
+        );
+
+        log.info("Tenant user registration successful for email: {} with role: {}", request.getEmail(), request.getRole());
+
+        return new AuthResponse(
+                jwtToken,
+                role.getRole(),
+                tenantUser.getTenantUserId(),
+                tenantUser.getName(),
+                AppConstants.STATUS_SUCCESS,
+                AppConstants.SUCCESS_MESSAGE_REGISTRATION_SUCCESSFUL,
+                LocalDateTime.now(),
+                true,
+                0,
+                false
+        );
+    }
+
+    /**
+     * Register USER to users table with tenant reference
+     */
+    private AuthResponse registerToUsersTableWithTenant(RegisterRequest request, Tenant tenant, UserRole role, String encryptedPassword) {
+        // First create tenant_user entry
+        TenantUser tenantUser = new TenantUser();
+        tenantUser.setTenantId(tenant.getTenantId());
+        tenantUser.setPlatformUserId(1L); // Default platform user ID
+        tenantUser.setRoleId(role.getRoleId());
+        tenantUser.setName(request.getName());
+        tenantUser.setEmail(request.getEmail());
+        tenantUser.setMobileNumber(request.getMobileNumber());
+        tenantUser.setPassword(encryptedPassword);
+        tenantUser.setPasswordEncryptionKeyVersion(encryptionKeyService.getLatestKey().getKeyVersion());
+        tenantUser.setIsActive(true);
+        tenantUser.setLoginAttempts(0);
+        tenantUser.setAccountLocked(false);
+
+        tenantUser = tenantUserRepository.save(tenantUser);
+
+        // Then create user entry referencing tenant_user
+        User user = new User();
+        user.setTenantUserId(tenantUser.getTenantUserId());
+        user.setName(request.getName());
+        user.setEmail(request.getEmail());
+        user.setMobileNumber(request.getMobileNumber());
+        user.setPassword(encryptedPassword);
+        user.setPasswordEncryptionKeyVersion(encryptionKeyService.getLatestKey().getKeyVersion());
+        user.setRoleId(role.getRoleId());
+        user.setIsActive(true);
+        user.setLoginAttempts(0);
+        user.setAccountLocked(false);
+
+        user = userRepository.save(user);
+
+        String jwtToken = jwtUtil.generateTokenWithUserDetails(
+                user.getEmail(),
+                user.getUserId(),
+                user.getName(),
+                role.getRole()
+        );
+
+        log.info("User registration successful for email: {} with role: {}", request.getEmail(), request.getRole());
+
+        return new AuthResponse(
+                jwtToken,
+                role.getRole(),
+                user.getUserId(),
+                user.getName(),
+                AppConstants.STATUS_SUCCESS,
+                AppConstants.SUCCESS_MESSAGE_REGISTRATION_SUCCESSFUL,
+                LocalDateTime.now(),
+                true,
+                0,
+                false
+        );
+    }
+
+    /**
+     * Register regular users (non-tenant based) - existing logic
+     */
+    private AuthResponse registerRegularUser(RegisterRequest request) {
         Optional<User> existingUser = userRepository.findByEmailOrMobileNumber(
                 request.getEmail(), request.getMobileNumber()
         );
@@ -131,10 +341,17 @@ public class AuthService {
 
     /**
      * Login using email + password (AES-encrypted password in DB).
+     * Handles both tenant_user table (SUPER_ADMIN, ADMIN) and users table (USER) logins.
      */
     public AuthResponse login(LoginRequest request) {
-        Optional<User> optionalUser = userRepository.findByEmail(request.getEmail());
+        // First check in tenant_user table for SUPER_ADMIN/ADMIN
+        Optional<TenantUser> tenantUserOpt = tenantUserRepository.findActiveByEmail(request.getEmail());
+        if (tenantUserOpt.isPresent()) {
+            return loginTenantUser(request, tenantUserOpt.get());
+        }
 
+        // Then check in users table for USER role
+        Optional<User> optionalUser = userRepository.findByEmail(request.getEmail());
         if (optionalUser.isEmpty()) {
             return new AuthResponse(null, null, null, null,
                     AppConstants.STATUS_FAILED,
@@ -142,9 +359,83 @@ public class AuthService {
                     null, null, null, null);
         }
 
-        User user = optionalUser.get();
-        LocalDateTime previousLoginTime = user.getLastLoginTime();
+        return loginRegularUser(request, optionalUser.get());
+    }
 
+    /**
+     * Login for tenant users (SUPER_ADMIN, ADMIN)
+     */
+    private AuthResponse loginTenantUser(LoginRequest request, TenantUser tenantUser) {
+        if (!tenantUser.getIsActive()) {
+            return new AuthResponse(null, null, null, null,
+                    AppConstants.STATUS_FAILED,
+                    AppConstants.ERROR_MESSAGE_INACTIVE_ACCOUNT,
+                    null, false, tenantUser.getLoginAttempts(), tenantUser.getAccountLocked());
+        }
+
+        if (Boolean.TRUE.equals(tenantUser.getAccountLocked())) {
+            return new AuthResponse(null, null, null, null,
+                    AppConstants.STATUS_FAILED,
+                    AppConstants.ERROR_MESSAGE_ACCOUNT_LOCKED,
+                    null, true, tenantUser.getLoginAttempts(), true);
+        }
+
+        try {
+            String decryptedPassword = aesUtils.decrypt(tenantUser.getPassword(),
+                    tenantUser.getPasswordEncryptionKeyVersion());
+
+            if (!request.getPassword().equals(decryptedPassword)) {
+                tenantUser.setLoginAttempts(tenantUser.getLoginAttempts() + 1);
+                if (tenantUser.getLoginAttempts() >= 5) {
+                    tenantUser.setAccountLocked(true);
+                }
+                tenantUserRepository.save(tenantUser);
+                return new AuthResponse(null, null, null, null,
+                        AppConstants.STATUS_FAILED,
+                        AppConstants.ERROR_MESSAGE_INVALID_LOGIN,
+                        null, tenantUser.getIsActive(), tenantUser.getLoginAttempts(), tenantUser.getAccountLocked());
+            }
+        } catch (Exception e) {
+            log.error("Error decrypting password for tenant user {}: {}", request.getEmail(), e.getMessage());
+            return new AuthResponse(null, null, null, null,
+                    AppConstants.STATUS_FAILED,
+                    AppConstants.ERROR_MESSAGE_LOGIN,
+                    null, tenantUser.getIsActive(), tenantUser.getLoginAttempts(), tenantUser.getAccountLocked());
+        }
+
+        // Update last login time and reset login attempts
+        tenantUser.setLoginAttempts(0);
+        tenantUser.setLastLoginTime(LocalDateTime.now());
+        tenantUserRepository.save(tenantUser);
+
+        Optional<UserRole> roleOpt = userRoleRepository.findById(tenantUser.getRoleId());
+        String roleName = roleOpt.map(UserRole::getRole).orElse("UNKNOWN");
+
+        String jwtToken = jwtUtil.generateTokenWithUserDetails(
+                tenantUser.getEmail(),
+                tenantUser.getTenantUserId(),
+                tenantUser.getName(),
+                roleName
+        );
+
+        return new AuthResponse(
+                jwtToken,
+                roleName,
+                tenantUser.getTenantUserId(),
+                tenantUser.getName(),
+                AppConstants.STATUS_SUCCESS,
+                AppConstants.LOGIN_SUCCESSFUL_MESSAGE,
+                tenantUser.getLastLoginTime(),
+                true,
+                0,
+                false
+        );
+    }
+
+    /**
+     * Login for regular users (USER role in users table)
+     */
+    private AuthResponse loginRegularUser(LoginRequest request, User user) {
         if (!user.getIsActive()) {
             return new AuthResponse(null, null, null, null,
                     AppConstants.STATUS_FAILED,
@@ -184,6 +475,7 @@ public class AuthService {
                     null, user.getIsActive(), user.getLoginAttempts(), user.getAccountLocked());
         }
 
+        // Update last login time and reset login attempts
         user.setLoginAttempts(0);
         user.setLastLoginTime(LocalDateTime.now());
         userRepository.save(user);
@@ -205,30 +497,25 @@ public class AuthService {
                 user.getName(),
                 AppConstants.STATUS_SUCCESS,
                 AppConstants.LOGIN_SUCCESSFUL_MESSAGE,
-                previousLoginTime,
+                user.getLastLoginTime(),
                 true,
                 0,
                 false
         );
     }
 
+    // ...existing methods (createRefreshCookieForUser, resetPassword, refreshToken, changePassword)...
+
     /**
      * Create and attach a refresh token cookie for the given user's email.
-     *
-     * @param email           user's email (subject for token)
-     * @param servletResponse HttpServletResponse to set cookie header
      */
     public void createRefreshCookieForUser(String email, HttpServletResponse servletResponse) {
-        // TTL for refresh token: 7 days (adjust as needed)
         long refreshTtlMs = 7L * 24L * 60L * 60L * 1000L;
-
-        // Generate refresh token (stateless JWT using JwtUtil generateToken with TTL override)
         String refreshToken = jwtUtil.generateToken(email, null, refreshTtlMs);
 
-        // Build HttpOnly cookie. Set secure=true in production (requires HTTPS).
         ResponseCookie cookie = ResponseCookie.from("refreshToken", refreshToken)
                 .httpOnly(true)
-                .secure(false) // <-- set to true in production
+                .secure(false)
                 .path("/")
                 .maxAge(Duration.ofMillis(refreshTtlMs))
                 .sameSite("Lax")
@@ -237,9 +524,6 @@ public class AuthService {
         servletResponse.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
     }
 
-    /**
-     * Reset password using OTP (simple flow using in-memory otpStore - adapt as needed).
-     */
     public ResponseEntity<ResponseDTO<Void>> resetPassword(ForgotPasswordResetRequest request) {
         String email = request.getEmail();
         String otp = request.getOtp();
@@ -270,10 +554,6 @@ public class AuthService {
         }
     }
 
-    /**
-     * Validate provided refresh token, issue a fresh access token and rotate refresh token.
-     * Returns AuthResponse with new access token in token field.
-     */
     public AuthResponse refreshToken(String refreshToken, HttpServletResponse servletResponse) {
         if (refreshToken == null || refreshToken.isBlank()) {
             return new AuthResponse(null, null, null, null,
@@ -281,10 +561,7 @@ public class AuthService {
         }
 
         try {
-            // Validate refresh token and extract username (will throw ExpiredJwtException if expired)
             String username = jwtUtil.extractUsername(refreshToken);
-
-            // Ensure the user still exists and is active
             Optional<User> optUser = userRepository.findByEmail(username);
             if (optUser.isEmpty()) {
                 return new AuthResponse(null, null, null, null,
@@ -296,27 +573,21 @@ public class AuthService {
                         AppConstants.STATUS_FAILED, AppConstants.ERROR_MESSAGE_INACTIVE_ACCOUNT, null, null, null, null);
             }
 
-            // Issue a fresh access token (default TTL via JwtUtil)
             String newAccessToken = jwtUtil.generateToken(user.getEmail());
-
-            // Rotate refresh token: create a new refresh token with longer TTL (e.g., 7 days)
-            long refreshTtlMs = 7L * 24L * 60L * 60L * 1000L; // 7 days
+            long refreshTtlMs = 7L * 24L * 60L * 60L * 1000L;
             String newRefreshToken = jwtUtil.generateToken(user.getEmail(), null, refreshTtlMs);
 
-            // Build secure HttpOnly cookie for refresh token
             ResponseCookie cookie = ResponseCookie.from("refreshToken", newRefreshToken)
                     .httpOnly(true)
-                    .secure(false) // set to true in production (when using HTTPS)
+                    .secure(false)
                     .path("/")
                     .maxAge(Duration.ofMillis(refreshTtlMs))
                     .sameSite("Lax")
                     .build();
 
             servletResponse.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
-
             String roleName = resolveRoleName(user.getRoleId());
 
-            // prepare response (reuse your AuthResponse constructor/semantics)
             return new AuthResponse(
                     newAccessToken,
                     roleName,
@@ -329,10 +600,6 @@ public class AuthService {
                     user.getLoginAttempts(),
                     user.getAccountLocked()
             );
-        } catch (io.jsonwebtoken.ExpiredJwtException eje) {
-            log.debug("Refresh token expired: {}", eje.getMessage());
-            return new AuthResponse(null, null, null, null,
-                    AppConstants.STATUS_FAILED, "Refresh token expired.", null, null, null, null);
         } catch (Exception ex) {
             log.error("Error during refreshToken: {}", ex.getMessage(), ex);
             return new AuthResponse(null, null, null, null,
@@ -390,11 +657,20 @@ public class AuthService {
     }
 
     // ---------------------------
-    // Helper methods - role mapping
+    // Helper methods
     // ---------------------------
 
     /**
-     * Resolve role name from DB by roleId. Returns "USER" as fallback if not found or null.
+     * Check if the role is tenant-based (requires tenant code for registration).
+     */
+    private boolean isTenantBasedRole(String role) {
+        return "SUPER_ADMIN".equalsIgnoreCase(role) ||
+               "ADMIN".equalsIgnoreCase(role) ||
+               "USER".equalsIgnoreCase(role);
+    }
+
+    /**
+     * Resolve role name from DB by roleId.
      */
     private String resolveRoleName(Long roleId) {
         if (roleId == null) {
@@ -406,8 +682,7 @@ public class AuthService {
     }
 
     /**
-     * Resolve roleId by role name. If roleName is null/blank, defaults to "USER".
-     * Throws IllegalArgumentException if role name is not found in DB.
+     * Resolve roleId by role name.
      */
     private Long resolveRoleId(String roleName) {
         String effective = (roleName == null || roleName.isBlank()) ? "USER" : roleName.trim();

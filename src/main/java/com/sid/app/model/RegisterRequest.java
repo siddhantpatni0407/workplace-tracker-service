@@ -25,4 +25,12 @@ public class RegisterRequest {
     @JsonProperty("role")
     private String role;
 
+    @JsonProperty("tenantCode")
+    private String tenantCode;
+
+    @JsonProperty("platformUserCode")
+    private String platformUserCode;
+
+    @JsonProperty("tenantUserCode")
+    private String tenantUserCode;
 }
