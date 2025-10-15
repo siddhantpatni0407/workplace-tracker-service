@@ -30,6 +30,11 @@ public interface TenantUserRepository extends JpaRepository<TenantUser, Long> {
 
     boolean existsByMobileNumber(String mobileNumber);
 
+    @Query("SELECT tu FROM TenantUser tu WHERE tu.adminCode = :adminCode AND tu.isActive = true")
+    Optional<TenantUser> findActiveByAdminCode(@Param("adminCode") String adminCode);
+
+    boolean existsByAdminCode(String adminCode);
+
     Optional<TenantUser> findByTenantUserCode(String tenantUserCode);
 
     @Query("SELECT tu FROM TenantUser tu WHERE tu.tenantUserCode = :code AND tu.isActive = true")

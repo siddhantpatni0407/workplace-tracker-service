@@ -43,6 +43,9 @@ public class TenantUser extends Auditable {
     @Column(name = "tenant_user_code", nullable = false, unique = true, length = 20)
     private String tenantUserCode;
 
+    @Column(name = "admin_code", unique = true, length = 20)
+    private String adminCode; // Unique code for Admin users to allow USER/MANAGER registration mapping
+
     @Column(name = "mobile_number", unique = true, length = 20)
     private String mobileNumber;
 

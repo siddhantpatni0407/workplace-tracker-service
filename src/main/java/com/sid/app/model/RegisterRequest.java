@@ -33,4 +33,7 @@ public class RegisterRequest {
 
     @JsonProperty("tenantUserCode")
     private String tenantUserCode;
+
+    @JsonProperty("adminCode")
+    private String adminCode; // Required for USER/MANAGER registration to map them to a specific Admin
 }

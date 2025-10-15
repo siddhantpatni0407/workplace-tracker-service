@@ -24,7 +24,7 @@ public class User extends Auditable {
     private Long userId;
 
     @Column(name = "tenant_user_id", nullable = false)
-    private Long tenantUserId;
+    private Long tenantUserId; // References the Admin user (from tenant_user table) for USER/MANAGER roles
 
     @Column(name = "name", length = 50, nullable = false)
     private String name;
@@ -62,5 +62,5 @@ public class User extends Auditable {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tenant_user_id", insertable = false, updatable = false)
-    private TenantUser tenantUser;
+    private TenantUser tenantUser; // For USER/MANAGER, this will be the Admin they're mapped to
 }
