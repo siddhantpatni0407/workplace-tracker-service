@@ -16,6 +16,7 @@ import com.sid.app.repository.UserRepository;
 import com.sid.app.repository.UserRoleRepository;
 import com.sid.app.repository.TenantRepository;
 import com.sid.app.repository.TenantUserRepository;
+import com.sid.app.repository.PlatformUserRepository;
 import com.sid.app.utils.AESUtils;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
