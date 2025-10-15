@@ -73,14 +73,12 @@ public class AuthService {
 
             // Validate tenant exists and is active
             Optional<Tenant> tenantOpt = tenantRepository.findActiveByTenantCode(request.getTenantCode());
-            if (tenantOpt.isEmpty()) {
-                return new AuthResponse(null, null, null, null,
-                        AppConstants.STATUS_FAILED,
-                        "Invalid or inactive tenant code: " + request.getTenantCode(),
-                        null, null, null, null);
-            }
+            return tenantOpt.map(tenant -> registerTenantBasedUser(request, tenant))
+                    .orElseGet(() -> new AuthResponse(null, null, null, null,
+                            AppConstants.STATUS_FAILED,
+                            "Invalid or inactive tenant code: " + request.getTenantCode(),
+                            null, null, null, null));
 
-            return registerTenantBasedUser(request, tenantOpt.get());
         }
 
         // Existing user registration logic for non-tenant roles
@@ -88,7 +86,7 @@ public class AuthService {
     }
 
     /**
-     * Register tenant-based users (SUPER_ADMIN, ADMIN, USER)
+     * Register tenant-based users (SUPER_ADMIN, ADMIN only)
      */
     private AuthResponse registerTenantBasedUser(RegisterRequest request, Tenant tenant) {
         try {
@@ -128,10 +126,9 @@ public class AuthService {
             // Encrypt password
             String encryptedPassword = aesUtils.encrypt(request.getPassword());
 
+            // Only SUPER_ADMIN and ADMIN are handled here
             if ("SUPER_ADMIN".equalsIgnoreCase(request.getRole()) || "ADMIN".equalsIgnoreCase(request.getRole())) {
                 return registerToTenantUserTable(request, tenant, role, encryptedPassword);
-            } else if ("USER".equalsIgnoreCase(request.getRole())) {
-                return registerToUsersTableWithTenant(request, tenant, role, encryptedPassword);
             }
 
             return new AuthResponse(null, null, null, null,
@@ -191,64 +188,6 @@ public class AuthService {
                 role.getRole(),
                 tenantUser.getTenantUserId(),
                 tenantUser.getName(),
-                AppConstants.STATUS_SUCCESS,
-                AppConstants.SUCCESS_MESSAGE_REGISTRATION_SUCCESSFUL,
-                LocalDateTime.now(),
-                true,
-                0,
-                false
-        );
-    }
-
-    /**
-     * Register USER to users table with tenant reference
-     */
-    private AuthResponse registerToUsersTableWithTenant(RegisterRequest request, Tenant tenant, UserRole role, String encryptedPassword) {
-        // First create tenant_user entry
-        TenantUser tenantUser = new TenantUser();
-        tenantUser.setTenantId(tenant.getTenantId());
-        tenantUser.setPlatformUserId(1L); // Default platform user ID
-        tenantUser.setRoleId(role.getRoleId());
-        tenantUser.setName(request.getName());
-        tenantUser.setEmail(request.getEmail());
-        tenantUser.setMobileNumber(request.getMobileNumber());
-        tenantUser.setPassword(encryptedPassword);
-        tenantUser.setPasswordEncryptionKeyVersion(encryptionKeyService.getLatestKey().getKeyVersion());
-        tenantUser.setIsActive(true);
-        tenantUser.setLoginAttempts(0);
-        tenantUser.setAccountLocked(false);
-
-        tenantUser = tenantUserRepository.save(tenantUser);
-
-        // Then create user entry referencing tenant_user
-        User user = new User();
-        user.setTenantUserId(tenantUser.getTenantUserId());
-        user.setName(request.getName());
-        user.setEmail(request.getEmail());
-        user.setMobileNumber(request.getMobileNumber());
-        user.setPassword(encryptedPassword);
-        user.setPasswordEncryptionKeyVersion(encryptionKeyService.getLatestKey().getKeyVersion());
-        user.setRoleId(role.getRoleId());
-        user.setIsActive(true);
-        user.setLoginAttempts(0);
-        user.setAccountLocked(false);
-
-        user = userRepository.save(user);
-
-        String jwtToken = jwtUtil.generateTokenWithUserDetails(
-                user.getEmail(),
-                user.getUserId(),
-                user.getName(),
-                role.getRole()
-        );
-
-        log.info("User registration successful for email: {} with role: {}", request.getEmail(), request.getRole());
-
-        return new AuthResponse(
-                jwtToken,
-                role.getRole(),
-                user.getUserId(),
-                user.getName(),
                 AppConstants.STATUS_SUCCESS,
                 AppConstants.SUCCESS_MESSAGE_REGISTRATION_SUCCESSFUL,
                 LocalDateTime.now(),
@@ -666,8 +605,7 @@ public class AuthService {
      */
     private boolean isTenantBasedRole(String role) {
         return "SUPER_ADMIN".equalsIgnoreCase(role) ||
-               "ADMIN".equalsIgnoreCase(role) ||
-               "USER".equalsIgnoreCase(role);
+                "ADMIN".equalsIgnoreCase(role);
     }
 
     /**
