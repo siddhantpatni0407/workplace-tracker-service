@@ -49,6 +49,7 @@ CREATE INDEX IF NOT EXISTS idx_user_role_role ON user_role(role);
 CREATE TABLE IF NOT EXISTS platform_user (
     platform_user_id BIGSERIAL PRIMARY KEY,
     role_id BIGINT NOT NULL,  -- PLATFORM_USER
+    platform_user_code VARCHAR(20) UNIQUE NOT NULL,
     name VARCHAR(100) NOT NULL,
     email VARCHAR(150) UNIQUE NOT NULL,
     mobile_number VARCHAR(20) UNIQUE,
@@ -67,6 +68,7 @@ CREATE INDEX IF NOT EXISTS idx_platform_user_email ON platform_user(email);
 CREATE INDEX IF NOT EXISTS idx_platform_user_mobile ON platform_user(mobile_number);
 CREATE INDEX IF NOT EXISTS idx_platform_user_role_id ON platform_user(role_id);
 
+CREATE INDEX IF NOT EXISTS idx_platform_user_code ON platform_user(platform_user_code);
 
 -- =========================
 -- App subscription table
@@ -122,6 +124,7 @@ CREATE TABLE IF NOT EXISTS tenant_user (
     tenant_id BIGINT NOT NULL,
     platform_user_id BIGINT NOT NULL,
     role_id BIGINT NOT NULL,           -- SUPER_ADMIN or ADMIN
+    tenant_user_code VARCHAR(20) UNIQUE NOT NULL,
     manager_tenant_user_id BIGINT NULL,
     name VARCHAR(100) NOT NULL,
     email VARCHAR(150) UNIQUE NOT NULL,
@@ -147,6 +150,7 @@ CREATE INDEX IF NOT EXISTS idx_tenant_user_role_id ON tenant_user(role_id);
 CREATE INDEX IF NOT EXISTS idx_tenant_user_email ON tenant_user(email);
 CREATE INDEX IF NOT EXISTS idx_tenant_user_mobile ON tenant_user(mobile_number);
 
+CREATE INDEX IF NOT EXISTS idx_tenant_user_code ON tenant_user(tenant_user_code);
 
 -- =========================
 -- Users table (mapped to tenant_user)
