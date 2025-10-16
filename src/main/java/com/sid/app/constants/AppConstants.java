@@ -153,6 +153,24 @@ public class AppConstants {
     public static final String ERROR_MESSAGE_INACTIVE_ACCOUNT = "Account is inactive.";
     public static final String ERROR_MESSAGE_REGISTRATION = "Registration failed.";
     public static final String ERROR_MESSAGE_LOGIN = "Login failed.";
+
+    // Tenant Management messages
+    public static final String SUCCESS_TENANT_CREATED = "Tenant created successfully";
+    public static final String SUCCESS_TENANT_UPDATED = "Tenant updated successfully";
+    public static final String SUCCESS_TENANT_DELETED = "Tenant deleted successfully";
+    public static final String SUCCESS_TENANT_STATUS_UPDATED = "Tenant status updated successfully";
+    public static final String SUCCESS_TENANTS_RETRIEVED = "Tenants retrieved successfully";
+    public static final String SUCCESS_TENANT_RETRIEVED = "Tenant retrieved successfully";
+    public static final String SUCCESS_TENANT_STATS_RETRIEVED = "Tenant statistics retrieved successfully";
+    public static final String SUCCESS_TENANT_USERS_RETRIEVED = "Tenant users retrieved successfully";
+    public static final String ERROR_TENANT_NOT_FOUND = "Tenant not found";
+    public static final String ERROR_TENANT_NAME_EXISTS = "Tenant name already exists";
+    public static final String ERROR_TENANT_CODE_EXISTS = "Tenant code already exists";
+    public static final String ERROR_INVALID_SUBSCRIPTION = "Invalid or inactive subscription";
+    public static final String ERROR_TENANT_CREATION_FAILED = "Failed to create tenant";
+    public static final String ERROR_TENANT_UPDATE_FAILED = "Failed to update tenant";
+
+    // Analytics messages
     public static final String SUCCESS_ANALYTICS_RETRIEVED = "Analytics aggregated data retrieved";
     public static final String ERROR_INVALID_ANALYTICS_PARAMS = "Invalid analytics parameters. Provide from, to and groupBy(month|year|week)";
     public static final String SUCCESS_BALANCE_ADJUSTED = "Balance adjusted";
@@ -197,4 +215,30 @@ public class AppConstants {
      * Default user.
      */
     public static final String DEFAULT_USER = "DEFAULT_USER";
+
+    // Tenant Management endpoints (Platform User only) - Updated to use RequestParam instead of PathVariable
+    public static final String TENANTS_ENDPOINT = "/api/v1/workplace-tracker-service/tenants";
+    public static final String TENANT_ENDPOINT = "/api/v1/workplace-tracker-service/tenant";
+    public static final String TENANT_STATUS_ENDPOINT = "/api/v1/workplace-tracker-service/tenant/status";
+    public static final String TENANT_SEARCH_ENDPOINT = "/api/v1/workplace-tracker-service/tenant/search";
+    public static final String TENANT_STATS_ENDPOINT = "/api/v1/workplace-tracker-service/tenant/stats";
+    public static final String ACTIVE_TENANTS_ENDPOINT = "/api/v1/workplace-tracker-service/tenants/active";
+    public static final String TENANT_USERS_ENDPOINT = "/api/v1/workplace-tracker-service/tenant/users";
+    public static final String TENANT_BY_ID_ENDPOINT = "/api/v1/workplace-tracker-service/tenant/by-id";
+    public static final String TENANT_BY_CODE_ENDPOINT = "/api/v1/workplace-tracker-service/tenant/by-code";
+    public static final String TENANT_DELETE_ENDPOINT = "/api/v1/workplace-tracker-service/tenant/delete";
+    public static final String TENANT_UPDATE_ENDPOINT = "/api/v1/workplace-tracker-service/tenant/update";
+
+    // Subscription Management endpoints (Platform User only)
+    public static final String SUBSCRIPTIONS_ENDPOINT = "/api/v1/workplace-tracker-service/subscriptions";
+    public static final String ACTIVE_SUBSCRIPTIONS_ENDPOINT = "/api/v1/workplace-tracker-service/subscriptions/active";
+    public static final String SUBSCRIPTION_BY_CODE_ENDPOINT = "/api/v1/workplace-tracker-service/subscription/by-code";
+
+    // Subscription Management messages
+    public static final String SUCCESS_SUBSCRIPTIONS_RETRIEVED = "Subscriptions retrieved successfully";
+    public static final String SUCCESS_ACTIVE_SUBSCRIPTIONS_RETRIEVED = "Active subscriptions retrieved successfully";
+    public static final String SUCCESS_SUBSCRIPTION_RETRIEVED = "Subscription retrieved successfully";
+    public static final String ERROR_SUBSCRIPTION_NOT_FOUND = "Subscription not found";
+    public static final String ERROR_NO_SUBSCRIPTIONS_FOUND = "No subscriptions found";
+    public static final String ERROR_INVALID_SUBSCRIPTION_CODE = "Invalid subscription code";
 }

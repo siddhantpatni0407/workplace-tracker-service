@@ -40,6 +40,18 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("SELECT u FROM User u WHERE u.tenantUserId = :tenantUserId AND u.isActive = true")
     List<User> findActiveByTenantUserId(@Param("tenantUserId") Long tenantUserId);
 
+    /**
+     * Count users by tenant user ID
+     */
+    @Query("SELECT COUNT(u) FROM User u WHERE u.tenantUserId = :tenantUserId")
+    Long countByTenantUserId(@Param("tenantUserId") Long tenantUserId);
+
+    /**
+     * Count active users by tenant user ID
+     */
+    @Query("SELECT COUNT(u) FROM User u WHERE u.tenantUserId = :tenantUserId AND u.isActive = true")
+    Long countActiveByTenantUserId(@Param("tenantUserId") Long tenantUserId);
+
     @Modifying
     @Query(value = "UPDATE users SET password = :password, password_encryption_key_version = :keyVersion, modified_date = now() WHERE user_id = :userId", nativeQuery = true)
     int updatePassword(@Param("userId") Long userId,

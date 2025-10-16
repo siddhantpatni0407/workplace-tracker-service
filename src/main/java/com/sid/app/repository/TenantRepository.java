@@ -31,4 +31,7 @@ public interface TenantRepository extends JpaRepository<Tenant, Long> {
     Optional<Tenant> findActiveByTenantCode(@Param("code") String tenantCode);
 
     boolean existsByTenantCode(String tenantCode);
+
+    @Query("SELECT t FROM Tenant t WHERE t.tenantName LIKE %:searchTerm% ORDER BY t.tenantName")
+    List<Tenant> findByTenantNameContainingIgnoreCase(@Param("searchTerm") String searchTerm);
 }

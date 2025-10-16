@@ -36,4 +36,10 @@ public interface TenantUserRepository extends JpaRepository<TenantUser, Long> {
     Optional<TenantUser> findActiveByTenantUserCode(@Param("code") String tenantUserCode);
 
     boolean existsByTenantUserCode(String tenantUserCode);
+
+    @Query("SELECT COUNT(tu) FROM TenantUser tu WHERE tu.tenantId = :tenantId")
+    Long countByTenantId(@Param("tenantId") Long tenantId);
+
+    @Query("SELECT COUNT(tu) FROM TenantUser tu WHERE tu.tenantId = :tenantId AND tu.isActive = true")
+    Long countActiveByTenantId(@Param("tenantId") Long tenantId);
 }
