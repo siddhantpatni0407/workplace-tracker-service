@@ -165,9 +165,9 @@ public class TenantController {
     /**
      * Get tenant by ID
      */
-    @GetMapping(AppConstants.TENANT_ENDPOINT + "/{tenantId}")
+    @GetMapping(AppConstants.TENANT_BY_ID_ENDPOINT)
     @RequiredRole({"PLATFORM_USER"})
-    public ResponseEntity<ResponseDTO<TenantDTO>> getTenantById(@PathVariable Long tenantId) {
+    public ResponseEntity<ResponseDTO<TenantDTO>> getTenantById(@RequestParam Long tenantId) {
         log.info("getTenantById() : Fetching tenant with ID: {}", tenantId);
 
         try {
@@ -203,9 +203,9 @@ public class TenantController {
     /**
      * Get tenant by code
      */
-    @GetMapping(AppConstants.TENANT_ENDPOINT + "/code/{tenantCode}")
+    @GetMapping(AppConstants.TENANT_BY_CODE_ENDPOINT)
     @RequiredRole({"PLATFORM_USER"})
-    public ResponseEntity<ResponseDTO<TenantDTO>> getTenantByCode(@PathVariable String tenantCode) {
+    public ResponseEntity<ResponseDTO<TenantDTO>> getTenantByCode(@RequestParam String tenantCode) {
         log.info("getTenantByCode() : Fetching tenant with code: {}", tenantCode);
 
         try {
@@ -241,9 +241,9 @@ public class TenantController {
     /**
      * Update tenant
      */
-    @PutMapping(value = AppConstants.TENANT_ENDPOINT + "/{tenantId}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(value = AppConstants.TENANT_UPDATE_ENDPOINT, consumes = MediaType.APPLICATION_JSON_VALUE)
     @RequiredRole({"PLATFORM_USER"})
-    public ResponseEntity<ResponseDTO<TenantDTO>> updateTenant(@PathVariable Long tenantId,
+    public ResponseEntity<ResponseDTO<TenantDTO>> updateTenant(@RequestParam Long tenantId,
                                                                @Valid @RequestBody TenantUpdateRequest request) {
 
         log.info("updateTenant() : Received request to update tenant ID {}: {}",
