@@ -100,9 +100,10 @@ public class AuthController {
                 break;
 
             case "ADMIN":
-                if (isBlank(request.getTenantCode())) {
-                    return createErrorResponse("Tenant code is required for ADMIN role");
+                if (isBlank(request.getTenantUserCode())) {
+                    return createErrorResponse("Tenant user code is required for ADMIN role");
                 }
+                // Note: No tenantCode validation needed since we derive tenant info from SUPER_ADMIN
                 break;
 
             case "USER":

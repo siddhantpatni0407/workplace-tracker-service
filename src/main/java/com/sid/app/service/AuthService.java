@@ -135,11 +135,31 @@ public class AuthService {
                 if (isBlank(request.getTenantCode())) {
                     return createErrorResponse("Tenant code is required for ADMIN role");
                 }
+                if (isBlank(request.getTenantUserCode())) {
+                    return createErrorResponse("Tenant user code is required for ADMIN role");
+                }
 
                 // Validate tenant code
                 Optional<Tenant> adminTenantOpt = tenantRepository.findActiveByTenantCode(request.getTenantCode());
                 if (adminTenantOpt.isEmpty()) {
                     return createErrorResponse("Invalid or inactive tenant code: " + request.getTenantCode());
+                }
+
+                // Validate tenant user code and ensure it belongs to a SUPER_ADMIN
+                Optional<TenantUser> superAdminOpt = tenantUserRepository.findActiveByTenantUserCode(request.getTenantUserCode());
+                if (superAdminOpt.isEmpty()) {
+                    return createErrorResponse("Invalid or inactive tenant user code: " + request.getTenantUserCode());
+                }
+
+                // Ensure the tenant user code belongs to a SUPER_ADMIN
+                UserRole superAdminRole = userRoleRepository.findById(superAdminOpt.get().getRoleId()).orElse(null);
+                if (superAdminRole == null || !"SUPER_ADMIN".equalsIgnoreCase(superAdminRole.getRole())) {
+                    return createErrorResponse("Tenant user code must belong to a SUPER_ADMIN user");
+                }
+
+                // Ensure the SUPER_ADMIN belongs to the same tenant
+                if (!superAdminOpt.get().getTenantId().equals(adminTenantOpt.get().getTenantId())) {
+                    return createErrorResponse("SUPER_ADMIN tenant user code must belong to the same tenant");
                 }
                 break;
 
@@ -191,8 +211,8 @@ public class AuthService {
         // Check mobile number if provided
         if (request.getMobileNumber() != null) {
             if (userRepository.findByMobileNumber(request.getMobileNumber()).isPresent() ||
-                tenantUserRepository.existsByMobileNumber(request.getMobileNumber()) ||
-                platformUserRepository.findByMobileNumber(request.getMobileNumber()).isPresent()) {
+                    tenantUserRepository.existsByMobileNumber(request.getMobileNumber()) ||
+                    platformUserRepository.findByMobileNumber(request.getMobileNumber()).isPresent()) {
                 return createErrorResponse(AppConstants.ERROR_MESSAGE_MOBILE_EXISTS);
             }
         }
@@ -263,15 +283,22 @@ public class AuthService {
      */
     private AuthResponse registerAdmin(RegisterRequest request, UserRole role) {
         try {
-            Tenant tenant = tenantRepository.findActiveByTenantCode(request.getTenantCode()).get();
+            Optional<TenantUser> superAdminOpt = tenantUserRepository.findActiveByTenantUserCode(request.getTenantUserCode());
+            if (superAdminOpt.isEmpty()) {
+                return createErrorResponse("SUPER_ADMIN not found for tenant user code: " + request.getTenantUserCode());
+            }
+            TenantUser superAdmin = superAdminOpt.get();
+            Tenant tenant = tenantRepository.findById(superAdmin.getTenantId())
+                    .orElseThrow(() -> new UserNotFoundException("Associated tenant not found for SUPER_ADMIN"));
 
             String encryptedPassword = aesUtils.encrypt(request.getPassword());
 
             TenantUser tenantUser = new TenantUser();
             tenantUser.setTenantId(tenant.getTenantId());
-            tenantUser.setPlatformUserId(1L); // Default platform user ID
             tenantUser.setRoleId(role.getRoleId());
+            tenantUser.setPlatformUserId(superAdmin.getPlatformUserId()); // Use SUPER_ADMIN's platform user ID
             tenantUser.setTenantUserCode(codeGenerationService.generateTenantUserCode());
+            tenantUser.setManagerTenantUserId(superAdmin.getTenantUserId()); // Link ADMIN to authorizing SUPER_ADMIN
             tenantUser.setName(request.getName());
             tenantUser.setEmail(request.getEmail());
             tenantUser.setMobileNumber(request.getMobileNumber());
@@ -290,7 +317,8 @@ public class AuthService {
                     role.getRole()
             );
 
-            log.info("ADMIN registration successful for email: {}", request.getEmail());
+            log.info("ADMIN registration successful for email: {} under SUPER_ADMIN: {} (ID: {})",
+                    request.getEmail(), superAdmin.getEmail(), superAdmin.getTenantUserId());
 
             return new AuthResponse(
                     jwtToken,
