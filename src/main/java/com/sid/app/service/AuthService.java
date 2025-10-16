@@ -59,8 +59,8 @@ public class AuthService {
     /**
      * Enhanced register method with role-based code validation:
      * - SUPER_ADMIN: requires platformUserCode + tenantCode
-     * - ADMIN: requires tenantCode
-     * - USER/MANAGER: requires tenantUserCode
+     * - ADMIN: requires tenantUserCode (SUPER_ADMIN's code - tenant derived automatically)
+     * - USER/MANAGER: requires tenantUserCode (ADMIN's code)
      */
     public AuthResponse register(RegisterRequest request) {
         try {
@@ -132,17 +132,8 @@ public class AuthService {
                 break;
 
             case "ADMIN":
-                if (isBlank(request.getTenantCode())) {
-                    return createErrorResponse("Tenant code is required for ADMIN role");
-                }
                 if (isBlank(request.getTenantUserCode())) {
                     return createErrorResponse("Tenant user code is required for ADMIN role");
-                }
-
-                // Validate tenant code
-                Optional<Tenant> adminTenantOpt = tenantRepository.findActiveByTenantCode(request.getTenantCode());
-                if (adminTenantOpt.isEmpty()) {
-                    return createErrorResponse("Invalid or inactive tenant code: " + request.getTenantCode());
                 }
 
                 // Validate tenant user code and ensure it belongs to a SUPER_ADMIN
@@ -157,9 +148,10 @@ public class AuthService {
                     return createErrorResponse("Tenant user code must belong to a SUPER_ADMIN user");
                 }
 
-                // Ensure the SUPER_ADMIN belongs to the same tenant
-                if (!superAdminOpt.get().getTenantId().equals(adminTenantOpt.get().getTenantId())) {
-                    return createErrorResponse("SUPER_ADMIN tenant user code must belong to the same tenant");
+                // Validate that the SUPER_ADMIN's tenant exists and is active
+                Optional<Tenant> adminTenantOpt = tenantRepository.findById(superAdminOpt.get().getTenantId());
+                if (adminTenantOpt.isEmpty() || !adminTenantOpt.get().getIsActive()) {
+                    return createErrorResponse("SUPER_ADMIN's associated tenant is not active");
                 }
                 break;
 
