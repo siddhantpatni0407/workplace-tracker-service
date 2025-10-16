@@ -6,6 +6,7 @@ import com.sid.app.entity.User;
 import com.sid.app.entity.UserRole;
 import com.sid.app.entity.Tenant;
 import com.sid.app.entity.TenantUser;
+import com.sid.app.entity.PlatformUser;
 import com.sid.app.exception.UserNotFoundException;
 import com.sid.app.model.AuthResponse;
 import com.sid.app.model.LoginRequest;
@@ -46,242 +47,322 @@ public class AuthService {
     private final UserRoleRepository userRoleRepository;
     private final TenantRepository tenantRepository;
     private final TenantUserRepository tenantUserRepository;
+    private final PlatformUserRepository platformUserRepository;
     private final JwtUtil jwtUtil;
     private final BCryptPasswordEncoder passwordEncoder;
     private final AESUtils aesUtils;
     private final EncryptionKeyService encryptionKeyService;
     private final CodeGenerationService codeGenerationService;
-    private final PlatformUserRepository platformUserRepository;
 
     private static final ConcurrentHashMap<String, String> otpStore = new ConcurrentHashMap<>();
 
     /**
-     * Register new user with tenant support.
-     * - SUPER_ADMIN, ADMIN: saves to tenant_user table + requires tenantCode
-     * - USER: saves to users table + tenant_user table + requires tenantCode
-     * - Other roles: saves to users table without tenant validation (existing behavior)
+     * Enhanced register method with role-based code validation:
+     * - SUPER_ADMIN: requires platformUserCode + tenantCode
+     * - ADMIN: requires tenantCode
+     * - USER/MANAGER: requires tenantUserCode
      */
     public AuthResponse register(RegisterRequest request) {
-        // Validate tenant code for tenant-based roles
-        if (isTenantBasedRole(request.getRole())) {
-            if (request.getTenantCode() == null || request.getTenantCode().trim().isEmpty()) {
-                return new AuthResponse(null, null, null, null,
-                        AppConstants.STATUS_FAILED,
-                        "Tenant code is required for " + request.getRole() + " role registration",
-                        null, null, null, null);
-            }
-
-            // Validate tenant exists and is active
-            Optional<Tenant> tenantOpt = tenantRepository.findActiveByTenantCode(request.getTenantCode());
-            return tenantOpt.map(tenant -> registerTenantBasedUser(request, tenant))
-                    .orElseGet(() -> new AuthResponse(null, null, null, null,
-                            AppConstants.STATUS_FAILED,
-                            "Invalid or inactive tenant code: " + request.getTenantCode(),
-                            null, null, null, null));
-
-        }
-
-        // Existing user registration logic for non-tenant roles
-        return registerRegularUser(request);
-    }
-
-    /**
-     * Register tenant-based users (SUPER_ADMIN, ADMIN only)
-     */
-    private AuthResponse registerTenantBasedUser(RegisterRequest request, Tenant tenant) {
         try {
-            // Get role information
+            // Validate role exists
             Optional<UserRole> roleOpt = userRoleRepository.findByRoleIgnoreCase(request.getRole());
             if (roleOpt.isEmpty()) {
-                return new AuthResponse(null, null, null, null,
-                        AppConstants.STATUS_FAILED,
-                        "Role not found: " + request.getRole(),
-                        null, null, null, null);
+                return createErrorResponse("Role not found: " + request.getRole());
             }
 
             UserRole role = roleOpt.get();
 
-            // Check for existing users in both tables
-            if (tenantUserRepository.existsByEmail(request.getEmail())) {
-                return new AuthResponse(null, null, null, null,
-                        AppConstants.STATUS_FAILED,
-                        AppConstants.ERROR_MESSAGE_EMAIL_EXISTS,
-                        null, null, null, null);
+            // Validate required codes based on role
+            AuthResponse validationResponse = validateRoleBasedCodes(request, role);
+            if (!AppConstants.STATUS_SUCCESS.equals(validationResponse.getStatus())) {
+                return validationResponse;
             }
 
-            if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-                return new AuthResponse(null, null, null, null,
-                        AppConstants.STATUS_FAILED,
-                        AppConstants.ERROR_MESSAGE_EMAIL_EXISTS,
-                        null, null, null, null);
+            // Check for existing users
+            AuthResponse existingUserCheck = checkExistingUsers(request);
+            if (!AppConstants.STATUS_SUCCESS.equals(existingUserCheck.getStatus())) {
+                return existingUserCheck;
             }
 
-            if (request.getMobileNumber() != null && tenantUserRepository.existsByMobileNumber(request.getMobileNumber())) {
-                return new AuthResponse(null, null, null, null,
-                        AppConstants.STATUS_FAILED,
-                        AppConstants.ERROR_MESSAGE_MOBILE_EXISTS,
-                        null, null, null, null);
+            // Route to appropriate registration method based on role
+            switch (request.getRole().toUpperCase()) {
+                case "SUPER_ADMIN":
+                    return registerSuperAdmin(request, role);
+                case "ADMIN":
+                    return registerAdmin(request, role);
+                case "USER":
+                case "MANAGER":
+                    return registerUserOrManager(request, role);
+                default:
+                    return createErrorResponse("Unsupported role: " + request.getRole());
             }
-
-            // Encrypt password
-            String encryptedPassword = aesUtils.encrypt(request.getPassword());
-
-            // Only SUPER_ADMIN and ADMIN are handled here
-            if ("SUPER_ADMIN".equalsIgnoreCase(request.getRole()) || "ADMIN".equalsIgnoreCase(request.getRole())) {
-                return registerToTenantUserTable(request, tenant, role, encryptedPassword);
-            }
-
-            return new AuthResponse(null, null, null, null,
-                    AppConstants.STATUS_FAILED,
-                    "Unsupported tenant role: " + request.getRole(),
-                    null, null, null, null);
 
         } catch (Exception e) {
-            log.error("Error during tenant-based user registration: {}", e.getMessage(), e);
-            return new AuthResponse(null, null, null, null,
-                    AppConstants.STATUS_FAILED,
-                    AppConstants.ERROR_MESSAGE_REGISTRATION,
-                    null, null, null, null);
+            log.error("Error during user registration: {}", e.getMessage(), e);
+            return createErrorResponse(AppConstants.ERROR_MESSAGE_REGISTRATION);
         }
     }
 
     /**
-     * Register SUPER_ADMIN and ADMIN to tenant_user table
+     * Validate required codes based on role
      */
-    private AuthResponse registerToTenantUserTable(RegisterRequest request, Tenant tenant, UserRole role, String encryptedPassword) {
-        // Check if SUPER_ADMIN already exists for this tenant
-        if ("SUPER_ADMIN".equalsIgnoreCase(request.getRole())) {
-            if (!tenantUserRepository.findByTenantIdAndRoleId(tenant.getTenantId(), role.getRoleId()).isEmpty()) {
-                return new AuthResponse(null, null, null, null,
-                        AppConstants.STATUS_FAILED,
-                        "A SUPER_ADMIN already exists for this tenant",
-                        null, null, null, null);
-            }
+    private AuthResponse validateRoleBasedCodes(RegisterRequest request, UserRole role) {
+        String roleName = request.getRole().toUpperCase();
+
+        switch (roleName) {
+            case "SUPER_ADMIN":
+                if (isBlank(request.getPlatformUserCode())) {
+                    return createErrorResponse("Platform user code is required for SUPER_ADMIN role");
+                }
+                if (isBlank(request.getTenantCode())) {
+                    return createErrorResponse("Tenant code is required for SUPER_ADMIN role");
+                }
+
+                // Validate platform user code
+                Optional<PlatformUser> platformUserOpt = platformUserRepository.findByPlatformUserCode(request.getPlatformUserCode());
+                if (platformUserOpt.isEmpty() || !platformUserOpt.get().getIsActive()) {
+                    return createErrorResponse("Invalid or inactive platform user code: " + request.getPlatformUserCode());
+                }
+
+                // Validate tenant code
+                Optional<Tenant> tenantOpt = tenantRepository.findActiveByTenantCode(request.getTenantCode());
+                if (tenantOpt.isEmpty()) {
+                    return createErrorResponse("Invalid or inactive tenant code: " + request.getTenantCode());
+                }
+                break;
+
+            case "ADMIN":
+                if (isBlank(request.getTenantCode())) {
+                    return createErrorResponse("Tenant code is required for ADMIN role");
+                }
+
+                // Validate tenant code
+                Optional<Tenant> adminTenantOpt = tenantRepository.findActiveByTenantCode(request.getTenantCode());
+                if (adminTenantOpt.isEmpty()) {
+                    return createErrorResponse("Invalid or inactive tenant code: " + request.getTenantCode());
+                }
+                break;
+
+            case "USER":
+            case "MANAGER":
+                if (isBlank(request.getTenantUserCode())) {
+                    return createErrorResponse("Tenant user code is required for " + roleName + " role");
+                }
+
+                // Validate tenant user code (admin mapping)
+                Optional<TenantUser> adminUserOpt = tenantUserRepository.findActiveByTenantUserCode(request.getTenantUserCode());
+                if (adminUserOpt.isEmpty()) {
+                    return createErrorResponse("Invalid or inactive tenant user code: " + request.getTenantUserCode());
+                }
+
+                // Ensure the tenant user code belongs to an ADMIN
+                UserRole adminRole = userRoleRepository.findById(adminUserOpt.get().getRoleId()).orElse(null);
+                if (adminRole == null || !"ADMIN".equalsIgnoreCase(adminRole.getRole())) {
+                    return createErrorResponse("Tenant user code must belong to an ADMIN user");
+                }
+                break;
+
+            default:
+                return createErrorResponse("Unsupported role: " + roleName);
         }
 
-        TenantUser tenantUser = new TenantUser();
-        tenantUser.setTenantId(tenant.getTenantId());
-        tenantUser.setPlatformUserId(1L); // Default platform user ID
-        tenantUser.setRoleId(role.getRoleId());
-        tenantUser.setName(request.getName());
-        tenantUser.setEmail(request.getEmail());
-        tenantUser.setMobileNumber(request.getMobileNumber());
-        tenantUser.setPassword(encryptedPassword);
-        tenantUser.setPasswordEncryptionKeyVersion(encryptionKeyService.getLatestKey().getKeyVersion());
-        tenantUser.setIsActive(true);
-        tenantUser.setLoginAttempts(0);
-        tenantUser.setAccountLocked(false);
-
-        tenantUser = tenantUserRepository.save(tenantUser);
-
-        String jwtToken = jwtUtil.generateTokenWithUserDetails(
-                tenantUser.getEmail(),
-                tenantUser.getTenantUserId(),
-                tenantUser.getName(),
-                role.getRole()
-        );
-
-        log.info("Tenant user registration successful for email: {} with role: {}", request.getEmail(), request.getRole());
-
-        return new AuthResponse(
-                jwtToken,
-                role.getRole(),
-                tenantUser.getTenantUserId(),
-                tenantUser.getName(),
-                AppConstants.STATUS_SUCCESS,
-                AppConstants.SUCCESS_MESSAGE_REGISTRATION_SUCCESSFUL,
-                LocalDateTime.now(),
-                true,
-                0,
-                false
-        );
+        return new AuthResponse(null, null, null, null, AppConstants.STATUS_SUCCESS, null, null, null, null, null);
     }
 
     /**
-     * Register regular users (non-tenant based) - existing logic
+     * Check for existing users in all relevant tables
      */
-    private AuthResponse registerRegularUser(RegisterRequest request) {
-        Optional<User> existingUser = userRepository.findByEmailOrMobileNumber(
-                request.getEmail(), request.getMobileNumber()
-        );
+    private AuthResponse checkExistingUsers(RegisterRequest request) {
+        // Check in users table
+        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+            return createErrorResponse(AppConstants.ERROR_MESSAGE_EMAIL_EXISTS);
+        }
 
-        if (existingUser.isPresent()) {
-            User foundUser = existingUser.get();
-            if (foundUser.getEmail().equals(request.getEmail())) {
-                return new AuthResponse(null, null, null, null,
-                        AppConstants.STATUS_FAILED,
-                        AppConstants.ERROR_MESSAGE_EMAIL_EXISTS,
-                        null, null, null, null);
-            } else {
-                return new AuthResponse(null, null, null, null,
-                        AppConstants.STATUS_FAILED,
-                        AppConstants.ERROR_MESSAGE_MOBILE_EXISTS,
-                        null, null, null, null);
+        // Check in tenant_user table
+        if (tenantUserRepository.existsByEmail(request.getEmail())) {
+            return createErrorResponse(AppConstants.ERROR_MESSAGE_EMAIL_EXISTS);
+        }
+
+        // Check in platform_user table
+        if (platformUserRepository.findByEmail(request.getEmail()).isPresent()) {
+            return createErrorResponse(AppConstants.ERROR_MESSAGE_EMAIL_EXISTS);
+        }
+
+        // Check mobile number if provided
+        if (request.getMobileNumber() != null) {
+            if (userRepository.findByMobileNumber(request.getMobileNumber()).isPresent() ||
+                tenantUserRepository.existsByMobileNumber(request.getMobileNumber()) ||
+                platformUserRepository.findByMobileNumber(request.getMobileNumber()).isPresent()) {
+                return createErrorResponse(AppConstants.ERROR_MESSAGE_MOBILE_EXISTS);
             }
         }
 
+        return new AuthResponse(null, null, null, null, AppConstants.STATUS_SUCCESS, null, null, null, null, null);
+    }
+
+    /**
+     * Register SUPER_ADMIN to tenant_user table
+     */
+    private AuthResponse registerSuperAdmin(RegisterRequest request, UserRole role) {
         try {
-            // encrypt password using AES utils (your existing approach)
+            PlatformUser platformUser = platformUserRepository.findByPlatformUserCode(request.getPlatformUserCode()).get();
+            Tenant tenant = tenantRepository.findActiveByTenantCode(request.getTenantCode()).get();
+
+            // Check if SUPER_ADMIN already exists for this tenant
+            if (!tenantUserRepository.findByTenantIdAndRoleId(tenant.getTenantId(), role.getRoleId()).isEmpty()) {
+                return createErrorResponse("A SUPER_ADMIN already exists for this tenant");
+            }
+
             String encryptedPassword = aesUtils.encrypt(request.getPassword());
 
-            User newUser = new User();
-            newUser.setName(request.getName());
-            newUser.setEmail(request.getEmail());
-            newUser.setMobileNumber(request.getMobileNumber());
-            newUser.setPassword(encryptedPassword);
+            TenantUser tenantUser = new TenantUser();
+            tenantUser.setTenantId(tenant.getTenantId());
+            tenantUser.setPlatformUserId(platformUser.getPlatformUserId());
+            tenantUser.setRoleId(role.getRoleId());
+            tenantUser.setTenantUserCode(codeGenerationService.generateTenantUserCode());
+            tenantUser.setName(request.getName());
+            tenantUser.setEmail(request.getEmail());
+            tenantUser.setMobileNumber(request.getMobileNumber());
+            tenantUser.setPassword(encryptedPassword);
+            tenantUser.setPasswordEncryptionKeyVersion(encryptionKeyService.getLatestKey().getKeyVersion());
+            tenantUser.setIsActive(true);
+            tenantUser.setLoginAttempts(0);
+            tenantUser.setAccountLocked(false);
 
-            // map role string to role_id (throws IllegalArgumentException if invalid)
-            Long roleId = resolveRoleId(request.getRole());
-            newUser.setRoleId(roleId);
+            tenantUser = tenantUserRepository.save(tenantUser);
 
-            newUser.setPasswordEncryptionKeyVersion(encryptionKeyService.getLatestKey().getKeyVersion());
-            newUser.setIsActive(Boolean.FALSE);
-            newUser.setLoginAttempts(0);
-            newUser.setAccountLocked(Boolean.FALSE);
-
-            User savedUser = userRepository.save(newUser);
-
-            // resolve role name for response
-            String roleName = resolveRoleName(savedUser.getRoleId());
-
-            // Generate JWT token with user details
             String jwtToken = jwtUtil.generateTokenWithUserDetails(
-                    savedUser.getEmail(),
-                    savedUser.getUserId(),
-                    savedUser.getName(),
-                    roleName
+                    tenantUser.getEmail(),
+                    tenantUser.getTenantUserId(),
+                    tenantUser.getName(),
+                    role.getRole()
             );
+
+            log.info("SUPER_ADMIN registration successful for email: {}", request.getEmail());
 
             return new AuthResponse(
                     jwtToken,
-                    roleName,
-                    savedUser.getUserId(),
-                    savedUser.getName(),
+                    role.getRole(),
+                    tenantUser.getTenantUserId(),
+                    tenantUser.getName(),
                     AppConstants.STATUS_SUCCESS,
                     AppConstants.SUCCESS_MESSAGE_REGISTRATION_SUCCESSFUL,
-                    null,
+                    LocalDateTime.now(),
                     true,
                     0,
                     false
             );
-        } catch (IllegalArgumentException iae) {
-            log.warn("register() : Invalid role specified: {}", request.getRole());
-            return new AuthResponse(null, null, null, null,
-                    AppConstants.STATUS_FAILED,
-                    iae.getMessage(),
-                    null, null, null, null);
         } catch (Exception e) {
-            log.error("Error encrypting password or saving user: {}", e.getMessage(), e);
-            return new AuthResponse(null, null, null, null,
-                    AppConstants.STATUS_FAILED,
-                    AppConstants.ERROR_MESSAGE_REGISTRATION,
-                    null, null, null, null);
+            log.error("Error registering SUPER_ADMIN: {}", e.getMessage(), e);
+            return createErrorResponse(AppConstants.ERROR_MESSAGE_REGISTRATION);
+        }
+    }
+
+    /**
+     * Register ADMIN to tenant_user table
+     */
+    private AuthResponse registerAdmin(RegisterRequest request, UserRole role) {
+        try {
+            Tenant tenant = tenantRepository.findActiveByTenantCode(request.getTenantCode()).get();
+
+            String encryptedPassword = aesUtils.encrypt(request.getPassword());
+
+            TenantUser tenantUser = new TenantUser();
+            tenantUser.setTenantId(tenant.getTenantId());
+            tenantUser.setPlatformUserId(1L); // Default platform user ID
+            tenantUser.setRoleId(role.getRoleId());
+            tenantUser.setTenantUserCode(codeGenerationService.generateTenantUserCode());
+            tenantUser.setName(request.getName());
+            tenantUser.setEmail(request.getEmail());
+            tenantUser.setMobileNumber(request.getMobileNumber());
+            tenantUser.setPassword(encryptedPassword);
+            tenantUser.setPasswordEncryptionKeyVersion(encryptionKeyService.getLatestKey().getKeyVersion());
+            tenantUser.setIsActive(true);
+            tenantUser.setLoginAttempts(0);
+            tenantUser.setAccountLocked(false);
+
+            tenantUser = tenantUserRepository.save(tenantUser);
+
+            String jwtToken = jwtUtil.generateTokenWithUserDetails(
+                    tenantUser.getEmail(),
+                    tenantUser.getTenantUserId(),
+                    tenantUser.getName(),
+                    role.getRole()
+            );
+
+            log.info("ADMIN registration successful for email: {}", request.getEmail());
+
+            return new AuthResponse(
+                    jwtToken,
+                    role.getRole(),
+                    tenantUser.getTenantUserId(),
+                    tenantUser.getName(),
+                    AppConstants.STATUS_SUCCESS,
+                    AppConstants.SUCCESS_MESSAGE_REGISTRATION_SUCCESSFUL,
+                    LocalDateTime.now(),
+                    true,
+                    0,
+                    false
+            );
+        } catch (Exception e) {
+            log.error("Error registering ADMIN: {}", e.getMessage(), e);
+            return createErrorResponse(AppConstants.ERROR_MESSAGE_REGISTRATION);
+        }
+    }
+
+    /**
+     * Register USER/MANAGER to users table
+     */
+    private AuthResponse registerUserOrManager(RegisterRequest request, UserRole role) {
+        try {
+            TenantUser adminUser = tenantUserRepository.findActiveByTenantUserCode(request.getTenantUserCode()).get();
+
+            String encryptedPassword = aesUtils.encrypt(request.getPassword());
+
+            User newUser = new User();
+            newUser.setTenantUserId(adminUser.getTenantUserId());
+            newUser.setName(request.getName());
+            newUser.setEmail(request.getEmail());
+            newUser.setMobileNumber(request.getMobileNumber());
+            newUser.setPassword(encryptedPassword);
+            newUser.setRoleId(role.getRoleId());
+            newUser.setPasswordEncryptionKeyVersion(encryptionKeyService.getLatestKey().getKeyVersion());
+            newUser.setIsActive(true);
+            newUser.setLoginAttempts(0);
+            newUser.setAccountLocked(false);
+
+            User savedUser = userRepository.save(newUser);
+
+            String jwtToken = jwtUtil.generateTokenWithUserDetails(
+                    savedUser.getEmail(),
+                    savedUser.getUserId(),
+                    savedUser.getName(),
+                    role.getRole()
+            );
+
+            log.info("{} registration successful for email: {}", request.getRole(), request.getEmail());
+
+            return new AuthResponse(
+                    jwtToken,
+                    role.getRole(),
+                    savedUser.getUserId(),
+                    savedUser.getName(),
+                    AppConstants.STATUS_SUCCESS,
+                    AppConstants.SUCCESS_MESSAGE_REGISTRATION_SUCCESSFUL,
+                    LocalDateTime.now(),
+                    true,
+                    0,
+                    false
+            );
+        } catch (Exception e) {
+            log.error("Error registering {}: {}", request.getRole(), e.getMessage(), e);
+            return createErrorResponse(AppConstants.ERROR_MESSAGE_REGISTRATION);
         }
     }
 
     /**
      * Login using email + password (AES-encrypted password in DB).
-     * Handles both tenant_user table (SUPER_ADMIN, ADMIN) and users table (USER) logins.
+     * Handles both tenant_user table (SUPER_ADMIN, ADMIN) and users table (USER, MANAGER) logins.
      */
     public AuthResponse login(LoginRequest request) {
         // First check in tenant_user table for SUPER_ADMIN/ADMIN
@@ -290,13 +371,10 @@ public class AuthService {
             return loginTenantUser(request, tenantUserOpt.get());
         }
 
-        // Then check in users table for USER role
+        // Then check in users table for USER/MANAGER role
         Optional<User> optionalUser = userRepository.findByEmail(request.getEmail());
         if (optionalUser.isEmpty()) {
-            return new AuthResponse(null, null, null, null,
-                    AppConstants.STATUS_FAILED,
-                    AppConstants.ERROR_MESSAGE_USER_NOT_FOUND,
-                    null, null, null, null);
+            return createErrorResponse(AppConstants.ERROR_MESSAGE_USER_NOT_FOUND);
         }
 
         return loginRegularUser(request, optionalUser.get());
@@ -373,7 +451,7 @@ public class AuthService {
     }
 
     /**
-     * Login for regular users (USER role in users table)
+     * Login for regular users (USER, MANAGER role in users table)
      */
     private AuthResponse loginRegularUser(LoginRequest request, User user) {
         if (!user.getIsActive()) {
@@ -420,7 +498,8 @@ public class AuthService {
         user.setLastLoginTime(LocalDateTime.now());
         userRepository.save(user);
 
-        String roleName = resolveRoleName(user.getRoleId());
+        Optional<UserRole> roleOpt = userRoleRepository.findById(user.getRoleId());
+        String roleName = roleOpt.map(UserRole::getRole).orElse("UNKNOWN");
 
         // Generate JWT token with user details
         String jwtToken = jwtUtil.generateTokenWithUserDetails(
@@ -526,7 +605,9 @@ public class AuthService {
                     .build();
 
             servletResponse.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
-            String roleName = resolveRoleName(user.getRoleId());
+
+            Optional<UserRole> roleOpt = userRoleRepository.findById(user.getRoleId());
+            String roleName = roleOpt.map(UserRole::getRole).orElse("UNKNOWN");
 
             return new AuthResponse(
                     newAccessToken,
@@ -601,35 +682,17 @@ public class AuthService {
     // ---------------------------
 
     /**
-     * Check if the role is tenant-based (requires tenant code for registration).
+     * Helper method to create error response
      */
-    private boolean isTenantBasedRole(String role) {
-        return "SUPER_ADMIN".equalsIgnoreCase(role) ||
-                "ADMIN".equalsIgnoreCase(role);
+    private AuthResponse createErrorResponse(String message) {
+        return new AuthResponse(null, null, null, null,
+                AppConstants.STATUS_FAILED, message, null, null, null, null);
     }
 
     /**
-     * Resolve role name from DB by roleId.
+     * Helper method to check if string is blank
      */
-    private String resolveRoleName(Long roleId) {
-        if (roleId == null) {
-            return "USER";
-        }
-        return userRoleRepository.findById(roleId)
-                .map(UserRole::getRole)
-                .orElse("USER");
-    }
-
-    /**
-     * Resolve roleId by role name.
-     */
-    private Long resolveRoleId(String roleName) {
-        String effective = (roleName == null || roleName.isBlank()) ? "USER" : roleName.trim();
-        Optional<UserRole> roleOpt = userRoleRepository.findByRole(effective);
-        if (roleOpt.isPresent()) {
-            return roleOpt.get().getRoleId();
-        } else {
-            throw new IllegalArgumentException("Invalid role: " + roleName);
-        }
+    private boolean isBlank(String str) {
+        return str == null || str.trim().isEmpty();
     }
 }

@@ -33,11 +33,90 @@ public class AuthController {
     @Autowired
     private JwtAuthenticationContext jwtAuthenticationContext;
 
+    /**
+     * Enhanced register endpoint with role-based code validation:
+     * - SUPER_ADMIN: requires platformUserCode + tenantCode
+     * - ADMIN: requires tenantCode
+     * - USER/MANAGER: requires tenantUserCode
+     */
     @PostMapping(AppConstants.USER_REGISTER_ENDPOINT)
-    public ResponseEntity<AuthResponse> register(@RequestBody RegisterRequest request) {
+    public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
         log.info("Register request -> {}", ApplicationUtils.getJSONString(request));
+
+        // Validate basic request fields
+        AuthResponse validationResponse = validateRegisterRequest(request);
+        if (!AppConstants.STATUS_SUCCESS.equals(validationResponse.getStatus())) {
+            return ResponseEntity.badRequest().body(validationResponse);
+        }
+
+        // Process registration through service
         AuthResponse response = authService.register(request);
-        return ResponseEntity.ok(response);
+
+        if (AppConstants.STATUS_SUCCESS.equals(response.getStatus())) {
+            return ResponseEntity.ok(response);
+        } else {
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+
+    /**
+     * Validate register request based on role requirements
+     */
+    private AuthResponse validateRegisterRequest(RegisterRequest request) {
+        // Basic field validation
+        if (isBlank(request.getName())) {
+            return createErrorResponse("Name is required");
+        }
+        if (isBlank(request.getEmail())) {
+            return createErrorResponse("Email is required");
+        }
+        if (isBlank(request.getPassword())) {
+            return createErrorResponse("Password is required");
+        }
+        if (isBlank(request.getRole())) {
+            return createErrorResponse("Role is required");
+        }
+
+        // Email format validation (basic)
+        if (!request.getEmail().contains("@")) {
+            return createErrorResponse("Invalid email format");
+        }
+
+        // Password length validation
+        if (request.getPassword().length() < 8) {
+            return createErrorResponse("Password must be at least 8 characters long");
+        }
+
+        // Role-specific code validation
+        String role = request.getRole().toUpperCase();
+        switch (role) {
+            case "SUPER_ADMIN":
+                if (isBlank(request.getPlatformUserCode())) {
+                    return createErrorResponse("Platform user code is required for SUPER_ADMIN role");
+                }
+                if (isBlank(request.getTenantCode())) {
+                    return createErrorResponse("Tenant code is required for SUPER_ADMIN role");
+                }
+                break;
+
+            case "ADMIN":
+                if (isBlank(request.getTenantCode())) {
+                    return createErrorResponse("Tenant code is required for ADMIN role");
+                }
+                break;
+
+            case "USER":
+            case "MANAGER":
+                if (isBlank(request.getTenantUserCode())) {
+                    return createErrorResponse("Tenant user code is required for " + role + " role");
+                }
+                break;
+
+            default:
+                return createErrorResponse("Invalid role: " + request.getRole() + ". Supported roles: SUPER_ADMIN, ADMIN, USER, MANAGER");
+        }
+
+        return new AuthResponse(null, null, null, null, AppConstants.STATUS_SUCCESS, null, null, null, null, null);
     }
 
     @PostMapping(AppConstants.USER_LOGIN_ENDPOINT)
@@ -152,4 +231,12 @@ public class AuthController {
         }
     }
 
+    // Helper methods
+    private AuthResponse createErrorResponse(String message) {
+        return new AuthResponse(null, null, null, null, AppConstants.STATUS_FAILED, message, null, null, null, null);
+    }
+
+    private boolean isBlank(String str) {
+        return str == null || str.trim().isEmpty();
+    }
 }
