@@ -14,6 +14,9 @@ public interface TenantUserRepository extends JpaRepository<TenantUser, Long> {
 
     Optional<TenantUser> findByEmail(String email);
 
+    @Query("SELECT tu FROM TenantUser tu WHERE tu.tenantId = :tenantId")
+    List<TenantUser> findByTenantId(@Param("tenantId") Long tenantId);
+
     @Query("SELECT tu FROM TenantUser tu WHERE tu.tenantId = :tenantId AND tu.isActive = true")
     List<TenantUser> findActiveByTenantId(@Param("tenantId") Long tenantId);
 

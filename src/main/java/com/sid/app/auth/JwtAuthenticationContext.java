@@ -6,6 +6,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
+import com.sid.app.repository.UserRepository;
+import com.sid.app.entity.User;
+import java.util.Optional;
 
 /**
  * Utility class to extract user information from JWT tokens in controllers.
@@ -16,6 +19,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 public class JwtAuthenticationContext {
 
     private final JwtUtil jwtUtil;
+    private final UserRepository userRepository;
 
     /**
      * Extract the current authenticated user's ID from the JWT token.
@@ -86,6 +90,39 @@ public class JwtAuthenticationContext {
 
         // Check if user has admin privileges
         return "ADMIN".equals(currentUserRole) || "SUPER_ADMIN".equals(currentUserRole);
+    }
+
+    /**
+     * Extract the current authenticated user's tenant user ID from the database.
+     */
+    public Long getCurrentUserTenantUserId() {
+        Long currentUserId = getCurrentUserId();
+        log.info("getCurrentUserTenantUserId() : Current user ID from JWT: {}", currentUserId);
+
+        if (currentUserId == null) {
+            log.warn("getCurrentUserTenantUserId() : Current user ID is null");
+            return null;
+        }
+
+        try {
+            // First, try to find by user_id in users table
+            Optional<User> userOptional = userRepository.findById(currentUserId);
+            log.info("getCurrentUserTenantUserId() : User found in users table: {}", userOptional.isPresent());
+
+            if (userOptional.isPresent()) {
+                User user = userOptional.get();
+                Long tenantUserId = user.getTenantUserId();
+                log.info("getCurrentUserTenantUserId() : User tenant_user_id from users table: {}", tenantUserId);
+                return tenantUserId;
+            } else {
+                // If not found in users table, the JWT userId might directly be the tenant_user_id
+                log.info("getCurrentUserTenantUserId() : User not found in users table, treating JWT userId as tenant_user_id: {}", currentUserId);
+                return currentUserId;
+            }
+        } catch (Exception e) {
+            log.error("getCurrentUserTenantUserId() : Error fetching user from database: {}", e.getMessage(), e);
+            return null;
+        }
     }
 
     /**

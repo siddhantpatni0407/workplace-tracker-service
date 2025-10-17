@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -168,6 +169,57 @@ public class UserService {
     }
 
     /**
+     * /**
+     * Get users by current user's tenant (same tenant_id)
+     */
+    public List<UserDTO> getUsersByCurrentUserTenant(Long currentUserTenantUserId) {
+        log.info("Fetching users for tenant_user_id: {}", currentUserTenantUserId);
+        if (currentUserTenantUserId == null) {
+            log.warn("Current user's tenant_user_id is null. Returning empty list.");
+            return Collections.emptyList();
+        }
+
+        try {
+            // First, get the tenant_id for the current tenant_user_id
+            Optional<TenantUser> tenantUserOpt = tenantUserRepository.findById(currentUserTenantUserId);
+            if (tenantUserOpt.isEmpty()) {
+                log.warn("TenantUser with ID {} not found. Returning empty list.", currentUserTenantUserId);
+                return Collections.emptyList();
+            }
+
+            Long tenantId = tenantUserOpt.get().getTenantId();
+            log.info("Found tenant_id {} for tenant_user_id {}", tenantId, currentUserTenantUserId);
+
+            // Get all tenant_user_ids that belong to the same tenant
+            List<TenantUser> tenantUsers = tenantUserRepository.findByTenantId(tenantId);
+            log.info("Found {} tenant users for tenant_id {}", tenantUsers.size(), tenantId);
+
+            if (tenantUsers.isEmpty()) {
+                return Collections.emptyList();
+            }
+
+            // Extract all tenant_user_ids for this tenant
+            List<Long> tenantUserIds = tenantUsers.stream()
+                    .map(TenantUser::getTenantUserId)
+                    .collect(Collectors.toList());
+
+            log.info("Looking for users with tenant_user_ids: {}", tenantUserIds);
+
+            // Find all users that have any of these tenant_user_ids
+            List<User> users = userRepository.findByTenantUserIdIn(tenantUserIds);
+            log.info("Found {} users for the tenant", users.size());
+
+            return users.stream()
+                    .map(this::convertToDTO)
+                    .collect(Collectors.toList());
+
+        } catch (Exception e) {
+            log.error("Error fetching users for tenant_user_id {}: {}", currentUserTenantUserId, e.getMessage(), e);
+            return Collections.emptyList();
+        }
+    }
+
+    /*
      * Convert User entity to UserDTO with tenant information
      */
     private UserDTO convertToDTO(User user) {

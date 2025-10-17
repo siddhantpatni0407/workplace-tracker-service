@@ -40,31 +40,76 @@ public class UserController {
 
     /**
      * Fetches all users from the system.
+     * Updated to return tenant-specific users for ADMIN role, all users for SUPER_ADMIN and PLATFORM_USER.
      *
      * @return ResponseEntity with a ResponseDTO containing a list of UserDTOs.
      */
     @GetMapping(AppConstants.FETCH_ALL_USERS_ENDPOINT)
     @RequiredRole({"ADMIN", "SUPER_ADMIN", "PLATFORM_USER"})
     public ResponseEntity<ResponseDTO<List<UserDTO>>> getAllUsers() {
-        log.info("getAllUsers() : Received request to fetch all users.");
+        String currentUserRole = jwtAuthenticationContext.getCurrentUserRole();
+        log.info("getAllUsers() : Received request to fetch users. Current user role: {}", currentUserRole);
 
-        List<UserDTO> users = userService.getAllUsers();
+        List<UserDTO> users;
 
-        if (users.isEmpty()) {
-            log.info("getAllUsers() : No users found in the system.");
+        // Role-based filtering logic
+        if ("ADMIN".equals(currentUserRole)) {
+            // For ADMIN users, get current user's tenant_user_id and fetch only users from same tenant
+            Long currentUserId = jwtAuthenticationContext.getCurrentUserId();
+            log.info("getAllUsers() : Current user ID from JWT: {}", currentUserId);
+
+            Long currentUserTenantUserId = jwtAuthenticationContext.getCurrentUserTenantUserId();
+            log.info("getAllUsers() : Current user tenant_user_id: {}", currentUserTenantUserId);
+
+            if (currentUserTenantUserId == null) {
+                log.warn("getAllUsers() : Current ADMIN user's tenant_user_id is null. Cannot fetch tenant-specific users.");
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(new ResponseDTO<>(
+                                AppConstants.STATUS_FAILED,
+                                "Unable to determine user's tenant. Access denied.",
+                                Collections.emptyList()
+                        ));
+            }
+
+            log.info("getAllUsers() : Fetching users for ADMIN user's tenant_user_id: {}", currentUserTenantUserId);
+            users = userService.getUsersByCurrentUserTenant(currentUserTenantUserId);
+
+            if (users.isEmpty()) {
+                log.info("getAllUsers() : No users found in the ADMIN user's tenant.");
+                return ResponseEntity.ok(new ResponseDTO<>(
+                        AppConstants.STATUS_SUCCESS,
+                        "No users found in your tenant.",
+                        Collections.emptyList()
+                ));
+            }
+
+            log.info("getAllUsers() : Successfully retrieved {} users for ADMIN user's tenant.", users.size());
             return ResponseEntity.ok(new ResponseDTO<>(
                     AppConstants.STATUS_SUCCESS,
-                    "No users found.",
-                    Collections.emptyList()
+                    "Users retrieved successfully for your tenant.",
+                    users
+            ));
+        } else {
+            // For SUPER_ADMIN and PLATFORM_USER, fetch all users
+            log.info("getAllUsers() : Fetching all users for {} role.", currentUserRole);
+            users = userService.getAllUsers();
+
+            if (users.isEmpty()) {
+                log.info("getAllUsers() : No users found in the system.");
+                return ResponseEntity.ok(new ResponseDTO<>(
+                        AppConstants.STATUS_SUCCESS,
+                        "No users found.",
+                        Collections.emptyList()
+                ));
+            }
+
+            log.info("getAllUsers() : Successfully retrieved {} users.", users.size());
+            return ResponseEntity.ok(new ResponseDTO<>(
+                    AppConstants.STATUS_SUCCESS,
+                    "Users retrieved successfully.",
+                    users
             ));
         }
-
-        log.info("getAllUsers() : Successfully retrieved {} users.", users.size());
-        return ResponseEntity.ok(new ResponseDTO<>(
-                AppConstants.STATUS_SUCCESS,
-                "Users retrieved successfully.",
-                users
-        ));
     }
 
     /**
