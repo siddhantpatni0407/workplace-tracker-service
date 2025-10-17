@@ -63,7 +63,7 @@ public interface TenantUserRepository extends JpaRepository<TenantUser, Long> {
     List<TenantUser> searchByTenantAndRoleAndTerm(@Param("tenantId") Long tenantId, @Param("roleId") Long roleId, @Param("searchTerm") String searchTerm);
 
     // Statistics methods for PLATFORM_USER
-    @Query("SELECT COUNT(DISTINCT tu.tenantId) FROM TenantUser tu")
+    @Query("SELECT COUNT(DISTINCT t.tenantId) FROM Tenant t")
     Long countDistinctTenants();
 
     @Query("SELECT COUNT(tu) FROM TenantUser tu " +
