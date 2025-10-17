@@ -42,4 +42,20 @@ public interface TenantUserRepository extends JpaRepository<TenantUser, Long> {
 
     @Query("SELECT COUNT(tu) FROM TenantUser tu WHERE tu.tenantId = :tenantId AND tu.isActive = true")
     Long countActiveByTenantId(@Param("tenantId") Long tenantId);
+
+    // New methods for tenant user management
+    @Query("SELECT tu FROM TenantUser tu WHERE tu.roleId = :roleId AND tu.isActive = true")
+    List<TenantUser> findByRoleIdAndIsActiveTrue(@Param("roleId") Long roleId);
+
+    @Query("SELECT tu FROM TenantUser tu WHERE tu.tenantId = :tenantId AND tu.roleId = :roleId AND tu.isActive = true")
+    List<TenantUser> findByTenantIdAndRoleIdAndIsActiveTrue(@Param("tenantId") Long tenantId, @Param("roleId") Long roleId);
+
+    @Query("SELECT tu FROM TenantUser tu WHERE tu.tenantId = :tenantId AND tu.roleId = :roleId AND tu.managerTenantUserId = :managerTenantUserId")
+    List<TenantUser> findByTenantIdAndRoleIdAndManagerTenantUserId(@Param("tenantId") Long tenantId, @Param("roleId") Long roleId, @Param("managerTenantUserId") Long managerTenantUserId);
+
+    @Query("SELECT tu FROM TenantUser tu WHERE tu.roleId = :roleId AND (tu.name LIKE %:searchTerm% OR tu.email LIKE %:searchTerm%)")
+    List<TenantUser> searchByRoleAndTerm(@Param("roleId") Long roleId, @Param("searchTerm") String searchTerm);
+
+    @Query("SELECT tu FROM TenantUser tu WHERE tu.tenantId = :tenantId AND tu.roleId = :roleId AND (tu.name LIKE %:searchTerm% OR tu.email LIKE %:searchTerm%)")
+    List<TenantUser> searchByTenantAndRoleAndTerm(@Param("tenantId") Long tenantId, @Param("roleId") Long roleId, @Param("searchTerm") String searchTerm);
 }

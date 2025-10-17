@@ -91,6 +91,20 @@ public class AppConstants {
     public static final String PLATFORM_AUTH_REFRESH_ENDPOINT = "/api/v1/workplace-tracker-service/platform-auth/refresh-token";
     public static final String PLATFORM_AUTH_PROFILE_ENDPOINT = "/api/v1/workplace-tracker-service/platform-auth/profile";
 
+    // Platform User Management endpoints - Super Admin management
+    public static final String SUPER_ADMIN_MANAGEMENT_ENDPOINT = "/api/v1/workplace-tracker-service/platform/super-admins";
+    public static final String SUPER_ADMIN_BY_TENANT_ENDPOINT = "/api/v1/workplace-tracker-service/platform/super-admins/by-tenant";
+    public static final String SUPER_ADMIN_STATUS_ENDPOINT = "/api/v1/workplace-tracker-service/platform/super-admins/status";
+    public static final String SUPER_ADMIN_SEARCH_ENDPOINT = "/api/v1/workplace-tracker-service/platform/super-admins/search";
+    public static final String SUPER_ADMIN_DETAILS_ENDPOINT = "/api/v1/workplace-tracker-service/platform/super-admins/details";
+
+    // Super Admin Management endpoints - Admin management
+    public static final String ADMIN_MANAGEMENT_ENDPOINT = "/api/v1/workplace-tracker-service/super-admin/admins";
+    public static final String ADMIN_BY_TENANT_ENDPOINT = "/api/v1/workplace-tracker-service/super-admin/admins/by-tenant";
+    public static final String ADMIN_STATUS_ENDPOINT = "/api/v1/workplace-tracker-service/super-admin/admins/status";
+    public static final String ADMIN_SEARCH_ENDPOINT = "/api/v1/workplace-tracker-service/super-admin/admins/search";
+    public static final String ADMIN_DETAILS_ENDPOINT = "/api/v1/workplace-tracker-service/super-admin/admins/details";
+
     // Holidays messages
     public static final String SUCCESS_HOLIDAYS_RETRIEVED = "Holidays retrieved";
     public static final String ERROR_NO_HOLIDAYS_FOUND = "No holidays found";
