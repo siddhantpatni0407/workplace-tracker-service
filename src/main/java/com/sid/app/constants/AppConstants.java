@@ -255,4 +255,13 @@ public class AppConstants {
     public static final String ERROR_SUBSCRIPTION_NOT_FOUND = "Subscription not found";
     public static final String ERROR_NO_SUBSCRIPTIONS_FOUND = "No subscriptions found";
     public static final String ERROR_INVALID_SUBSCRIPTION_CODE = "Invalid subscription code";
+
+    // Platform Stats endpoints
+    public static final String PLATFORM_STATS_ENDPOINT = "/api/v1/workplace-tracker-service/platform/stats";
+
+    // Role codes for platform statistics
+    public static final String ROLE_CODE_SUPER_ADMIN = "SUPER_ADMIN";
+    public static final String ROLE_CODE_ADMIN = "ADMIN";
+    public static final String ROLE_CODE_USER = "USER";
+    public static final String ROLE_CODE_MANAGER = "MANAGER";
 }

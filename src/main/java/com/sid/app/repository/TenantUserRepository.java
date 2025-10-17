@@ -61,4 +61,41 @@ public interface TenantUserRepository extends JpaRepository<TenantUser, Long> {
 
     @Query("SELECT tu FROM TenantUser tu WHERE tu.tenantId = :tenantId AND tu.roleId = :roleId AND (tu.name LIKE %:searchTerm% OR tu.email LIKE %:searchTerm%)")
     List<TenantUser> searchByTenantAndRoleAndTerm(@Param("tenantId") Long tenantId, @Param("roleId") Long roleId, @Param("searchTerm") String searchTerm);
+
+    // Statistics methods for PLATFORM_USER
+    @Query("SELECT COUNT(DISTINCT tu.tenantId) FROM TenantUser tu")
+    Long countDistinctTenants();
+
+    @Query("SELECT COUNT(tu) FROM TenantUser tu " +
+           "JOIN UserRole ur ON tu.roleId = ur.roleId " +
+           "WHERE ur.role = :roleCode")
+    Long countSuperAdmins(@Param("roleCode") String roleCode);
+
+    @Query("SELECT COUNT(tu) FROM TenantUser tu " +
+           "JOIN UserRole ur ON tu.roleId = ur.roleId " +
+           "WHERE ur.role = :roleCode")
+    Long countAdmins(@Param("roleCode") String roleCode);
+
+    @Query("SELECT COUNT(tu) FROM TenantUser tu " +
+           "JOIN UserRole ur ON tu.roleId = ur.roleId " +
+           "WHERE ur.role IN :roleCodes")
+    Long countUsers(@Param("roleCodes") List<String> roleCodes);
+
+    @Query("SELECT tu.tenantId, COUNT(tu) FROM TenantUser tu " +
+           "JOIN UserRole ur ON tu.roleId = ur.roleId " +
+           "WHERE ur.role = :roleCode GROUP BY tu.tenantId")
+    List<Object[]> countSuperAdminsByTenant(@Param("roleCode") String roleCode);
+
+    @Query("SELECT tu.tenantId, COUNT(tu) FROM TenantUser tu " +
+           "JOIN UserRole ur ON tu.roleId = ur.roleId " +
+           "WHERE ur.role = :roleCode GROUP BY tu.tenantId")
+    List<Object[]> countAdminsByTenant(@Param("roleCode") String roleCode);
+
+    @Query("SELECT tu.tenantId, COUNT(tu) FROM TenantUser tu " +
+           "JOIN UserRole ur ON tu.roleId = ur.roleId " +
+           "WHERE ur.role IN :roleCodes GROUP BY tu.tenantId")
+    List<Object[]> countUsersByTenant(@Param("roleCodes") List<String> roleCodes);
+
+    @Query("SELECT tu.tenantId, COUNT(tu) FROM TenantUser tu GROUP BY tu.tenantId")
+    List<Object[]> countTotalUsersByTenant();
 }
