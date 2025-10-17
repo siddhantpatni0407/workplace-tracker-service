@@ -1,6 +1,7 @@
 package com.sid.app.controller;
 
 import com.sid.app.constants.AppConstants;
+import com.sid.app.constants.EndpointConstants;
 import com.sid.app.dto.request.PlatformUserLoginRequest;
 import com.sid.app.dto.request.PlatformUserSignupRequest;
 import com.sid.app.dto.response.PlatformUserAuthResponse;
@@ -20,7 +21,7 @@ public class PlatformUserController {
 
     private final PlatformUserService platformUserService;
 
-    @PostMapping(AppConstants.PLATFORM_AUTH_SIGNUP_ENDPOINT)
+    @PostMapping(EndpointConstants.PLATFORM_AUTH_SIGNUP_ENDPOINT)
     public ResponseEntity<PlatformUserAuthResponse> signup(@Valid @RequestBody PlatformUserSignupRequest request) {
         log.info("Platform user signup request received for email: {}", request.getEmail());
 
@@ -42,7 +43,7 @@ public class PlatformUserController {
         }
     }
 
-    @PostMapping(AppConstants.PLATFORM_AUTH_LOGIN_ENDPOINT)
+    @PostMapping(EndpointConstants.PLATFORM_AUTH_LOGIN_ENDPOINT)
     public ResponseEntity<PlatformUserAuthResponse> login(@Valid @RequestBody PlatformUserLoginRequest request) {
         log.info("Platform user login request received for: {}", request.getEmailOrMobile());
 
@@ -64,7 +65,7 @@ public class PlatformUserController {
         }
     }
 
-    @PostMapping(AppConstants.PLATFORM_AUTH_REFRESH_ENDPOINT)
+    @PostMapping(EndpointConstants.PLATFORM_AUTH_REFRESH_ENDPOINT)
     public ResponseEntity<PlatformUserAuthResponse> refreshToken(@RequestBody String refreshToken) {
         log.info("Platform user token refresh request received");
 
@@ -86,7 +87,7 @@ public class PlatformUserController {
         }
     }
 
-    @GetMapping(AppConstants.PLATFORM_AUTH_PROFILE_ENDPOINT)
+    @GetMapping(EndpointConstants.PLATFORM_AUTH_PROFILE_ENDPOINT)
     public ResponseEntity<PlatformUserResponse> getProfile(@RequestParam Long platformUserId) {
         log.info("Platform user profile request for ID: {}", platformUserId);
 

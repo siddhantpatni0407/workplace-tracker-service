@@ -2,6 +2,7 @@ package com.sid.app.config;
 
 import com.sid.app.auth.JwtAuthenticationFilter;
 import com.sid.app.constants.AppConstants;
+import com.sid.app.constants.EndpointConstants;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -44,14 +45,14 @@ public class SecurityConfig {
                         ).permitAll()
                         // Allow public authentication endpoints without JWT
                         .requestMatchers(
-                                AppConstants.USER_REGISTER_ENDPOINT,
-                                AppConstants.USER_LOGIN_ENDPOINT,
-                                AppConstants.FORGOT_PASSWORD_RESET_ENDPOINT,
-                                AppConstants.AUTH_REFRESH_ENDPOINT,
+                                EndpointConstants.USER_REGISTER_ENDPOINT,
+                                EndpointConstants.USER_LOGIN_ENDPOINT,
+                                EndpointConstants.FORGOT_PASSWORD_RESET_ENDPOINT,
+                                EndpointConstants.AUTH_REFRESH_ENDPOINT,
                                 // Platform User Authentication endpoints
-                                AppConstants.PLATFORM_AUTH_SIGNUP_ENDPOINT,
-                                AppConstants.PLATFORM_AUTH_LOGIN_ENDPOINT,
-                                AppConstants.PLATFORM_AUTH_REFRESH_ENDPOINT
+                                EndpointConstants.PLATFORM_AUTH_SIGNUP_ENDPOINT,
+                                EndpointConstants.PLATFORM_AUTH_LOGIN_ENDPOINT,
+                                EndpointConstants.PLATFORM_AUTH_REFRESH_ENDPOINT
                         ).permitAll()
                         // Require authentication for all other endpoints
                         .anyRequest().authenticated()

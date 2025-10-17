@@ -2,6 +2,7 @@ package com.sid.app.controller;
 
 import com.sid.app.auth.RequiredRole;
 import com.sid.app.constants.AppConstants;
+import com.sid.app.constants.EndpointConstants;
 import com.sid.app.model.LeavePolicyDTO;
 import com.sid.app.model.ResponseDTO;
 import com.sid.app.service.LeavePolicyService;
@@ -22,7 +23,7 @@ public class LeavePolicyController {
 
     private final LeavePolicyService policyService;
 
-    @GetMapping(AppConstants.LEAVE_POLICY_ENDPOINT)
+    @GetMapping(EndpointConstants.LEAVE_POLICY_ENDPOINT)
     @RequiredRole({"USER", "ADMIN", "SUPER_ADMIN"})
     public ResponseEntity<ResponseDTO<List<LeavePolicyDTO>>> getAllPolicies() {
         log.info("getAllPolicies() - request");
@@ -38,7 +39,7 @@ public class LeavePolicyController {
         return ResponseEntity.ok(new ResponseDTO<>(AppConstants.STATUS_SUCCESS, AppConstants.SUCCESS_POLICY_RETRIEVED, list));
     }
 
-    @GetMapping(AppConstants.EXACT_LEAVE_POLICY_ENDPOINT)
+    @GetMapping(EndpointConstants.EXACT_LEAVE_POLICY_ENDPOINT)
     @RequiredRole({"USER", "ADMIN", "SUPER_ADMIN"})
     public ResponseEntity<ResponseDTO<LeavePolicyDTO>> getPolicy(@RequestParam("policyId") Long policyId) {
         log.info("getPolicy() - policyId={}", policyId);
@@ -61,7 +62,7 @@ public class LeavePolicyController {
         }
     }
 
-    @PostMapping(AppConstants.LEAVE_POLICY_ENDPOINT)
+    @PostMapping(EndpointConstants.LEAVE_POLICY_ENDPOINT)
     @RequiredRole({"ADMIN"})
     public ResponseEntity<ResponseDTO<LeavePolicyDTO>> createPolicy(@Valid @RequestBody LeavePolicyDTO req) {
         log.info("createPolicy() - code={}", req.getPolicyCode());
@@ -79,7 +80,7 @@ public class LeavePolicyController {
         }
     }
 
-    @PutMapping(AppConstants.LEAVE_POLICY_ENDPOINT)
+    @PutMapping(EndpointConstants.LEAVE_POLICY_ENDPOINT)
     @RequiredRole({"ADMIN"})
     public ResponseEntity<ResponseDTO<LeavePolicyDTO>> updatePolicy(@RequestParam("policyId") Long policyId,
                                                                     @Valid @RequestBody LeavePolicyDTO req) {

@@ -2,6 +2,7 @@ package com.sid.app.controller;
 
 import com.sid.app.auth.RequiredRole;
 import com.sid.app.constants.AppConstants;
+import com.sid.app.constants.EndpointConstants;
 import com.sid.app.model.HolidayDTO;
 import com.sid.app.model.ResponseDTO;
 import com.sid.app.service.HolidayService;
@@ -20,7 +21,7 @@ import java.util.Optional;
 @RestController
 @Slf4j
 @RequiredArgsConstructor
-@RequestMapping(AppConstants.HOLIDAYS_ENDPOINT)
+@RequestMapping(EndpointConstants.HOLIDAYS_ENDPOINT)
 public class HolidayController {
 
     private final HolidayService holidayService;

@@ -3,6 +3,7 @@ package com.sid.app.controller;
 import com.sid.app.auth.JwtAuthenticationContext;
 import com.sid.app.auth.RequiredRole;
 import com.sid.app.constants.AppConstants;
+import com.sid.app.constants.EndpointConstants;
 import com.sid.app.model.ResponseDTO;
 import com.sid.app.model.UserProfileDTO;
 import com.sid.app.service.UserProfileService;
@@ -31,7 +32,7 @@ public class UserProfileController {
      * Get user profile
      * GET /user-profile
      */
-    @GetMapping(value = AppConstants.USER_PROFILE_ENDPOINT, produces = "application/json")
+    @GetMapping(value = EndpointConstants.USER_PROFILE_ENDPOINT, produces = "application/json")
     @RequiredRole({"USER", "ADMIN", "SUPER_ADMIN"})
     public ResponseEntity<ResponseDTO<UserProfileDTO>> getProfile() {
         Long userId = jwtAuthenticationContext.getCurrentUserId();
@@ -55,7 +56,7 @@ public class UserProfileController {
      * Create or update user profile
      * PUT /user-profile
      */
-    @PutMapping(value = AppConstants.USER_PROFILE_ENDPOINT, produces = "application/json")
+    @PutMapping(value = EndpointConstants.USER_PROFILE_ENDPOINT, produces = "application/json")
     @RequiredRole({"USER", "ADMIN", "SUPER_ADMIN"})
     public ResponseEntity<ResponseDTO<?>> upsertProfile(@Valid @RequestBody UserProfileDTO dto) {
 

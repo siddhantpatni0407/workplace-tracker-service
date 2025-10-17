@@ -3,6 +3,7 @@ package com.sid.app.controller;
 import com.sid.app.auth.JwtAuthenticationContext;
 import com.sid.app.auth.RequiredRole;
 import com.sid.app.constants.AppConstants;
+import com.sid.app.constants.EndpointConstants;
 import com.sid.app.model.AggregatePeriodDTO;
 import com.sid.app.model.ResponseDTO;
 import com.sid.app.service.AnalyticsService;
@@ -21,7 +22,7 @@ import java.util.Locale;
 @RestController
 @Slf4j
 @RequiredArgsConstructor
-@RequestMapping(AppConstants.ANALYTICS_VISITS_LEAVES_AGG_ENDPOINT)
+@RequestMapping(EndpointConstants.ANALYTICS_VISITS_LEAVES_AGG_ENDPOINT)
 public class AnalyticsController {
 
     private final AnalyticsService analyticsService;

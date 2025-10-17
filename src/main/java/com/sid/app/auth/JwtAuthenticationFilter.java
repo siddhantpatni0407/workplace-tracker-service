@@ -2,6 +2,7 @@ package com.sid.app.auth;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sid.app.constants.AppConstants;
+import com.sid.app.constants.EndpointConstants;
 import com.sid.app.model.ResponseDTO;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
@@ -38,7 +39,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         log.debug("Processing request for path: {}", path);
 
         // Allow the refresh endpoint to be called without parsing the Authorization header
-        if (path != null && path.contains(AppConstants.AUTH_REFRESH_ENDPOINT)) {
+        if (path != null && path.contains(EndpointConstants.AUTH_REFRESH_ENDPOINT)) {
             filterChain.doFilter(request, response);
             return;
         }

@@ -3,6 +3,7 @@ package com.sid.app.controller;
 import com.sid.app.auth.JwtAuthenticationContext;
 import com.sid.app.auth.RequiredRole;
 import com.sid.app.constants.AppConstants;
+import com.sid.app.constants.EndpointConstants;
 import com.sid.app.model.AuthResponse;
 import com.sid.app.model.LoginRequest;
 import com.sid.app.model.RegisterRequest;
@@ -39,7 +40,7 @@ public class AuthController {
      * - ADMIN: requires tenantCode
      * - USER/MANAGER: requires tenantUserCode
      */
-    @PostMapping(AppConstants.USER_REGISTER_ENDPOINT)
+    @PostMapping(EndpointConstants.USER_REGISTER_ENDPOINT)
     public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
         log.info("Register request -> {}", ApplicationUtils.getJSONString(request));
 
@@ -120,7 +121,7 @@ public class AuthController {
         return new AuthResponse(null, null, null, null, AppConstants.STATUS_SUCCESS, null, null, null, null, null);
     }
 
-    @PostMapping(AppConstants.USER_LOGIN_ENDPOINT)
+    @PostMapping(EndpointConstants.USER_LOGIN_ENDPOINT)
     public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request, HttpServletResponse servletResponse) {
         log.info("Login request -> {}", ApplicationUtils.getJSONString(request));
         AuthResponse response = authService.login(request);
@@ -145,13 +146,13 @@ public class AuthController {
     }
 
 
-    @PostMapping(AppConstants.FORGOT_PASSWORD_RESET_ENDPOINT)
+    @PostMapping(EndpointConstants.FORGOT_PASSWORD_RESET_ENDPOINT)
     public ResponseEntity<ResponseDTO<Void>> resetPassword(@Valid @RequestBody ForgotPasswordResetRequest request) {
         log.info("Reset password for email: {}", request.getEmail());
         return authService.resetPassword(request);
     }
 
-    @PostMapping(AppConstants.AUTH_REFRESH_ENDPOINT)
+    @PostMapping(EndpointConstants.AUTH_REFRESH_ENDPOINT)
     public ResponseEntity<AuthResponse> refreshToken(
             @CookieValue(value = "refreshToken", required = false) String refreshTokenCookie,
             @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authorizationHeader,
@@ -192,7 +193,7 @@ public class AuthController {
      * Change password for a user (partial update).
      * Accepts userId in body (optional) or derive from JWT in production.
      */
-    @PatchMapping(value = AppConstants.USER_CHANGE_PASSWORD_ENDPOINT, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PatchMapping(value = EndpointConstants.USER_CHANGE_PASSWORD_ENDPOINT, consumes = MediaType.APPLICATION_JSON_VALUE)
     @RequiredRole({"USER", "ADMIN", "SUPER_ADMIN"})
     public ResponseEntity<ResponseDTO<Void>> changePassword(@RequestBody @Valid PasswordChangeRequest request,
                                                             @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authorizationHeader) {

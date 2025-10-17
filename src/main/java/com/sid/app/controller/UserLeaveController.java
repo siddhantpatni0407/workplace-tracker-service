@@ -3,6 +3,7 @@ package com.sid.app.controller;
 import com.sid.app.auth.RequiredRole;
 import com.sid.app.auth.JwtAuthenticationContext;
 import com.sid.app.constants.AppConstants;
+import com.sid.app.constants.EndpointConstants;
 import com.sid.app.model.ResponseDTO;
 import com.sid.app.model.UserLeaveDTO;
 import com.sid.app.service.UserLeaveService;
@@ -23,7 +24,7 @@ import java.util.Optional;
 @RestController
 @Slf4j
 @RequiredArgsConstructor
-@RequestMapping(AppConstants.USER_LEAVE_ENDPOINT)
+@RequestMapping(EndpointConstants.USER_LEAVE_ENDPOINT)
 public class UserLeaveController {
 
     private final UserLeaveService userLeaveService;

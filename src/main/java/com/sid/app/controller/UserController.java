@@ -3,6 +3,7 @@ package com.sid.app.controller;
 import com.sid.app.auth.JwtAuthenticationContext;
 import com.sid.app.auth.RequiredRole;
 import com.sid.app.constants.AppConstants;
+import com.sid.app.constants.EndpointConstants;
 import com.sid.app.model.ResponseDTO;
 import com.sid.app.model.UserDTO;
 import com.sid.app.model.UserStatusUpdateRequest;
@@ -44,7 +45,7 @@ public class UserController {
      *
      * @return ResponseEntity with a ResponseDTO containing a list of UserDTOs.
      */
-    @GetMapping(AppConstants.FETCH_ALL_USERS_ENDPOINT)
+    @GetMapping(EndpointConstants.FETCH_ALL_USERS_ENDPOINT)
     @RequiredRole({"ADMIN", "SUPER_ADMIN", "PLATFORM_USER"})
     public ResponseEntity<ResponseDTO<List<UserDTO>>> getAllUsers() {
         String currentUserRole = jwtAuthenticationContext.getCurrentUserRole();
@@ -115,7 +116,7 @@ public class UserController {
     /**
      * Fetches users by tenant ID.
      */
-    @GetMapping(AppConstants.USERS_BY_TENANT_ENDPOINT)
+    @GetMapping(EndpointConstants.USERS_BY_TENANT_ENDPOINT)
     @RequiredRole({"ADMIN", "SUPER_ADMIN", "PLATFORM_USER", "MANAGER"})
     public ResponseEntity<ResponseDTO<List<UserDTO>>> getUsersByTenant(@RequestParam Long tenantId) {
         log.info("getUsersByTenant() : Received request to fetch users for tenant ID: {}", tenantId);
@@ -142,7 +143,7 @@ public class UserController {
     /**
      * Fetches active users by tenant ID.
      */
-    @GetMapping(AppConstants.ACTIVE_USERS_BY_TENANT_ENDPOINT)
+    @GetMapping(EndpointConstants.ACTIVE_USERS_BY_TENANT_ENDPOINT)
     @RequiredRole({"ADMIN", "SUPER_ADMIN", "PLATFORM_USER", "MANAGER"})
     public ResponseEntity<ResponseDTO<List<UserDTO>>> getActiveUsersByTenant(@RequestParam Long tenantId) {
         log.info("getActiveUsersByTenant() : Received request to fetch active users for tenant ID: {}", tenantId);
@@ -160,7 +161,7 @@ public class UserController {
     /**
      * Search users within a tenant.
      */
-    @GetMapping(AppConstants.SEARCH_USERS_BY_TENANT_ENDPOINT)
+    @GetMapping(EndpointConstants.SEARCH_USERS_BY_TENANT_ENDPOINT)
     @RequiredRole({"ADMIN", "SUPER_ADMIN", "PLATFORM_USER", "MANAGER"})
     public ResponseEntity<ResponseDTO<List<UserDTO>>> searchUsersByTenant(
             @RequestParam Long tenantId,
@@ -190,7 +191,7 @@ public class UserController {
      *
      * @return ResponseEntity with a ResponseDTO containing the UserDTO.
      */
-    @GetMapping(AppConstants.USER_ENDPOINT)
+    @GetMapping(EndpointConstants.USER_ENDPOINT)
     @RequiredRole({"USER", "ADMIN", "SUPER_ADMIN", "PLATFORM_USER", "MANAGER"})
     public ResponseEntity<ResponseDTO<UserDTO>> getUserById(@RequestParam(required = false) Long userId) {
         // If userId not provided in request param, get from JWT context
@@ -233,7 +234,7 @@ public class UserController {
      * @param updatedUserDTO The updated user details.
      * @return ResponseEntity with a ResponseDTO indicating the update status.
      */
-    @PutMapping(AppConstants.USER_ENDPOINT)
+    @PutMapping(EndpointConstants.USER_ENDPOINT)
     @RequiredRole({"ADMIN", "SUPER_ADMIN", "PLATFORM_USER"})
     public ResponseEntity<ResponseDTO<UserDTO>> updateUser(
             @RequestParam(required = false) Long userId,
@@ -285,7 +286,7 @@ public class UserController {
     /**
      * Update user active / locked status in a single API call.
      */
-    @PatchMapping(value = AppConstants.USER_STATUS_ENDPOINT, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PatchMapping(value = EndpointConstants.USER_STATUS_ENDPOINT, consumes = MediaType.APPLICATION_JSON_VALUE)
     @RequiredRole({"ADMIN", "SUPER_ADMIN", "PLATFORM_USER"})
     public ResponseEntity<ResponseDTO<UserDTO>> updateUserStatus(@RequestBody UserStatusUpdateRequest req) {
         log.info("updateUserStatus() : Received request -> {}", ApplicationUtils.getJSONString(req));
@@ -339,7 +340,7 @@ public class UserController {
      *
      * @return ResponseEntity with a ResponseDTO indicating the deletion status.
      */
-    @DeleteMapping(AppConstants.USER_ENDPOINT)
+    @DeleteMapping(EndpointConstants.USER_ENDPOINT)
     @RequiredRole({"ADMIN", "SUPER_ADMIN", "PLATFORM_USER"})
     public ResponseEntity<ResponseDTO<Void>> deleteUser(@RequestParam(required = false) Long userId) {
         // If userId not provided in request param, get from JWT context
@@ -377,3 +378,4 @@ public class UserController {
     }
 
 }
+

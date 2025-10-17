@@ -2,6 +2,7 @@ package com.sid.app.controller;
 
 import com.sid.app.auth.RequiredRole;
 import com.sid.app.constants.AppConstants;
+import com.sid.app.constants.EndpointConstants;
 import com.sid.app.model.*;
 import com.sid.app.service.TenantService;
 import com.sid.app.utils.ApplicationUtils;
@@ -39,7 +40,7 @@ public class TenantController {
     /**
      * Create a new tenant
      */
-    @PostMapping(AppConstants.TENANT_ENDPOINT)
+    @PostMapping(EndpointConstants.TENANT_ENDPOINT)
     @RequiredRole({"PLATFORM_USER"})
     public ResponseEntity<ResponseDTO<TenantDTO>> createTenant(@Valid @RequestBody TenantCreateRequest request) {
         log.info("createTenant() : Received request to create tenant: {}", ApplicationUtils.getJSONString(request));
@@ -79,7 +80,7 @@ public class TenantController {
     /**
      * Get all tenants with pagination
      */
-    @GetMapping(AppConstants.TENANTS_ENDPOINT)
+    @GetMapping(EndpointConstants.TENANTS_ENDPOINT)
     @RequiredRole({"PLATFORM_USER"})
     public ResponseEntity<ResponseDTO<Page<TenantDTO>>> getAllTenants(@RequestParam(defaultValue = "0") int page,
                                                                       @RequestParam(defaultValue = "10") int size,
@@ -127,7 +128,7 @@ public class TenantController {
     /**
      * Get all active tenants
      */
-    @GetMapping(AppConstants.ACTIVE_TENANTS_ENDPOINT)
+    @GetMapping(EndpointConstants.ACTIVE_TENANTS_ENDPOINT)
     @RequiredRole({"PLATFORM_USER"})
     public ResponseEntity<ResponseDTO<List<TenantDTO>>> getActiveTenants() {
         log.info("getActiveTenants() : Fetching all active tenants");
@@ -165,7 +166,7 @@ public class TenantController {
     /**
      * Get tenant by ID
      */
-    @GetMapping(AppConstants.TENANT_BY_ID_ENDPOINT)
+    @GetMapping(EndpointConstants.TENANT_BY_ID_ENDPOINT)
     @RequiredRole({"PLATFORM_USER"})
     public ResponseEntity<ResponseDTO<TenantDTO>> getTenantById(@RequestParam Long tenantId) {
         log.info("getTenantById() : Fetching tenant with ID: {}", tenantId);
@@ -203,7 +204,7 @@ public class TenantController {
     /**
      * Get tenant by code
      */
-    @GetMapping(AppConstants.TENANT_BY_CODE_ENDPOINT)
+    @GetMapping(EndpointConstants.TENANT_BY_CODE_ENDPOINT)
     @RequiredRole({"PLATFORM_USER"})
     public ResponseEntity<ResponseDTO<TenantDTO>> getTenantByCode(@RequestParam String tenantCode) {
         log.info("getTenantByCode() : Fetching tenant with code: {}", tenantCode);
@@ -241,7 +242,7 @@ public class TenantController {
     /**
      * Update tenant
      */
-    @PutMapping(value = AppConstants.TENANT_UPDATE_ENDPOINT, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(value = EndpointConstants.TENANT_UPDATE_ENDPOINT, consumes = MediaType.APPLICATION_JSON_VALUE)
     @RequiredRole({"PLATFORM_USER"})
     public ResponseEntity<ResponseDTO<TenantDTO>> updateTenant(@RequestParam Long tenantId,
                                                                @Valid @RequestBody TenantUpdateRequest request) {
@@ -291,7 +292,7 @@ public class TenantController {
     /**
      * Update tenant status (activate/deactivate)
      */
-    @PatchMapping(value = AppConstants.TENANT_STATUS_ENDPOINT, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PatchMapping(value = EndpointConstants.TENANT_STATUS_ENDPOINT, consumes = MediaType.APPLICATION_JSON_VALUE)
     @RequiredRole({"PLATFORM_USER"})
     public ResponseEntity<ResponseDTO<TenantDTO>> updateTenantStatus(
             @Valid @RequestBody TenantStatusUpdateRequest request) {
@@ -334,7 +335,7 @@ public class TenantController {
     /**
      * Delete tenant (soft delete by deactivation)
      */
-    @DeleteMapping(AppConstants.TENANT_DELETE_ENDPOINT)
+    @DeleteMapping(EndpointConstants.TENANT_DELETE_ENDPOINT)
     @RequiredRole({"PLATFORM_USER"})
     public ResponseEntity<ResponseDTO<Void>> deleteTenant(@RequestParam Long tenantId) {
         log.info("deleteTenant() : Received request to delete tenant with ID: {}", tenantId);
@@ -372,7 +373,7 @@ public class TenantController {
     /**
      * Search tenants by name
      */
-    @GetMapping(AppConstants.TENANT_SEARCH_ENDPOINT)
+    @GetMapping(EndpointConstants.TENANT_SEARCH_ENDPOINT)
     @RequiredRole({"PLATFORM_USER"})
     public ResponseEntity<ResponseDTO<List<TenantDTO>>> searchTenants(@RequestParam String searchTerm) {
         log.info("searchTenants() : Searching tenants with term: {}", searchTerm);
@@ -420,7 +421,7 @@ public class TenantController {
     /**
      * Get tenant statistics
      */
-    @GetMapping(AppConstants.TENANT_STATS_ENDPOINT)
+    @GetMapping(EndpointConstants.TENANT_STATS_ENDPOINT)
     @RequiredRole({"PLATFORM_USER"})
     public ResponseEntity<ResponseDTO<TenantDTO>> getTenantStats(@RequestParam Long tenantId) {
         log.info("getTenantStats() : Fetching statistics for tenant ID: {}", tenantId);
@@ -458,7 +459,7 @@ public class TenantController {
     /**
      * Get users for a specific tenant
      */
-    @GetMapping(AppConstants.TENANT_USERS_ENDPOINT)
+    @GetMapping(EndpointConstants.TENANT_USERS_ENDPOINT)
     @RequiredRole({"PLATFORM_USER"})
     public ResponseEntity<ResponseDTO<List<Object>>> getTenantUsers(@RequestParam Long tenantId) {
         log.info("getTenantUsers() : Fetching users for tenant ID: {}", tenantId);

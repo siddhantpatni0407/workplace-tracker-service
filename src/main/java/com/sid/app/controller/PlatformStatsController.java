@@ -2,6 +2,7 @@ package com.sid.app.controller;
 
 import com.sid.app.auth.RequiredRole;
 import com.sid.app.constants.AppConstants;
+import com.sid.app.constants.EndpointConstants;
 import com.sid.app.model.PlatformStatsDTO;
 import com.sid.app.model.ResponseDTO;
 import com.sid.app.service.PlatformStatsService;
@@ -31,7 +32,7 @@ public class PlatformStatsController {
      *
      * @return ResponseEntity with platform statistics
      */
-    @GetMapping(AppConstants.PLATFORM_STATS_ENDPOINT)
+    @GetMapping(EndpointConstants.PLATFORM_STATS_ENDPOINT)
     @RequiredRole({"PLATFORM_USER"})
     public ResponseEntity<ResponseDTO<PlatformStatsDTO>> getPlatformStats() {
         log.info("getPlatformStats() : Received request to fetch platform statistics");

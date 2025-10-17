@@ -3,6 +3,7 @@ package com.sid.app.controller;
 import com.sid.app.auth.RequiredRole;
 import com.sid.app.auth.JwtAuthenticationContext;
 import com.sid.app.constants.AppConstants;
+import com.sid.app.constants.EndpointConstants;
 import com.sid.app.model.OfficeVisitDTO;
 import com.sid.app.model.ResponseDTO;
 import com.sid.app.service.OfficeVisitService;
@@ -24,7 +25,7 @@ import java.util.Optional;
 @RestController
 @Slf4j
 @RequiredArgsConstructor
-@RequestMapping(AppConstants.VISITS_ENDPOINT)
+@RequestMapping(EndpointConstants.VISITS_ENDPOINT)
 public class OfficeVisitController {
 
     private final OfficeVisitService visitService;

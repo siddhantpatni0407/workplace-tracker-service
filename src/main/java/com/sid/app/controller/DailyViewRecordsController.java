@@ -3,6 +3,7 @@ package com.sid.app.controller;
 import com.sid.app.auth.JwtAuthenticationContext;
 import com.sid.app.auth.RequiredRole;
 import com.sid.app.constants.AppConstants;
+import com.sid.app.constants.EndpointConstants;
 import com.sid.app.model.DailyViewRecordsDTO;
 import com.sid.app.model.ResponseDTO;
 import com.sid.app.service.DailyViewRecordsService;
@@ -23,7 +24,7 @@ import java.util.List;
 @RestController
 @Slf4j
 @RequiredArgsConstructor
-@RequestMapping(AppConstants.FETCH_DAILY_VIEW_ENDPOINT)
+@RequestMapping(EndpointConstants.FETCH_DAILY_VIEW_ENDPOINT)
 public class DailyViewRecordsController {
 
     private final DailyViewRecordsService service;

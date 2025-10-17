@@ -2,6 +2,7 @@ package com.sid.app.controller;
 
 import com.sid.app.auth.RequiredRole;
 import com.sid.app.constants.AppConstants;
+import com.sid.app.constants.EndpointConstants;
 import com.sid.app.exception.SchemaNotFoundException;
 import com.sid.app.model.ResponseDTO;
 import com.sid.app.service.DatabaseBackupService;
@@ -25,7 +26,7 @@ public class DatabaseBackupController {
         this.backupService = backupService;
     }
 
-    @GetMapping(AppConstants.DB_BACKUP_ENDPOINT)
+    @GetMapping(EndpointConstants.DB_BACKUP_ENDPOINT)
     @RequiredRole({"ADMIN", "SUPER_ADMIN"})
     public ResponseEntity<ResponseDTO<Map<String, String>>> createBackup(
             @RequestParam(name = "type", defaultValue = "sql") String type,
