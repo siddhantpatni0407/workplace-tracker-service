@@ -1,9 +1,11 @@
 package com.sid.app.auth;
 
 import com.sid.app.entity.PlatformUser;
+import com.sid.app.entity.TenantUser;
 import com.sid.app.entity.User;
 import com.sid.app.entity.UserRole;
 import com.sid.app.repository.PlatformUserRepository;
+import com.sid.app.repository.TenantUserRepository;
 import com.sid.app.repository.UserRepository;
 import com.sid.app.repository.UserRoleRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -24,20 +26,30 @@ public class CustomUserDetailsService implements UserDetailsService {
     private final UserRepository userRepository;
     private final UserRoleRepository userRoleRepository;
     private final PlatformUserRepository platformUserRepository;
+    private final TenantUserRepository tenantUserRepository;
 
     public CustomUserDetailsService(UserRepository userRepository,
                                     UserRoleRepository userRoleRepository,
-                                    PlatformUserRepository platformUserRepository) {
+                                    PlatformUserRepository platformUserRepository,
+                                    TenantUserRepository tenantUserRepository) {
         this.userRepository = userRepository;
         this.userRoleRepository = userRoleRepository;
         this.platformUserRepository = platformUserRepository;
+        this.tenantUserRepository = tenantUserRepository;
     }
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         log.debug("Loading user by email: {}", email);
 
-        // First, try to find platform user
+        // First, try to find tenant user (SUPER_ADMIN, ADMIN)
+        Optional<TenantUser> tenantUser = tenantUserRepository.findActiveByEmail(email);
+        if (tenantUser.isPresent()) {
+            log.debug("Found tenant user: {}", email);
+            return createUserDetailsFromTenantUser(tenantUser.get());
+        }
+
+        // Second, try to find platform user
         Optional<PlatformUser> platformUser = platformUserRepository.findByEmail(email);
         if (platformUser.isPresent()) {
             log.debug("Found platform user: {}", email);
@@ -53,6 +65,23 @@ public class CustomUserDetailsService implements UserDetailsService {
 
         log.warn("User not found with email: {}", email);
         throw new UsernameNotFoundException("User not found with email: " + email);
+    }
+
+    private UserDetails createUserDetailsFromTenantUser(TenantUser tenantUser) {
+        // Resolve role name from roleId for tenant users
+        String roleName = userRoleRepository.findById(tenantUser.getRoleId())
+                .map(UserRole::getRole)
+                .orElse("USER");
+
+        GrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + roleName.toUpperCase());
+
+        return org.springframework.security.core.userdetails.User.builder()
+                .username(tenantUser.getEmail())
+                .password(tenantUser.getPassword()) // AES encrypted password
+                .authorities(Collections.singleton(authority))
+                .disabled(!Boolean.TRUE.equals(tenantUser.getIsActive()))
+                .accountLocked(Boolean.TRUE.equals(tenantUser.getAccountLocked()))
+                .build();
     }
 
     private UserDetails createUserDetailsFromPlatformUser(PlatformUser platformUser) {
