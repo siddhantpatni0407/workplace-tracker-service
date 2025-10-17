@@ -1,5 +1,6 @@
 package com.sid.app.auth;
 
+import com.sid.app.enums.UserRole;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Aspect to handle role-based authorization using @RequiredRole annotation.
@@ -35,7 +37,7 @@ public class RoleAuthorizationAspect {
         log.debug("RoleAuthorizationAspect: Checking authorization for {}.{}", className, methodName);
 
         // Get required roles from annotation
-        String[] requiredRoles = requiredRole.value();
+        UserRole[] requiredRoles = requiredRole.value();
         if (requiredRoles.length == 0) {
             log.warn("RoleAuthorizationAspect: No roles specified in @RequiredRole for {}.{}", className, methodName);
             return joinPoint.proceed(); // No roles specified, allow access
@@ -48,11 +50,15 @@ public class RoleAuthorizationAspect {
             return createForbiddenResponse("Access denied: No role found for current user");
         }
 
+        // Convert required roles to their string codes for comparison
+        List<String> requiredRolesCodes = Arrays.stream(requiredRoles)
+                .map(UserRole::getCode)
+                .collect(Collectors.toList());
+
         // Check if current user's role is in the required roles list
-        List<String> requiredRolesList = Arrays.asList(requiredRoles);
-        if (!requiredRolesList.contains(currentUserRole)) {
+        if (!requiredRolesCodes.contains(currentUserRole)) {
             log.warn("RoleAuthorizationAspect: Access denied for {}.{} - User role: {}, Required roles: {}",
-                    className, methodName, currentUserRole, Arrays.toString(requiredRoles));
+                    className, methodName, currentUserRole, requiredRolesCodes);
             return createForbiddenResponse("Access denied: Insufficient privileges");
         }
 

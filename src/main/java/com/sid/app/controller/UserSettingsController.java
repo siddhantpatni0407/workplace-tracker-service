@@ -4,6 +4,7 @@ import com.sid.app.auth.JwtAuthenticationContext;
 import com.sid.app.auth.RequiredRole;
 import com.sid.app.constants.AppConstants;
 import com.sid.app.constants.EndpointConstants;
+import com.sid.app.enums.UserRole;
 import com.sid.app.model.ResponseDTO;
 import com.sid.app.model.UserSettingsDTO;
 import com.sid.app.service.UserSettingsService;
@@ -29,7 +30,7 @@ public class UserSettingsController {
      * Get user settings
      */
     @GetMapping(EndpointConstants.USER_SETTINGS_ENDPOINT)
-    @RequiredRole({"USER", "ADMIN", "SUPER_ADMIN"})
+    @RequiredRole({UserRole.USER, UserRole.MANAGER, UserRole.ADMIN, UserRole.SUPER_ADMIN})
     public ResponseEntity<ResponseDTO<UserSettingsDTO>> getUserSettings() {
         Long userId = jwtAuthenticationContext.getCurrentUserId();
         log.info("getUserSettings() -> userId={}", userId);
@@ -50,7 +51,7 @@ public class UserSettingsController {
      * Create or update user settings
      */
     @PutMapping(EndpointConstants.USER_SETTINGS_ENDPOINT)
-    @RequiredRole({"USER", "ADMIN", "SUPER_ADMIN"})
+    @RequiredRole({UserRole.USER, UserRole.MANAGER, UserRole.ADMIN, UserRole.SUPER_ADMIN})
     public ResponseEntity<ResponseDTO<UserSettingsDTO>> upsertUserSettings(
             @Valid @RequestBody UserSettingsDTO dto) {
 
@@ -79,7 +80,7 @@ public class UserSettingsController {
      * Delete user settings
      */
     @DeleteMapping(EndpointConstants.USER_SETTINGS_ENDPOINT)
-    @RequiredRole({"USER", "ADMIN", "SUPER_ADMIN"})
+    @RequiredRole({UserRole.USER, UserRole.MANAGER, UserRole.ADMIN, UserRole.SUPER_ADMIN})
     public ResponseEntity<ResponseDTO<Void>> deleteUserSettings() {
         Long userId = jwtAuthenticationContext.getCurrentUserId();
         try {

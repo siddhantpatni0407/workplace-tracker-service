@@ -4,6 +4,7 @@ import com.sid.app.auth.JwtAuthenticationContext;
 import com.sid.app.auth.RequiredRole;
 import com.sid.app.constants.AppConstants;
 import com.sid.app.constants.EndpointConstants;
+import com.sid.app.enums.UserRole;
 import com.sid.app.model.AggregatePeriodDTO;
 import com.sid.app.model.ResponseDTO;
 import com.sid.app.service.AnalyticsService;
@@ -40,7 +41,7 @@ public class AnalyticsController {
      * - groupBy = month | year | week
      */
     @GetMapping
-    @RequiredRole({"USER", "ADMIN", "SUPER_ADMIN"})
+    @RequiredRole({UserRole.USER, UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.MANAGER})
     public ResponseEntity<ResponseDTO<List<AggregatePeriodDTO>>> getVisitsLeavesAggregate(@RequestParam(value = "from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
                                                                                           @RequestParam(value = "to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
                                                                                           @RequestParam(value = "groupBy") String groupBy) {

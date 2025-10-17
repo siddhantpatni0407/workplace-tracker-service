@@ -3,6 +3,7 @@ package com.sid.app.controller;
 import com.sid.app.auth.RequiredRole;
 import com.sid.app.constants.AppConstants;
 import com.sid.app.constants.EndpointConstants;
+import com.sid.app.enums.UserRole;
 import com.sid.app.model.PlatformStatsDTO;
 import com.sid.app.model.ResponseDTO;
 import com.sid.app.service.PlatformStatsService;
@@ -33,7 +34,7 @@ public class PlatformStatsController {
      * @return ResponseEntity with platform statistics
      */
     @GetMapping(EndpointConstants.PLATFORM_STATS_ENDPOINT)
-    @RequiredRole({"PLATFORM_USER"})
+    @RequiredRole({UserRole.PLATFORM_USER})
     public ResponseEntity<ResponseDTO<PlatformStatsDTO>> getPlatformStats() {
         log.info("getPlatformStats() : Received request to fetch platform statistics");
 
@@ -47,7 +48,7 @@ public class PlatformStatsController {
 
             return ResponseEntity.ok(new ResponseDTO<>(
                     AppConstants.STATUS_SUCCESS,
-                    "Platform statistics retrieved successfully.",
+                    AppConstants.SUCCESS_PLATFORM_STATS_RETRIEVED,
                     stats
             ));
 
@@ -56,7 +57,7 @@ public class PlatformStatsController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ResponseDTO<>(
                             AppConstants.STATUS_FAILED,
-                            "Failed to retrieve platform statistics: " + e.getMessage(),
+                            AppConstants.ERROR_PLATFORM_STATS_FETCH_FAILED + ": " + e.getMessage(),
                             null
                     ));
         }

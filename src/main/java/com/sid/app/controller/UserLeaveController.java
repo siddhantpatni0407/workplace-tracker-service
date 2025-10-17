@@ -4,6 +4,7 @@ import com.sid.app.auth.RequiredRole;
 import com.sid.app.auth.JwtAuthenticationContext;
 import com.sid.app.constants.AppConstants;
 import com.sid.app.constants.EndpointConstants;
+import com.sid.app.enums.UserRole;
 import com.sid.app.model.ResponseDTO;
 import com.sid.app.model.UserLeaveDTO;
 import com.sid.app.service.UserLeaveService;
@@ -37,7 +38,7 @@ public class UserLeaveController {
      * Users can only view their own leaves unless they are admin.
      */
     @GetMapping
-    @RequiredRole({"USER", "ADMIN", "SUPER_ADMIN"})
+    @RequiredRole({UserRole.USER, UserRole.MANAGER, UserRole.ADMIN, UserRole.SUPER_ADMIN})
     public ResponseEntity<ResponseDTO<List<UserLeaveDTO>>> getUserLeaves() {
         Long userId = authContext.getCurrentUserId();
         log.info("getUserLeaves() - userId={}", userId);
@@ -73,7 +74,7 @@ public class UserLeaveController {
      * Users can only create leaves for themselves unless they are admin.
      */
     @PostMapping
-    @RequiredRole({"USER", "ADMIN", "SUPER_ADMIN"})
+    @RequiredRole({UserRole.USER, UserRole.MANAGER, UserRole.ADMIN, UserRole.SUPER_ADMIN})
     public ResponseEntity<ResponseDTO<UserLeaveDTO>> createLeave(@Valid @RequestBody UserLeaveDTO req) {
         log.info("createLeave() - userId={} policyId={} startDate={} endDate={}",
                 req.getUserId(), req.getPolicyId(), req.getStartDate(), req.getEndDate());
@@ -104,7 +105,7 @@ public class UserLeaveController {
      * Users can only update their own leaves unless they are admin.
      */
     @PutMapping
-    @RequiredRole({"USER", "ADMIN", "SUPER_ADMIN"})
+    @RequiredRole({UserRole.USER, UserRole.MANAGER, UserRole.ADMIN, UserRole.SUPER_ADMIN})
     public ResponseEntity<ResponseDTO<UserLeaveDTO>> updateLeave(@RequestParam("userLeaveId") Long userLeaveId,
                                                                  @Valid @RequestBody UserLeaveDTO req) {
 
@@ -142,7 +143,7 @@ public class UserLeaveController {
      * Users can only delete their own leaves unless they are admin.
      */
     @DeleteMapping
-    @RequiredRole({"USER", "ADMIN", "SUPER_ADMIN"})
+    @RequiredRole({UserRole.USER, UserRole.MANAGER, UserRole.ADMIN, UserRole.SUPER_ADMIN})
     public ResponseEntity<ResponseDTO<Void>> deleteLeave(@RequestParam("userLeaveId") Long userLeaveId) {
         log.info("deleteLeave() - userLeaveId={}", userLeaveId);
 

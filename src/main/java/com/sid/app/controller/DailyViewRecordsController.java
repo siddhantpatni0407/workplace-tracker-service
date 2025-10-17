@@ -4,6 +4,7 @@ import com.sid.app.auth.JwtAuthenticationContext;
 import com.sid.app.auth.RequiredRole;
 import com.sid.app.constants.AppConstants;
 import com.sid.app.constants.EndpointConstants;
+import com.sid.app.enums.UserRole;
 import com.sid.app.model.DailyViewRecordsDTO;
 import com.sid.app.model.ResponseDTO;
 import com.sid.app.service.DailyViewRecordsService;
@@ -33,7 +34,7 @@ public class DailyViewRecordsController {
     private JwtAuthenticationContext jwtAuthenticationContext;
 
     @GetMapping
-    @RequiredRole({"USER", "ADMIN", "SUPER_ADMIN"})
+    @RequiredRole({UserRole.USER, UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.MANAGER})
     public ResponseEntity<ResponseDTO<List<DailyViewRecordsDTO>>> fetchDailyViewRecords(@RequestParam(value = "year", required = false) Integer year,
                                                                                         @RequestParam(value = "month", required = false) Integer month,
                                                                                         @RequestParam(value = "from", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,

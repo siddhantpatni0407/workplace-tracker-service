@@ -51,7 +51,7 @@ public class UserTasksController {
      * @return ResponseEntity with the created task
      */
     @PostMapping(EndpointConstants.TASKS_ENDPOINT)
-    @RequiredRole({"USER"})
+    @RequiredRole({UserRole.USER, UserRole.MANAGER})
     public ResponseEntity<ResponseDTO<UserTasksDTO>> createTask(@RequestBody @Valid UserTasksDTO taskDTO) {
         Long userId = jwtAuthenticationContext.getCurrentUserId();
         log.info("createTask() : Creating task for user: {}", userId);
@@ -76,7 +76,7 @@ public class UserTasksController {
      * @return ResponseEntity with the task data
      */
     @GetMapping(EndpointConstants.TASKS_DETAILS_ENDPOINT)
-    @RequiredRole({"USER"})
+    @RequiredRole({UserRole.USER, UserRole.MANAGER})
     public ResponseEntity<ResponseDTO<UserTasksDTO>> getTaskById(@RequestParam Long userTaskId) {
         Long userId = jwtAuthenticationContext.getCurrentUserId();
         log.info("getTaskById() : Fetching task {} for user {}", userTaskId, userId);
@@ -117,7 +117,7 @@ public class UserTasksController {
      * @return ResponseEntity with the list of tasks
      */
     @GetMapping(EndpointConstants.TASKS_USER_ENDPOINT)
-    @RequiredRole({"USER"})
+    @RequiredRole({UserRole.USER, UserRole.MANAGER})
     public ResponseEntity<ResponseDTO<UserTasksListResponseDTO>> getUserTasks(@RequestParam(defaultValue = "0") int page,
                                                                               @RequestParam(defaultValue = "50") int limit,
                                                                               @RequestParam(required = false) TaskStatus status,
@@ -170,7 +170,7 @@ public class UserTasksController {
      * @return ResponseEntity with the updated task
      */
     @PutMapping(EndpointConstants.TASKS_UPDATE_ENDPOINT)
-    @RequiredRole({"USER"})
+    @RequiredRole({UserRole.USER, UserRole.MANAGER})
     public ResponseEntity<ResponseDTO<UserTasksDTO>> updateTask(@RequestParam Long userTaskId,
                                                                 @RequestBody @Valid UserTasksDTO taskDTO) {
         Long userId = jwtAuthenticationContext.getCurrentUserId();
@@ -198,7 +198,7 @@ public class UserTasksController {
      * @return ResponseEntity with success message
      */
     @DeleteMapping(EndpointConstants.TASKS_DELETE_ENDPOINT)
-    @RequiredRole({"USER"})
+    @RequiredRole({UserRole.USER, UserRole.MANAGER})
     public ResponseEntity<ResponseDTO<Void>> deleteTask(@RequestParam Long userTaskId) {
         Long userId = jwtAuthenticationContext.getCurrentUserId();
         log.info("deleteTask() : Deleting task {} for user {}", userTaskId, userId);
@@ -228,7 +228,7 @@ public class UserTasksController {
      * @return ResponseEntity with updated task status
      */
     @PatchMapping(EndpointConstants.TASKS_STATUS_UPDATE_ENDPOINT)
-    @RequiredRole({"USER"})
+    @RequiredRole({UserRole.USER, UserRole.MANAGER})
     public ResponseEntity<ResponseDTO<UserTasksDTO>> updateTaskStatus(@RequestParam Long userTaskId,
                                                                       @RequestBody Map<String, TaskStatus> statusRequest) {
         Long userId = jwtAuthenticationContext.getCurrentUserId();
@@ -263,7 +263,7 @@ public class UserTasksController {
      * @return ResponseEntity with updated task priority
      */
     @PatchMapping(EndpointConstants.TASKS_PRIORITY_UPDATE_ENDPOINT)
-    @RequiredRole({"USER"})
+    @RequiredRole({UserRole.USER, UserRole.MANAGER})
     public ResponseEntity<ResponseDTO<UserTasksDTO>> updateTaskPriority(@RequestParam Long userTaskId,
                                                                         @RequestBody Map<String, TaskPriority> priorityRequest) {
         Long userId = jwtAuthenticationContext.getCurrentUserId();
@@ -306,7 +306,7 @@ public class UserTasksController {
      * @return ResponseEntity with search results
      */
     @GetMapping(EndpointConstants.TASKS_SEARCH_ENDPOINT)
-    @RequiredRole({"USER"})
+    @RequiredRole({UserRole.USER, UserRole.MANAGER})
     public ResponseEntity<ResponseDTO<UserTasksListResponseDTO>> searchTasks(@RequestParam String searchTerm,
                                                                              @RequestParam(defaultValue = "0") int page,
                                                                              @RequestParam(defaultValue = "50") int limit,
@@ -343,7 +343,7 @@ public class UserTasksController {
      * @return ResponseEntity with overdue tasks
      */
     @GetMapping(EndpointConstants.TASKS_OVERDUE_ENDPOINT)
-    @RequiredRole({"USER"})
+    @RequiredRole({UserRole.USER, UserRole.MANAGER})
     public ResponseEntity<ResponseDTO<UserTasksListResponseDTO>> getOverdueTasks(@RequestParam(defaultValue = "0") int page,
                                                                                  @RequestParam(defaultValue = "50") int limit,
                                                                                  @RequestParam(defaultValue = "dueDate") String sortBy,
@@ -377,7 +377,7 @@ public class UserTasksController {
      * @return ResponseEntity with tasks filtered by status
      */
     @GetMapping(EndpointConstants.TASKS_BY_STATUS_ENDPOINT)
-    @RequiredRole({"USER"})
+    @RequiredRole({UserRole.USER, UserRole.MANAGER})
     public ResponseEntity<ResponseDTO<UserTasksListResponseDTO>> getTasksByStatus(@RequestParam TaskStatus status,
                                                                                   @RequestParam(defaultValue = "0") int page,
                                                                                   @RequestParam(defaultValue = "50") int limit,
@@ -412,7 +412,7 @@ public class UserTasksController {
      * @return ResponseEntity with tasks filtered by priority
      */
     @GetMapping(EndpointConstants.TASKS_BY_PRIORITY_ENDPOINT)
-    @RequiredRole({"USER"})
+    @RequiredRole({UserRole.USER, UserRole.MANAGER})
     public ResponseEntity<ResponseDTO<UserTasksListResponseDTO>> getTasksByPriority(@RequestParam TaskPriority priority,
                                                                                     @RequestParam(defaultValue = "0") int page,
                                                                                     @RequestParam(defaultValue = "50") int limit,
@@ -444,7 +444,7 @@ public class UserTasksController {
      * @return ResponseEntity with task statistics
      */
     @GetMapping(EndpointConstants.TASKS_STATS_ENDPOINT)
-    @RequiredRole({"USER"})
+    @RequiredRole({UserRole.USER, UserRole.MANAGER})
     public ResponseEntity<ResponseDTO<UserTasksStatsDTO>> getTaskStats() {
         Long userId = jwtAuthenticationContext.getCurrentUserId();
         log.info("getTaskStats() : Fetching task statistics for user {}", userId);
@@ -469,7 +469,7 @@ public class UserTasksController {
      * @return ResponseEntity with bulk update result
      */
     @PutMapping(EndpointConstants.TASKS_BULK_UPDATE_ENDPOINT)
-    @RequiredRole({"USER"})
+    @RequiredRole({UserRole.USER, UserRole.MANAGER})
     public ResponseEntity<ResponseDTO<List<UserTasksDTO>>> bulkUpdateTasks(@RequestBody @Valid UserTasksBulkUpdateRequest bulkUpdateRequest) {
         Long userId = jwtAuthenticationContext.getCurrentUserId();
         log.info("bulkUpdateTasks() : Bulk updating tasks for user {}", userId);
@@ -492,7 +492,7 @@ public class UserTasksController {
      * @return ResponseEntity with bulk delete result
      */
     @DeleteMapping(EndpointConstants.TASKS_BULK_DELETE_ENDPOINT)
-    @RequiredRole({"USER"})
+    @RequiredRole({UserRole.USER, UserRole.MANAGER})
     public ResponseEntity<ResponseDTO<Void>> bulkDeleteTasks(@RequestBody @Valid UserTasksBulkDeleteRequest bulkDeleteRequest) {
         Long userId = jwtAuthenticationContext.getCurrentUserId();
         log.info("bulkDeleteTasks() : Bulk deleting tasks for user {}", userId);
@@ -515,7 +515,7 @@ public class UserTasksController {
      * @return ResponseEntity with the duplicated task
      */
     @PostMapping(EndpointConstants.TASKS_DUPLICATE_ENDPOINT)
-    @RequiredRole({"USER"})
+    @RequiredRole({UserRole.USER, UserRole.MANAGER})
     public ResponseEntity<ResponseDTO<UserTasksDTO>> duplicateTask(@RequestParam Long userTaskId) {
         Long userId = jwtAuthenticationContext.getCurrentUserId();
         log.info("duplicateTask() : Duplicating task {} for user {}", userTaskId, userId);

@@ -3,6 +3,7 @@ package com.sid.app.controller;
 import com.sid.app.auth.RequiredRole;
 import com.sid.app.constants.AppConstants;
 import com.sid.app.constants.EndpointConstants;
+import com.sid.app.enums.UserRole;
 import com.sid.app.model.CurrentMonthSpecialDaysDTO;
 import com.sid.app.model.ResponseDTO;
 import com.sid.app.model.SpecialDaysDataDTO;
@@ -28,7 +29,7 @@ public class SpecialDaysController {
      * All authenticated users can view special days.
      */
     @GetMapping(value = EndpointConstants.SPECIAL_DAYS_ENDPOINT, produces = MediaType.APPLICATION_JSON_VALUE)
-    @RequiredRole({"USER", "ADMIN", "SUPER_ADMIN"})
+    @RequiredRole({UserRole.USER, UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.MANAGER})
     public ResponseEntity<ResponseDTO<SpecialDaysDataDTO>> getSpecialDays(@RequestParam(required = false) Integer month,
                                                                           @RequestParam(required = false) Integer year,
                                                                           @RequestParam(required = false) Integer page,
@@ -51,7 +52,7 @@ public class SpecialDaysController {
      * All authenticated users can view special days.
      */
     @GetMapping(value = EndpointConstants.SPECIAL_DAYS_CURRENT_MONTH_ENDPOINT, produces = MediaType.APPLICATION_JSON_VALUE)
-    @RequiredRole({"USER", "ADMIN", "SUPER_ADMIN"})
+    @RequiredRole({UserRole.USER, UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.MANAGER})
     public ResponseEntity<ResponseDTO<CurrentMonthSpecialDaysDTO>> getCurrentMonthSpecialDays(@RequestParam(required = false) Integer month,
                                                                                               @RequestParam(required = false) Integer year,
                                                                                               @RequestParam(required = false) Integer limit) {
@@ -68,7 +69,7 @@ public class SpecialDaysController {
      * All authenticated users can view birthdays.
      */
     @GetMapping(value = EndpointConstants.SPECIAL_DAYS_BIRTHDAYS_ENDPOINT, produces = MediaType.APPLICATION_JSON_VALUE)
-    @RequiredRole({"USER", "ADMIN", "SUPER_ADMIN"})
+    @RequiredRole({UserRole.USER, UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.MANAGER})
     public ResponseEntity<ResponseDTO<SpecialDaysDataDTO>> getBirthdays(@RequestParam(required = false) Integer month,
                                                                         @RequestParam(required = false) Integer year,
                                                                         @RequestParam(required = false) Integer page,
@@ -90,7 +91,7 @@ public class SpecialDaysController {
      * All authenticated users can view anniversaries.
      */
     @GetMapping(value = EndpointConstants.SPECIAL_DAYS_ANNIVERSARIES_ENDPOINT, produces = MediaType.APPLICATION_JSON_VALUE)
-    @RequiredRole({"USER", "ADMIN", "SUPER_ADMIN"})
+    @RequiredRole({UserRole.USER, UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.MANAGER})
     public ResponseEntity<ResponseDTO<SpecialDaysDataDTO>> getAnniversaries(@RequestParam(required = false) Integer month,
                                                                             @RequestParam(required = false) Integer year,
                                                                             @RequestParam(required = false) Integer page,

@@ -4,6 +4,7 @@ import com.sid.app.auth.JwtAuthenticationContext;
 import com.sid.app.auth.RequiredRole;
 import com.sid.app.constants.AppConstants;
 import com.sid.app.constants.EndpointConstants;
+import com.sid.app.enums.UserRole;
 import com.sid.app.model.ResponseDTO;
 import com.sid.app.model.TenantUserDTO;
 import com.sid.app.model.UserStatusUpdateRequest;
@@ -40,7 +41,7 @@ public class PlatformUserManagementController {
      * Get all Super Admins in the system
      */
     @GetMapping(EndpointConstants.SUPER_ADMIN_MANAGEMENT_ENDPOINT)
-    @RequiredRole({"PLATFORM_USER"})
+    @RequiredRole({UserRole.PLATFORM_USER})
     public ResponseEntity<ResponseDTO<List<TenantUserDTO>>> getAllSuperAdmins() {
         log.info("getAllSuperAdmins() : Platform User requesting all Super Admins");
 
@@ -77,7 +78,7 @@ public class PlatformUserManagementController {
      * Get Super Admins by tenant ID
      */
     @GetMapping(EndpointConstants.SUPER_ADMIN_BY_TENANT_ENDPOINT)
-    @RequiredRole({"PLATFORM_USER"})
+    @RequiredRole({UserRole.PLATFORM_USER})
     public ResponseEntity<ResponseDTO<List<TenantUserDTO>>> getSuperAdminsByTenant(@RequestParam Long tenantId) {
         log.info("getSuperAdminsByTenant() : Platform User requesting Super Admins for tenant ID: {}", tenantId);
 
@@ -122,7 +123,7 @@ public class PlatformUserManagementController {
      * Search Super Admins by name or email
      */
     @GetMapping(EndpointConstants.SUPER_ADMIN_SEARCH_ENDPOINT)
-    @RequiredRole({"PLATFORM_USER"})
+    @RequiredRole({UserRole.PLATFORM_USER})
     public ResponseEntity<ResponseDTO<List<TenantUserDTO>>> searchSuperAdmins(@RequestParam String searchTerm) {
         log.info("searchSuperAdmins() : Platform User searching Super Admins with term: {}", searchTerm);
 
@@ -158,7 +159,7 @@ public class PlatformUserManagementController {
      * Get Super Admin by ID
      */
     @GetMapping(EndpointConstants.SUPER_ADMIN_DETAILS_ENDPOINT)
-    @RequiredRole({"PLATFORM_USER"})
+    @RequiredRole({UserRole.PLATFORM_USER})
     public ResponseEntity<ResponseDTO<TenantUserDTO>> getSuperAdminById(@RequestParam Long tenantUserId) {
         log.info("getSuperAdminById() : Platform User requesting Super Admin with ID: {}", tenantUserId);
 
@@ -201,7 +202,7 @@ public class PlatformUserManagementController {
      * Update Super Admin status (activate/deactivate)
      */
     @PutMapping(EndpointConstants.SUPER_ADMIN_STATUS_ENDPOINT)
-    @RequiredRole({"PLATFORM_USER"})
+    @RequiredRole({UserRole.PLATFORM_USER})
     public ResponseEntity<ResponseDTO<TenantUserDTO>> updateSuperAdminStatus(@RequestParam Long tenantUserId,
                                                                              @RequestBody @Valid UserStatusUpdateRequest statusRequest) {
         log.info("updateSuperAdminStatus() : Platform User updating status for Super Admin ID: {}", tenantUserId);

@@ -4,6 +4,7 @@ import com.sid.app.auth.JwtAuthenticationContext;
 import com.sid.app.auth.RequiredRole;
 import com.sid.app.constants.AppConstants;
 import com.sid.app.constants.EndpointConstants;
+import com.sid.app.enums.UserRole;
 import com.sid.app.model.AuthResponse;
 import com.sid.app.model.LoginRequest;
 import com.sid.app.model.RegisterRequest;
@@ -66,56 +67,56 @@ public class AuthController {
     private AuthResponse validateRegisterRequest(RegisterRequest request) {
         // Basic field validation
         if (isBlank(request.getName())) {
-            return createErrorResponse("Name is required");
+            return createErrorResponse(AppConstants.ERROR_NAME_REQUIRED);
         }
         if (isBlank(request.getEmail())) {
-            return createErrorResponse("Email is required");
+            return createErrorResponse(AppConstants.ERROR_EMAIL_REQUIRED);
         }
         if (isBlank(request.getPassword())) {
-            return createErrorResponse("Password is required");
+            return createErrorResponse(AppConstants.ERROR_PASSWORD_REQUIRED);
         }
         if (isBlank(request.getRole())) {
-            return createErrorResponse("Role is required");
+            return createErrorResponse(AppConstants.ERROR_ROLE_REQUIRED);
         }
 
         // Email format validation (basic)
         if (!request.getEmail().contains("@")) {
-            return createErrorResponse("Invalid email format");
+            return createErrorResponse(AppConstants.ERROR_INVALID_EMAIL_FORMAT);
         }
 
         // Password length validation
         if (request.getPassword().length() < 8) {
-            return createErrorResponse("Password must be at least 8 characters long");
+            return createErrorResponse(AppConstants.ERROR_PASSWORD_MIN_LENGTH);
         }
 
         // Role-specific code validation
         String role = request.getRole().toUpperCase();
         switch (role) {
-            case "SUPER_ADMIN":
+            case AppConstants.ROLE_CODE_SUPER_ADMIN:
                 if (isBlank(request.getPlatformUserCode())) {
-                    return createErrorResponse("Platform user code is required for SUPER_ADMIN role");
+                    return createErrorResponse(AppConstants.ERROR_PLATFORM_USER_CODE_REQUIRED_SUPER_ADMIN);
                 }
                 if (isBlank(request.getTenantCode())) {
-                    return createErrorResponse("Tenant code is required for SUPER_ADMIN role");
+                    return createErrorResponse(AppConstants.ERROR_TENANT_CODE_REQUIRED_SUPER_ADMIN);
                 }
                 break;
 
-            case "ADMIN":
+            case AppConstants.ROLE_CODE_ADMIN:
                 if (isBlank(request.getTenantUserCode())) {
-                    return createErrorResponse("Tenant user code is required for ADMIN role");
+                    return createErrorResponse(AppConstants.ERROR_TENANT_USER_CODE_REQUIRED_ADMIN);
                 }
                 // Note: No tenantCode validation needed since we derive tenant info from SUPER_ADMIN
                 break;
 
-            case "USER":
-            case "MANAGER":
+            case AppConstants.ROLE_CODE_USER:
+            case AppConstants.ROLE_CODE_MANAGER:
                 if (isBlank(request.getTenantUserCode())) {
-                    return createErrorResponse("Tenant user code is required for " + role + " role");
+                    return createErrorResponse(String.format(AppConstants.ERROR_TENANT_USER_CODE_REQUIRED_USER_MANAGER, role));
                 }
                 break;
 
             default:
-                return createErrorResponse("Invalid role: " + request.getRole() + ". Supported roles: SUPER_ADMIN, ADMIN, USER, MANAGER");
+                return createErrorResponse(String.format(AppConstants.ERROR_INVALID_ROLE, request.getRole()));
         }
 
         return new AuthResponse(null, null, null, null, AppConstants.STATUS_SUCCESS, null, null, null, null, null);
@@ -145,7 +146,6 @@ public class AuthController {
         }
     }
 
-
     @PostMapping(EndpointConstants.FORGOT_PASSWORD_RESET_ENDPOINT)
     public ResponseEntity<ResponseDTO<Void>> resetPassword(@Valid @RequestBody ForgotPasswordResetRequest request) {
         log.info("Reset password for email: {}", request.getEmail());
@@ -168,7 +168,7 @@ public class AuthController {
 
         if (token == null) {
             AuthResponse resp = new AuthResponse(null, null, null, null,
-                    AppConstants.STATUS_FAILED, "Missing refresh token.", null, null, null, null);
+                    AppConstants.STATUS_FAILED, AppConstants.ERROR_MISSING_REFRESH_TOKEN, null, null, null, null);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(resp);
         }
 
@@ -184,7 +184,7 @@ public class AuthController {
         } catch (Exception ex) {
             log.warn("Refresh token failed: {}", ex.getMessage());
             AuthResponse resp = new AuthResponse(null, null, null, null,
-                    AppConstants.STATUS_FAILED, "Refresh failed.", null, null, null, null);
+                    AppConstants.STATUS_FAILED, AppConstants.ERROR_REFRESH_FAILED, null, null, null, null);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(resp);
         }
     }
@@ -194,7 +194,7 @@ public class AuthController {
      * Accepts userId in body (optional) or derive from JWT in production.
      */
     @PatchMapping(value = EndpointConstants.USER_CHANGE_PASSWORD_ENDPOINT, consumes = MediaType.APPLICATION_JSON_VALUE)
-    @RequiredRole({"USER", "ADMIN", "SUPER_ADMIN"})
+    @RequiredRole({UserRole.USER, UserRole.MANAGER, UserRole.ADMIN, UserRole.SUPER_ADMIN})
     public ResponseEntity<ResponseDTO<Void>> changePassword(@RequestBody @Valid PasswordChangeRequest request,
                                                             @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authorizationHeader) {
 
@@ -208,12 +208,12 @@ public class AuthController {
             if (userId == null) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                         .body(new ResponseDTO<>(AppConstants.STATUS_FAILED,
-                                "userId is required. In production derive userId from auth token.", null));
+                                AppConstants.ERROR_USER_ID_REQUIRED, null));
             }
 
             authService.changePassword(userId, request.getCurrentPassword(), request.getNewPassword());
             log.info("changePassword() : Password changed successfully for userId={}", userId);
-            return ResponseEntity.ok(new ResponseDTO<>(AppConstants.STATUS_SUCCESS, "Password changed successfully.", null));
+            return ResponseEntity.ok(new ResponseDTO<>(AppConstants.STATUS_SUCCESS, AppConstants.SUCCESS_PASSWORD_CHANGED, null));
 
         } catch (UserNotFoundException ex) {
             log.warn("changePassword() : User not found: {}", userId);
@@ -229,7 +229,7 @@ public class AuthController {
         } catch (Exception ex) {
             log.error("changePassword() error: {}", ex.getMessage(), ex);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ResponseDTO<>(AppConstants.STATUS_FAILED, "Failed to change password.", null));
+                    .body(new ResponseDTO<>(AppConstants.STATUS_FAILED, AppConstants.ERROR_FAILED_TO_CHANGE_PASSWORD, null));
         }
     }
 

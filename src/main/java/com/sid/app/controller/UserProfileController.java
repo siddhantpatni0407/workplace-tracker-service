@@ -4,6 +4,7 @@ import com.sid.app.auth.JwtAuthenticationContext;
 import com.sid.app.auth.RequiredRole;
 import com.sid.app.constants.AppConstants;
 import com.sid.app.constants.EndpointConstants;
+import com.sid.app.enums.UserRole;
 import com.sid.app.model.ResponseDTO;
 import com.sid.app.model.UserProfileDTO;
 import com.sid.app.service.UserProfileService;
@@ -33,7 +34,7 @@ public class UserProfileController {
      * GET /user-profile
      */
     @GetMapping(value = EndpointConstants.USER_PROFILE_ENDPOINT, produces = "application/json")
-    @RequiredRole({"USER", "ADMIN", "SUPER_ADMIN"})
+    @RequiredRole({UserRole.USER, UserRole.MANAGER, UserRole.ADMIN, UserRole.SUPER_ADMIN})
     public ResponseEntity<ResponseDTO<UserProfileDTO>> getProfile() {
         Long userId = jwtAuthenticationContext.getCurrentUserId();
         log.info("GET /user/profile called - userId={}", userId);
@@ -57,7 +58,7 @@ public class UserProfileController {
      * PUT /user-profile
      */
     @PutMapping(value = EndpointConstants.USER_PROFILE_ENDPOINT, produces = "application/json")
-    @RequiredRole({"USER", "ADMIN", "SUPER_ADMIN"})
+    @RequiredRole({UserRole.USER, UserRole.MANAGER, UserRole.ADMIN, UserRole.SUPER_ADMIN})
     public ResponseEntity<ResponseDTO<?>> upsertProfile(@Valid @RequestBody UserProfileDTO dto) {
 
         Long userId = jwtAuthenticationContext.getCurrentUserId();

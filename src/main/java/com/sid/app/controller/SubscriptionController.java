@@ -3,6 +3,7 @@ package com.sid.app.controller;
 import com.sid.app.auth.RequiredRole;
 import com.sid.app.constants.AppConstants;
 import com.sid.app.constants.EndpointConstants;
+import com.sid.app.enums.UserRole;
 import com.sid.app.model.ResponseDTO;
 import com.sid.app.model.SubscriptionDTO;
 import com.sid.app.service.SubscriptionService;
@@ -35,7 +36,7 @@ public class SubscriptionController {
      * Get all subscriptions
      */
     @GetMapping(EndpointConstants.SUBSCRIPTIONS_ENDPOINT)
-    @RequiredRole({"PLATFORM_USER"})
+    @RequiredRole({UserRole.PLATFORM_USER})
     public ResponseEntity<ResponseDTO<List<SubscriptionDTO>>> getAllSubscriptions() {
         log.info("getAllSubscriptions() : Fetching all subscriptions");
 
@@ -73,7 +74,7 @@ public class SubscriptionController {
      * Get all active subscriptions
      */
     @GetMapping(EndpointConstants.ACTIVE_SUBSCRIPTIONS_ENDPOINT)
-    @RequiredRole({"PLATFORM_USER"})
+    @RequiredRole({UserRole.PLATFORM_USER})
     public ResponseEntity<ResponseDTO<List<SubscriptionDTO>>> getActiveSubscriptions() {
         log.info("getActiveSubscriptions() : Fetching all active subscriptions");
 
@@ -111,7 +112,7 @@ public class SubscriptionController {
      * Get subscription by code
      */
     @GetMapping(EndpointConstants.SUBSCRIPTION_BY_CODE_ENDPOINT)
-    @RequiredRole({"PLATFORM_USER"})
+    @RequiredRole({UserRole.PLATFORM_USER})
     public ResponseEntity<ResponseDTO<SubscriptionDTO>> getSubscriptionByCode(@RequestParam String subscriptionCode) {
         log.info("getSubscriptionByCode() : Fetching subscription with code: {}", subscriptionCode);
 

@@ -138,7 +138,77 @@ public class AppConstants {
     public static final String ERROR_NO_SUBSCRIPTIONS_FOUND = "No subscriptions found";
     public static final String ERROR_INVALID_SUBSCRIPTION_CODE = "Invalid subscription code";
 
-    // Role codes for platform statistics
+    // Platform User Authentication messages
+    public static final String SUCCESS_PLATFORM_SIGNUP = "Platform user signup successful";
+    public static final String SUCCESS_PLATFORM_LOGIN = "Platform user login successful";
+    public static final String SUCCESS_PLATFORM_TOKEN_REFRESH = "Platform user token refresh successful";
+    public static final String SUCCESS_PLATFORM_PROFILE_RETRIEVED = "Platform user profile retrieved successfully";
+    public static final String ERROR_PLATFORM_SIGNUP_FAILED = "Signup failed due to server error";
+    public static final String ERROR_PLATFORM_LOGIN_FAILED = "Login failed due to server error";
+    public static final String ERROR_PLATFORM_TOKEN_REFRESH_FAILED = "Token refresh failed due to server error";
+    public static final String ERROR_PLATFORM_PROFILE_NOT_FOUND = "Platform user profile not found";
+
+    // Authentication and Registration Validation Messages
+    public static final String ERROR_NAME_REQUIRED = "Name is required";
+    public static final String ERROR_EMAIL_REQUIRED = "Email is required";
+    public static final String ERROR_PASSWORD_REQUIRED = "Password is required";
+    public static final String ERROR_ROLE_REQUIRED = "Role is required";
+    public static final String ERROR_INVALID_EMAIL_FORMAT = "Invalid email format";
+    public static final String ERROR_PASSWORD_MIN_LENGTH = "Password must be at least 8 characters long";
+    public static final String ERROR_PLATFORM_USER_CODE_REQUIRED_SUPER_ADMIN = "Platform user code is required for SUPER_ADMIN role";
+    public static final String ERROR_TENANT_CODE_REQUIRED_SUPER_ADMIN = "Tenant code is required for SUPER_ADMIN role";
+    public static final String ERROR_TENANT_USER_CODE_REQUIRED_ADMIN = "Tenant user code is required for ADMIN role";
+    public static final String ERROR_TENANT_USER_CODE_REQUIRED_USER_MANAGER = "Tenant user code is required for %s role";
+    public static final String ERROR_INVALID_ROLE = "Invalid role: %s. Supported roles: SUPER_ADMIN, ADMIN, USER, MANAGER";
+
+    // Authentication Messages
+    public static final String ERROR_MISSING_REFRESH_TOKEN = "Missing refresh token.";
+    public static final String ERROR_REFRESH_FAILED = "Refresh failed.";
+    public static final String SUCCESS_PASSWORD_CHANGED = "Password changed successfully.";
+    public static final String ERROR_USER_ID_REQUIRED = "userId is required. In production derive userId from auth token.";
+    public static final String ERROR_FAILED_TO_CHANGE_PASSWORD = "Failed to change password.";
+
+    // Tenant Management Operation Messages
+    public static final String SUCCESS_TENANT_CREATED_MESSAGE = "Tenant created successfully";
+    public static final String ERROR_TENANT_CREATION_FAILED_MESSAGE = "Failed to create tenant";
+    public static final String SUCCESS_TENANTS_RETRIEVED_MESSAGE = "Tenants retrieved successfully";
+    public static final String ERROR_TENANTS_FETCH_FAILED = "Failed to fetch tenants";
+    public static final String SUCCESS_ACTIVE_TENANTS_RETRIEVED_MESSAGE = "Active tenants retrieved successfully";
+    public static final String ERROR_ACTIVE_TENANTS_FETCH_FAILED = "Failed to fetch active tenants";
+    public static final String SUCCESS_TENANT_RETRIEVED_MESSAGE = "Tenant retrieved successfully";
+    public static final String ERROR_TENANT_FETCH_FAILED = "Failed to fetch tenant";
+    public static final String SUCCESS_TENANT_UPDATED_MESSAGE = "Tenant updated successfully";
+    public static final String ERROR_TENANT_UPDATE_FAILED_MESSAGE = "Failed to update tenant";
+    public static final String SUCCESS_TENANT_STATUS_UPDATED_MESSAGE = "Tenant status updated successfully";
+    public static final String ERROR_TENANT_STATUS_UPDATE_FAILED = "Failed to update tenant status";
+    public static final String SUCCESS_TENANT_DELETED_MESSAGE = "Tenant deleted successfully";
+    public static final String ERROR_TENANT_DELETE_FAILED = "Failed to delete tenant";
+    public static final String SUCCESS_TENANTS_FOUND = "Tenants found successfully";
+    public static final String ERROR_TENANTS_SEARCH_FAILED = "Failed to search tenants";
+    public static final String SUCCESS_TENANT_STATS_RETRIEVED_MESSAGE = "Tenant statistics retrieved successfully";
+    public static final String ERROR_TENANT_STATS_FETCH_FAILED = "Failed to fetch tenant statistics";
+    public static final String SUCCESS_TENANT_USERS_RETRIEVED_MESSAGE = "Tenant users retrieved successfully";
+    public static final String ERROR_TENANT_USERS_FETCH_FAILED = "Failed to fetch tenant users";
+
+    // Tenant Management Info Messages
+    public static final String INFO_NO_TENANTS_FOUND = "No tenants found";
+    public static final String INFO_NO_ACTIVE_TENANTS_FOUND = "No active tenants found";
+    public static final String INFO_NO_TENANTS_FOUND_FOR_SEARCH = "No tenants found for the given search term";
+    public static final String INFO_NO_USERS_FOUND_FOR_TENANT = "No users found for this tenant";
+
+    // Tenant Management Validation Messages
+    public static final String ERROR_SEARCH_TERM_EMPTY = "Search term cannot be empty";
+
+    // Common Sort Direction Constants
+    public static final String SORT_DIRECTION_DESC = "desc";
+    public static final String SORT_DIRECTION_ASC = "asc";
+
+    // Platform Stats Messages
+    public static final String SUCCESS_PLATFORM_STATS_RETRIEVED = "Platform statistics retrieved successfully.";
+    public static final String ERROR_PLATFORM_STATS_FETCH_FAILED = "Failed to retrieve platform statistics";
+
+    // Role codes
+    public static final String ROLE_CODE_PLATFORM_USER = "PLATFORM_USER";
     public static final String ROLE_CODE_SUPER_ADMIN = "SUPER_ADMIN";
     public static final String ROLE_CODE_ADMIN = "ADMIN";
     public static final String ROLE_CODE_USER = "USER";

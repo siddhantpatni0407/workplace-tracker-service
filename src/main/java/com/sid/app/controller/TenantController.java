@@ -3,6 +3,7 @@ package com.sid.app.controller;
 import com.sid.app.auth.RequiredRole;
 import com.sid.app.constants.AppConstants;
 import com.sid.app.constants.EndpointConstants;
+import com.sid.app.enums.UserRole;
 import com.sid.app.model.*;
 import com.sid.app.service.TenantService;
 import com.sid.app.utils.ApplicationUtils;
@@ -41,7 +42,7 @@ public class TenantController {
      * Create a new tenant
      */
     @PostMapping(EndpointConstants.TENANT_ENDPOINT)
-    @RequiredRole({"PLATFORM_USER"})
+    @RequiredRole({UserRole.PLATFORM_USER})
     public ResponseEntity<ResponseDTO<TenantDTO>> createTenant(@Valid @RequestBody TenantCreateRequest request) {
         log.info("createTenant() : Received request to create tenant: {}", ApplicationUtils.getJSONString(request));
 
@@ -52,7 +53,7 @@ public class TenantController {
             return ResponseEntity.status(HttpStatus.CREATED).body(
                     new ResponseDTO<>(
                             AppConstants.STATUS_SUCCESS,
-                            "Tenant created successfully",
+                            AppConstants.SUCCESS_TENANT_CREATED_MESSAGE,
                             createdTenant
                     )
             );
@@ -70,7 +71,7 @@ public class TenantController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                     new ResponseDTO<>(
                             AppConstants.STATUS_FAILED,
-                            "Failed to create tenant",
+                            AppConstants.ERROR_TENANT_CREATION_FAILED_MESSAGE,
                             null
                     )
             );
@@ -81,17 +82,17 @@ public class TenantController {
      * Get all tenants with pagination
      */
     @GetMapping(EndpointConstants.TENANTS_ENDPOINT)
-    @RequiredRole({"PLATFORM_USER"})
+    @RequiredRole({UserRole.PLATFORM_USER})
     public ResponseEntity<ResponseDTO<Page<TenantDTO>>> getAllTenants(@RequestParam(defaultValue = "0") int page,
                                                                       @RequestParam(defaultValue = "10") int size,
                                                                       @RequestParam(defaultValue = "tenantId") String sortBy,
-                                                                      @RequestParam(defaultValue = "desc") String sortDir) {
+                                                                      @RequestParam(defaultValue = AppConstants.SORT_DIRECTION_DESC) String sortDir) {
 
         log.info("getAllTenants() : Fetching tenants - page: {}, size: {}, sortBy: {}, sortDir: {}",
                 page, size, sortBy, sortDir);
 
         try {
-            Sort sort = sortDir.equalsIgnoreCase("desc")
+            Sort sort = sortDir.equalsIgnoreCase(AppConstants.SORT_DIRECTION_DESC)
                     ? Sort.by(sortBy).descending()
                     : Sort.by(sortBy).ascending();
 
@@ -102,7 +103,7 @@ public class TenantController {
                 log.info("getAllTenants() : No tenants found");
                 return ResponseEntity.ok(new ResponseDTO<>(
                         AppConstants.STATUS_SUCCESS,
-                        "No tenants found",
+                        AppConstants.INFO_NO_TENANTS_FOUND,
                         tenants
                 ));
             }
@@ -110,7 +111,7 @@ public class TenantController {
             log.info("getAllTenants() : Retrieved {} tenants", tenants.getTotalElements());
             return ResponseEntity.ok(new ResponseDTO<>(
                     AppConstants.STATUS_SUCCESS,
-                    "Tenants retrieved successfully",
+                    AppConstants.SUCCESS_TENANTS_RETRIEVED_MESSAGE,
                     tenants
             ));
         } catch (Exception ex) {
@@ -118,7 +119,7 @@ public class TenantController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                     new ResponseDTO<>(
                             AppConstants.STATUS_FAILED,
-                            "Failed to fetch tenants",
+                            AppConstants.ERROR_TENANTS_FETCH_FAILED,
                             null
                     )
             );
@@ -129,7 +130,7 @@ public class TenantController {
      * Get all active tenants
      */
     @GetMapping(EndpointConstants.ACTIVE_TENANTS_ENDPOINT)
-    @RequiredRole({"PLATFORM_USER"})
+    @RequiredRole({UserRole.PLATFORM_USER})
     public ResponseEntity<ResponseDTO<List<TenantDTO>>> getActiveTenants() {
         log.info("getActiveTenants() : Fetching all active tenants");
 
@@ -140,7 +141,7 @@ public class TenantController {
                 log.info("getActiveTenants() : No active tenants found");
                 return ResponseEntity.ok(new ResponseDTO<>(
                         AppConstants.STATUS_SUCCESS,
-                        "No active tenants found",
+                        AppConstants.INFO_NO_ACTIVE_TENANTS_FOUND,
                         Collections.emptyList()
                 ));
             }
@@ -148,7 +149,7 @@ public class TenantController {
             log.info("getActiveTenants() : Retrieved {} active tenants", activeTenants.size());
             return ResponseEntity.ok(new ResponseDTO<>(
                     AppConstants.STATUS_SUCCESS,
-                    "Active tenants retrieved successfully",
+                    AppConstants.SUCCESS_ACTIVE_TENANTS_RETRIEVED_MESSAGE,
                     activeTenants
             ));
         } catch (Exception ex) {
@@ -156,7 +157,7 @@ public class TenantController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                     new ResponseDTO<>(
                             AppConstants.STATUS_FAILED,
-                            "Failed to fetch active tenants",
+                            AppConstants.ERROR_ACTIVE_TENANTS_FETCH_FAILED,
                             null
                     )
             );
@@ -167,7 +168,7 @@ public class TenantController {
      * Get tenant by ID
      */
     @GetMapping(EndpointConstants.TENANT_BY_ID_ENDPOINT)
-    @RequiredRole({"PLATFORM_USER"})
+    @RequiredRole({UserRole.PLATFORM_USER})
     public ResponseEntity<ResponseDTO<TenantDTO>> getTenantById(@RequestParam Long tenantId) {
         log.info("getTenantById() : Fetching tenant with ID: {}", tenantId);
 
@@ -177,7 +178,7 @@ public class TenantController {
 
             return ResponseEntity.ok(new ResponseDTO<>(
                     AppConstants.STATUS_SUCCESS,
-                    "Tenant retrieved successfully",
+                    AppConstants.SUCCESS_TENANT_RETRIEVED_MESSAGE,
                     tenant
             ));
         } catch (EntityNotFoundException ex) {
@@ -194,7 +195,7 @@ public class TenantController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                     new ResponseDTO<>(
                             AppConstants.STATUS_FAILED,
-                            "Failed to fetch tenant",
+                            AppConstants.ERROR_TENANT_FETCH_FAILED,
                             null
                     )
             );
@@ -205,7 +206,7 @@ public class TenantController {
      * Get tenant by code
      */
     @GetMapping(EndpointConstants.TENANT_BY_CODE_ENDPOINT)
-    @RequiredRole({"PLATFORM_USER"})
+    @RequiredRole({UserRole.PLATFORM_USER})
     public ResponseEntity<ResponseDTO<TenantDTO>> getTenantByCode(@RequestParam String tenantCode) {
         log.info("getTenantByCode() : Fetching tenant with code: {}", tenantCode);
 
@@ -215,7 +216,7 @@ public class TenantController {
 
             return ResponseEntity.ok(new ResponseDTO<>(
                     AppConstants.STATUS_SUCCESS,
-                    "Tenant retrieved successfully",
+                    AppConstants.SUCCESS_TENANT_RETRIEVED_MESSAGE,
                     tenant
             ));
         } catch (EntityNotFoundException ex) {
@@ -232,7 +233,7 @@ public class TenantController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                     new ResponseDTO<>(
                             AppConstants.STATUS_FAILED,
-                            "Failed to fetch tenant",
+                            AppConstants.ERROR_TENANT_FETCH_FAILED,
                             null
                     )
             );
@@ -243,7 +244,7 @@ public class TenantController {
      * Update tenant
      */
     @PutMapping(value = EndpointConstants.TENANT_UPDATE_ENDPOINT, consumes = MediaType.APPLICATION_JSON_VALUE)
-    @RequiredRole({"PLATFORM_USER"})
+    @RequiredRole({UserRole.PLATFORM_USER})
     public ResponseEntity<ResponseDTO<TenantDTO>> updateTenant(@RequestParam Long tenantId,
                                                                @Valid @RequestBody TenantUpdateRequest request) {
 
@@ -256,7 +257,7 @@ public class TenantController {
 
             return ResponseEntity.ok(new ResponseDTO<>(
                     AppConstants.STATUS_SUCCESS,
-                    "Tenant updated successfully",
+                    AppConstants.SUCCESS_TENANT_UPDATED_MESSAGE,
                     updatedTenant
             ));
         } catch (EntityNotFoundException ex) {
@@ -282,7 +283,7 @@ public class TenantController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                     new ResponseDTO<>(
                             AppConstants.STATUS_FAILED,
-                            "Failed to update tenant",
+                            AppConstants.ERROR_TENANT_UPDATE_FAILED_MESSAGE,
                             null
                     )
             );
@@ -293,7 +294,7 @@ public class TenantController {
      * Update tenant status (activate/deactivate)
      */
     @PatchMapping(value = EndpointConstants.TENANT_STATUS_ENDPOINT, consumes = MediaType.APPLICATION_JSON_VALUE)
-    @RequiredRole({"PLATFORM_USER"})
+    @RequiredRole({UserRole.PLATFORM_USER})
     public ResponseEntity<ResponseDTO<TenantDTO>> updateTenantStatus(
             @Valid @RequestBody TenantStatusUpdateRequest request) {
 
@@ -307,7 +308,7 @@ public class TenantController {
 
             return ResponseEntity.ok(new ResponseDTO<>(
                     AppConstants.STATUS_SUCCESS,
-                    "Tenant status updated successfully",
+                    AppConstants.SUCCESS_TENANT_STATUS_UPDATED_MESSAGE,
                     updatedTenant
             ));
         } catch (EntityNotFoundException ex) {
@@ -325,7 +326,7 @@ public class TenantController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                     new ResponseDTO<>(
                             AppConstants.STATUS_FAILED,
-                            "Failed to update tenant status",
+                            AppConstants.ERROR_TENANT_STATUS_UPDATE_FAILED,
                             null
                     )
             );
@@ -336,7 +337,7 @@ public class TenantController {
      * Delete tenant (soft delete by deactivation)
      */
     @DeleteMapping(EndpointConstants.TENANT_DELETE_ENDPOINT)
-    @RequiredRole({"PLATFORM_USER"})
+    @RequiredRole({UserRole.PLATFORM_USER})
     public ResponseEntity<ResponseDTO<Void>> deleteTenant(@RequestParam Long tenantId) {
         log.info("deleteTenant() : Received request to delete tenant with ID: {}", tenantId);
 
@@ -346,7 +347,7 @@ public class TenantController {
 
             return ResponseEntity.ok(new ResponseDTO<>(
                     AppConstants.STATUS_SUCCESS,
-                    "Tenant deleted successfully",
+                    AppConstants.SUCCESS_TENANT_DELETED_MESSAGE,
                     null
             ));
         } catch (EntityNotFoundException ex) {
@@ -363,7 +364,7 @@ public class TenantController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                     new ResponseDTO<>(
                             AppConstants.STATUS_FAILED,
-                            "Failed to delete tenant",
+                            AppConstants.ERROR_TENANT_DELETE_FAILED,
                             null
                     )
             );
@@ -374,7 +375,7 @@ public class TenantController {
      * Search tenants by name
      */
     @GetMapping(EndpointConstants.TENANT_SEARCH_ENDPOINT)
-    @RequiredRole({"PLATFORM_USER"})
+    @RequiredRole({UserRole.PLATFORM_USER})
     public ResponseEntity<ResponseDTO<List<TenantDTO>>> searchTenants(@RequestParam String searchTerm) {
         log.info("searchTenants() : Searching tenants with term: {}", searchTerm);
 
@@ -383,7 +384,7 @@ public class TenantController {
                 return ResponseEntity.badRequest().body(
                         new ResponseDTO<>(
                                 AppConstants.STATUS_FAILED,
-                                "Search term cannot be empty",
+                                AppConstants.ERROR_SEARCH_TERM_EMPTY,
                                 null
                         )
                 );
@@ -395,7 +396,7 @@ public class TenantController {
                 log.info("searchTenants() : No tenants found for search term: {}", searchTerm);
                 return ResponseEntity.ok(new ResponseDTO<>(
                         AppConstants.STATUS_SUCCESS,
-                        "No tenants found for the given search term",
+                        AppConstants.INFO_NO_TENANTS_FOUND_FOR_SEARCH,
                         Collections.emptyList()
                 ));
             }
@@ -403,7 +404,7 @@ public class TenantController {
             log.info("searchTenants() : Found {} tenants for search term: {}", tenants.size(), searchTerm);
             return ResponseEntity.ok(new ResponseDTO<>(
                     AppConstants.STATUS_SUCCESS,
-                    "Tenants found successfully",
+                    AppConstants.SUCCESS_TENANTS_FOUND,
                     tenants
             ));
         } catch (Exception ex) {
@@ -411,7 +412,7 @@ public class TenantController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                     new ResponseDTO<>(
                             AppConstants.STATUS_FAILED,
-                            "Failed to search tenants",
+                            AppConstants.ERROR_TENANTS_SEARCH_FAILED,
                             null
                     )
             );
@@ -422,7 +423,7 @@ public class TenantController {
      * Get tenant statistics
      */
     @GetMapping(EndpointConstants.TENANT_STATS_ENDPOINT)
-    @RequiredRole({"PLATFORM_USER"})
+    @RequiredRole({UserRole.PLATFORM_USER})
     public ResponseEntity<ResponseDTO<TenantDTO>> getTenantStats(@RequestParam Long tenantId) {
         log.info("getTenantStats() : Fetching statistics for tenant ID: {}", tenantId);
 
@@ -432,7 +433,7 @@ public class TenantController {
 
             return ResponseEntity.ok(new ResponseDTO<>(
                     AppConstants.STATUS_SUCCESS,
-                    "Tenant statistics retrieved successfully",
+                    AppConstants.SUCCESS_TENANT_STATS_RETRIEVED_MESSAGE,
                     tenantStats
             ));
         } catch (EntityNotFoundException ex) {
@@ -449,7 +450,7 @@ public class TenantController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                     new ResponseDTO<>(
                             AppConstants.STATUS_FAILED,
-                            "Failed to fetch tenant statistics",
+                            AppConstants.ERROR_TENANT_STATS_FETCH_FAILED,
                             null
                     )
             );
@@ -460,7 +461,7 @@ public class TenantController {
      * Get users for a specific tenant
      */
     @GetMapping(EndpointConstants.TENANT_USERS_ENDPOINT)
-    @RequiredRole({"PLATFORM_USER"})
+    @RequiredRole({UserRole.PLATFORM_USER})
     public ResponseEntity<ResponseDTO<List<Object>>> getTenantUsers(@RequestParam Long tenantId) {
         log.info("getTenantUsers() : Fetching users for tenant ID: {}", tenantId);
 
@@ -471,7 +472,7 @@ public class TenantController {
                 log.info("getTenantUsers() : No users found for tenant ID: {}", tenantId);
                 return ResponseEntity.ok(new ResponseDTO<>(
                         AppConstants.STATUS_SUCCESS,
-                        "No users found for this tenant",
+                        AppConstants.INFO_NO_USERS_FOUND_FOR_TENANT,
                         Collections.emptyList()
                 ));
             }
@@ -479,7 +480,7 @@ public class TenantController {
             log.info("getTenantUsers() : Found {} users for tenant ID: {}", tenantUsers.size(), tenantId);
             return ResponseEntity.ok(new ResponseDTO<>(
                     AppConstants.STATUS_SUCCESS,
-                    "Tenant users retrieved successfully",
+                    AppConstants.SUCCESS_TENANT_USERS_RETRIEVED_MESSAGE,
                     tenantUsers
             ));
         } catch (EntityNotFoundException ex) {
@@ -496,7 +497,7 @@ public class TenantController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                     new ResponseDTO<>(
                             AppConstants.STATUS_FAILED,
-                            "Failed to fetch tenant users",
+                            AppConstants.ERROR_TENANT_USERS_FETCH_FAILED,
                             null
                     )
             );

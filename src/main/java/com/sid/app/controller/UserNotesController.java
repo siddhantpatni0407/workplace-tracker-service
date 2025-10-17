@@ -50,7 +50,7 @@ public class UserNotesController {
      * @return ResponseEntity with the created note
      */
     @PostMapping(EndpointConstants.NOTES_ENDPOINT)
-    @RequiredRole({"USER"})
+    @RequiredRole({UserRole.USER, UserRole.MANAGER})
     public ResponseEntity<ResponseDTO<UserNotesDTO>> createNote(@RequestBody @Valid UserNotesDTO noteDTO) {
         Long userId = jwtAuthenticationContext.getCurrentUserId();
         log.info("createNote() : Creating note for user: {}", userId);
@@ -74,7 +74,7 @@ public class UserNotesController {
      * @return ResponseEntity with the note data
      */
     @GetMapping(EndpointConstants.NOTES_ENDPOINT)
-    @RequiredRole({"USER"})
+    @RequiredRole({UserRole.USER, UserRole.MANAGER})
     public ResponseEntity<ResponseDTO<UserNotesDTO>> getNoteById(@RequestParam Long noteId) {
         Long userId = jwtAuthenticationContext.getCurrentUserId();
         log.info("getNoteById() : Fetching note {} for user {}", noteId, userId);
@@ -113,7 +113,7 @@ public class UserNotesController {
      * @return ResponseEntity with paginated notes
      */
     @GetMapping(EndpointConstants.NOTES_USER_ENDPOINT)
-    @RequiredRole({"USER"})
+    @RequiredRole({UserRole.USER, UserRole.MANAGER})
     public ResponseEntity<ResponseDTO<UserNotesListResponseDTO>> getAllUserNotes(@RequestParam(defaultValue = "0") int page,
                                                                                  @RequestParam(defaultValue = "20") int limit,
                                                                                  @RequestParam(required = false) NoteType noteType,
@@ -165,7 +165,7 @@ public class UserNotesController {
      * @return ResponseEntity with the updated note
      */
     @PutMapping(EndpointConstants.NOTES_ENDPOINT)
-    @RequiredRole({"USER"})
+    @RequiredRole({UserRole.USER, UserRole.MANAGER})
     public ResponseEntity<ResponseDTO<UserNotesDTO>> updateNote(@RequestParam Long noteId,
                                                                 @RequestBody @Valid UserNotesDTO noteDTO) {
         Long userId = jwtAuthenticationContext.getCurrentUserId();
@@ -193,7 +193,7 @@ public class UserNotesController {
      * @return ResponseEntity with deletion status
      */
     @DeleteMapping(EndpointConstants.NOTES_ENDPOINT)
-    @RequiredRole({"USER"})
+    @RequiredRole({UserRole.USER, UserRole.MANAGER})
     public ResponseEntity<ResponseDTO<Void>> deleteNote(@RequestParam Long noteId,
                                                         @RequestParam(defaultValue = "false") boolean permanent) {
         Long userId = jwtAuthenticationContext.getCurrentUserId();
@@ -226,7 +226,7 @@ public class UserNotesController {
      * @return ResponseEntity with filtered notes
      */
     @GetMapping(EndpointConstants.NOTES_BY_TYPE_ENDPOINT)
-    @RequiredRole({"USER"})
+    @RequiredRole({UserRole.USER, UserRole.MANAGER})
     public ResponseEntity<ResponseDTO<UserNotesListResponseDTO>> getNotesByType(@RequestParam NoteType noteType,
                                                                                 @RequestParam(defaultValue = "0") int page,
                                                                                 @RequestParam(defaultValue = "20") int limit,
@@ -266,7 +266,7 @@ public class UserNotesController {
      * @return ResponseEntity with filtered notes
      */
     @GetMapping(EndpointConstants.NOTES_BY_CATEGORY_ENDPOINT)
-    @RequiredRole({"USER"})
+    @RequiredRole({UserRole.USER, UserRole.MANAGER})
     public ResponseEntity<ResponseDTO<UserNotesListResponseDTO>> getNotesByCategory(@RequestParam NoteCategory category,
                                                                                     @RequestParam(defaultValue = "0") int page,
                                                                                     @RequestParam(defaultValue = "20") int limit,
@@ -305,7 +305,7 @@ public class UserNotesController {
      * @return ResponseEntity with pinned notes
      */
     @GetMapping(EndpointConstants.NOTES_PINNED_ENDPOINT)
-    @RequiredRole({"USER"})
+    @RequiredRole({UserRole.USER, UserRole.MANAGER})
     public ResponseEntity<ResponseDTO<UserNotesListResponseDTO>> getPinnedNotes(@RequestParam(defaultValue = "0") int page,
                                                                                 @RequestParam(defaultValue = "20") int limit,
                                                                                 @RequestParam(defaultValue = "modifiedDate") String sortBy,
@@ -343,7 +343,7 @@ public class UserNotesController {
      * @return ResponseEntity with archived notes
      */
     @GetMapping(EndpointConstants.NOTES_ARCHIVED_ENDPOINT)
-    @RequiredRole({"USER"})
+    @RequiredRole({UserRole.USER, UserRole.MANAGER})
     public ResponseEntity<ResponseDTO<UserNotesListResponseDTO>> getArchivedNotes(@RequestParam(defaultValue = "0") int page,
                                                                                   @RequestParam(defaultValue = "20") int limit,
                                                                                   @RequestParam(defaultValue = "modifiedDate") String sortBy,
@@ -382,7 +382,7 @@ public class UserNotesController {
      * @return ResponseEntity with search results
      */
     @GetMapping(EndpointConstants.NOTES_SEARCH_ENDPOINT)
-    @RequiredRole({"USER"})
+    @RequiredRole({UserRole.USER, UserRole.MANAGER})
     public ResponseEntity<ResponseDTO<UserNotesListResponseDTO>> searchNotes(@RequestParam String query,
                                                                              @RequestParam(defaultValue = "0") int page,
                                                                              @RequestParam(defaultValue = "20") int limit,
@@ -426,7 +426,7 @@ public class UserNotesController {
      * @return ResponseEntity with updated note
      */
     @PatchMapping(EndpointConstants.NOTES_STATUS_ENDPOINT)
-    @RequiredRole({"USER"})
+    @RequiredRole({UserRole.USER, UserRole.MANAGER})
     public ResponseEntity<ResponseDTO<UserNotesDTO>> updateNoteStatus(@RequestParam Long noteId,
                                                                       @RequestParam NoteStatus status) {
         Long userId = jwtAuthenticationContext.getCurrentUserId();
@@ -453,7 +453,7 @@ public class UserNotesController {
      * @return ResponseEntity with updated note
      */
     @PatchMapping(EndpointConstants.NOTES_PIN_ENDPOINT)
-    @RequiredRole({"USER"})
+    @RequiredRole({UserRole.USER, UserRole.MANAGER})
     public ResponseEntity<ResponseDTO<UserNotesDTO>> togglePinStatus(@RequestParam Long noteId) {
         Long userId = jwtAuthenticationContext.getCurrentUserId();
         log.info("togglePinStatus() : Toggling pin status for note {} for user {}", noteId, userId);
@@ -480,7 +480,7 @@ public class UserNotesController {
      * @return ResponseEntity with updated note
      */
     @PatchMapping(EndpointConstants.NOTES_COLOR_ENDPOINT)
-    @RequiredRole({"USER"})
+    @RequiredRole({UserRole.USER, UserRole.MANAGER})
     public ResponseEntity<ResponseDTO<UserNotesDTO>> updateNoteColor(@RequestParam Long noteId,
                                                                      @RequestParam NoteColor color) {
         Long userId = jwtAuthenticationContext.getCurrentUserId();
@@ -508,7 +508,7 @@ public class UserNotesController {
      * @return ResponseEntity with note statistics
      */
     @GetMapping(EndpointConstants.NOTES_STATS_ENDPOINT)
-    @RequiredRole({"USER"})
+    @RequiredRole({UserRole.USER, UserRole.MANAGER})
     public ResponseEntity<ResponseDTO<UserNotesStatsDTO>> getNoteStats() {
         Long userId = jwtAuthenticationContext.getCurrentUserId();
         log.info("getNoteStats() : Fetching note statistics for user {}", userId);
@@ -532,7 +532,7 @@ public class UserNotesController {
      * @return ResponseEntity with updated notes
      */
     @PutMapping(EndpointConstants.NOTES_BULK_UPDATE_ENDPOINT)
-    @RequiredRole({"USER"})
+    @RequiredRole({UserRole.USER, UserRole.MANAGER})
     public ResponseEntity<ResponseDTO<List<UserNotesDTO>>> bulkUpdateNotes(@RequestBody @Valid UserNotesBulkUpdateRequest request) {
         Long userId = jwtAuthenticationContext.getCurrentUserId();
         log.info("bulkUpdateNotes() : Bulk updating {} notes for user {}",
@@ -564,7 +564,7 @@ public class UserNotesController {
      * @return ResponseEntity with deletion status
      */
     @DeleteMapping(EndpointConstants.NOTES_BULK_DELETE_ENDPOINT)
-    @RequiredRole({"USER"})
+    @RequiredRole({UserRole.USER, UserRole.MANAGER})
     public ResponseEntity<ResponseDTO<Void>> bulkDeleteNotes(@RequestBody @Valid UserNotesBulkDeleteRequest request) {
         Long userId = jwtAuthenticationContext.getCurrentUserId();
         log.info("bulkDeleteNotes() : Bulk deleting {} notes for user {} (permanent: {})",
@@ -598,7 +598,7 @@ public class UserNotesController {
      * @return ResponseEntity with the duplicated note
      */
     @PostMapping(EndpointConstants.NOTES_DUPLICATE_ENDPOINT)
-    @RequiredRole({"USER"})
+    @RequiredRole({UserRole.USER, UserRole.MANAGER})
     public ResponseEntity<ResponseDTO<UserNotesDTO>> duplicateNote(@RequestParam Long noteId) {
         Long userId = jwtAuthenticationContext.getCurrentUserId();
         log.info("duplicateNote() : Duplicating note {} for user {}", noteId, userId);

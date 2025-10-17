@@ -28,7 +28,7 @@ public class PlatformUserController {
         try {
             PlatformUserAuthResponse response = platformUserService.signup(request);
 
-            if ("SUCCESS".equals(response.getStatus())) {
+            if (AppConstants.STATUS_SUCCESS.equals(response.getStatus())) {
                 return ResponseEntity.status(HttpStatus.CREATED).body(response);
             } else {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
@@ -36,8 +36,8 @@ public class PlatformUserController {
         } catch (Exception e) {
             log.error("Error in platform user signup: {}", e.getMessage(), e);
             PlatformUserAuthResponse errorResponse = PlatformUserAuthResponse.builder()
-                    .status("FAILED")
-                    .message("Signup failed due to server error")
+                    .status(AppConstants.STATUS_FAILED)
+                    .message(AppConstants.ERROR_PLATFORM_SIGNUP_FAILED)
                     .build();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
@@ -50,7 +50,7 @@ public class PlatformUserController {
         try {
             PlatformUserAuthResponse response = platformUserService.login(request);
 
-            if ("SUCCESS".equals(response.getStatus())) {
+            if (AppConstants.STATUS_SUCCESS.equals(response.getStatus())) {
                 return ResponseEntity.ok(response);
             } else {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
@@ -58,8 +58,8 @@ public class PlatformUserController {
         } catch (Exception e) {
             log.error("Error in platform user login: {}", e.getMessage(), e);
             PlatformUserAuthResponse errorResponse = PlatformUserAuthResponse.builder()
-                    .status("FAILED")
-                    .message("Login failed due to server error")
+                    .status(AppConstants.STATUS_FAILED)
+                    .message(AppConstants.ERROR_PLATFORM_LOGIN_FAILED)
                     .build();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
@@ -72,7 +72,7 @@ public class PlatformUserController {
         try {
             PlatformUserAuthResponse response = platformUserService.refreshToken(refreshToken);
 
-            if ("SUCCESS".equals(response.getStatus())) {
+            if (AppConstants.STATUS_SUCCESS.equals(response.getStatus())) {
                 return ResponseEntity.ok(response);
             } else {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
@@ -80,8 +80,8 @@ public class PlatformUserController {
         } catch (Exception e) {
             log.error("Error in platform user token refresh: {}", e.getMessage(), e);
             PlatformUserAuthResponse errorResponse = PlatformUserAuthResponse.builder()
-                    .status("FAILED")
-                    .message("Token refresh failed due to server error")
+                    .status(AppConstants.STATUS_FAILED)
+                    .message(AppConstants.ERROR_PLATFORM_TOKEN_REFRESH_FAILED)
                     .build();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }

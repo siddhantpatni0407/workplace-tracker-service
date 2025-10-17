@@ -4,6 +4,7 @@ import com.sid.app.auth.RequiredRole;
 import com.sid.app.auth.JwtAuthenticationContext;
 import com.sid.app.constants.AppConstants;
 import com.sid.app.constants.EndpointConstants;
+import com.sid.app.enums.UserRole;
 import com.sid.app.model.OfficeVisitDTO;
 import com.sid.app.model.ResponseDTO;
 import com.sid.app.service.OfficeVisitService;
@@ -38,7 +39,7 @@ public class OfficeVisitController {
      * Users can only view their own visits unless they are admin.
      */
     @GetMapping
-    @RequiredRole({"USER", "ADMIN", "SUPER_ADMIN"})
+    @RequiredRole({UserRole.USER, UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.MANAGER})
     public ResponseEntity<ResponseDTO<List<OfficeVisitDTO>>> getVisitsForMonth(@RequestParam("year") int year,
                                                                                @RequestParam("month") int month) {
 
@@ -79,7 +80,7 @@ public class OfficeVisitController {
      * Users can only create visits for themselves unless they are admin.
      */
     @PostMapping
-    @RequiredRole({"USER", "ADMIN", "SUPER_ADMIN"})
+    @RequiredRole({UserRole.USER, UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.MANAGER})
     public ResponseEntity<ResponseDTO<OfficeVisitDTO>> upsertVisit(@Valid @RequestBody OfficeVisitDTO req) {
         log.info("upsertVisit() userId={} visitDate={}", req.getUserId(), req.getVisitDate());
 
@@ -109,7 +110,7 @@ public class OfficeVisitController {
      * Users can only delete their own visits unless they are admin.
      */
     @DeleteMapping
-    @RequiredRole({"USER", "ADMIN", "SUPER_ADMIN"})
+    @RequiredRole({UserRole.USER, UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.MANAGER})
     public ResponseEntity<ResponseDTO<Void>> deleteVisit(@RequestParam("officeVisitId") Long officeVisitId) {
         log.info("deleteVisit() officeVisitId={}", officeVisitId);
 

@@ -1,5 +1,6 @@
 package com.sid.app.auth;
 
+import com.sid.app.enums.UserRole;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -12,5 +13,5 @@ import java.lang.annotation.Target;
 @Target({ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface RequiredRole {
-    String[] value() default {}; // Array of required roles
+    UserRole[] value() default {}; // Array of required roles using enum
 }

@@ -4,6 +4,7 @@ import com.sid.app.auth.JwtAuthenticationContext;
 import com.sid.app.auth.RequiredRole;
 import com.sid.app.constants.AppConstants;
 import com.sid.app.constants.EndpointConstants;
+import com.sid.app.enums.UserRole;
 import com.sid.app.model.ResponseDTO;
 import com.sid.app.model.UserLeaveBalanceDTO;
 import com.sid.app.repository.LeavePolicyRepository;
@@ -40,7 +41,7 @@ public class UserLeaveBalanceController {
      * GET /user-leave-balance?policyId=..&year=..
      */
     @GetMapping(EndpointConstants.USER_LEAVE_BALANCE_ENDPOINT)
-    @RequiredRole({"USER", "ADMIN", "SUPER_ADMIN"})
+    @RequiredRole({UserRole.USER, UserRole.MANAGER, UserRole.ADMIN, UserRole.SUPER_ADMIN})
     public ResponseEntity<ResponseDTO<UserLeaveBalanceDTO>> getBalance(@RequestParam("policyId") Long policyId,
                                                                        @RequestParam("year") Integer year) {
 
@@ -73,7 +74,7 @@ public class UserLeaveBalanceController {
      * Keep this restricted to ADMIN role to avoid accidental edits.
      */
     @PostMapping(EndpointConstants.USER_LEAVE_BALANCE_ENDPOINT)
-    @RequiredRole({"USER", "ADMIN", "SUPER_ADMIN"})
+    @RequiredRole({UserRole.USER, UserRole.MANAGER, UserRole.ADMIN, UserRole.SUPER_ADMIN})
     public ResponseEntity<ResponseDTO<UserLeaveBalanceDTO>> upsertBalance(@Valid @RequestBody UserLeaveBalanceDTO req) {
         log.info("upsertBalance() (ADMIN) userId={} policyId={} year={}", req.getUserId(), req.getPolicyId(), req.getYear());
 
@@ -123,7 +124,7 @@ public class UserLeaveBalanceController {
      * This endpoint is useful for adhoc adjustments / testing and should be protected.
      */
     @PostMapping(EndpointConstants.USER_LEAVE_BALANCE_ADJUST_ENDPOINT)
-    @RequiredRole({"USER", "ADMIN", "SUPER_ADMIN"})
+    @RequiredRole({UserRole.USER, UserRole.MANAGER, UserRole.ADMIN, UserRole.SUPER_ADMIN})
     public ResponseEntity<ResponseDTO<UserLeaveBalanceDTO>> adjustBalance(@RequestParam("policyId") Long policyId,
                                                                           @RequestParam("year") Integer year,
                                                                           @RequestParam("delta") BigDecimal delta) {
@@ -157,7 +158,7 @@ public class UserLeaveBalanceController {
      * Useful for reconciliation after a bug or historical import.
      */
     @PostMapping(EndpointConstants.USER_LEAVE_BALANCE_RECALCULATE_ENDPOINT)
-    @RequiredRole({"USER", "ADMIN", "SUPER_ADMIN"})
+    @RequiredRole({UserRole.USER, UserRole.MANAGER, UserRole.ADMIN, UserRole.SUPER_ADMIN})
     public ResponseEntity<ResponseDTO<UserLeaveBalanceDTO>> recalculate(@RequestParam("policyId") Long policyId,
                                                                         @RequestParam("year") Integer year) {
 
