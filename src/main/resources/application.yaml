@@ -10,6 +10,7 @@ spring:
 
   banner:
     location: ${SPRING_BANNER_LOCATION:classpath:banner.txt}
+    mode: ${SPRING_BANNER_MODE:console}
 
   security:
     user:
