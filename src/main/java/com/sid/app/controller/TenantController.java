@@ -503,4 +503,78 @@ public class TenantController {
             );
         }
     }
+
+    /**
+     * Update tenant's subscription plan
+     */
+    @PatchMapping(EndpointConstants.TENANT_SUBSCRIPTION_UPDATE_ENDPOINT)
+    @RequiredRole({UserRole.PLATFORM_USER})
+    public ResponseEntity<ResponseDTO<TenantDTO>> updateTenantSubscription(@RequestParam String tenantCode,
+                                                                           @RequestParam String subscriptionCode) {
+        log.info("updateTenantSubscription() : Updating subscription for tenant: {} to subscription: {}",
+                tenantCode, subscriptionCode);
+
+        try {
+            // Validate input parameters
+            if (tenantCode == null || tenantCode.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(
+                        new ResponseDTO<>(
+                                AppConstants.STATUS_FAILED,
+                                "Tenant code cannot be empty",
+                                null
+                        )
+                );
+            }
+
+            if (subscriptionCode == null || subscriptionCode.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(
+                        new ResponseDTO<>(
+                                AppConstants.STATUS_FAILED,
+                                "Subscription code cannot be empty",
+                                null
+                        )
+                );
+            }
+
+            TenantDTO updatedTenant = tenantService.updateTenantSubscription(
+                    tenantCode.trim(), subscriptionCode.trim());
+
+            log.info("updateTenantSubscription() : Tenant subscription updated successfully for tenant: {}",
+                    tenantCode);
+
+            return ResponseEntity.ok(new ResponseDTO<>(
+                    AppConstants.STATUS_SUCCESS,
+                    "Tenant subscription updated successfully",
+                    updatedTenant
+            ));
+        } catch (EntityNotFoundException ex) {
+            log.warn("updateTenantSubscription() : Entity not found: {}", ex.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    new ResponseDTO<>(
+                            AppConstants.STATUS_FAILED,
+                            ex.getMessage(),
+                            null
+                    )
+            );
+        } catch (IllegalArgumentException ex) {
+            log.warn("updateTenantSubscription() : Validation failed: {}", ex.getMessage());
+            return ResponseEntity.badRequest().body(
+                    new ResponseDTO<>(
+                            AppConstants.STATUS_FAILED,
+                            ex.getMessage(),
+                            null
+                    )
+            );
+        } catch (Exception ex) {
+            log.error("updateTenantSubscription() : Error updating tenant subscription for tenant {}: {}",
+                    tenantCode, ex.getMessage(), ex);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    new ResponseDTO<>(
+                            AppConstants.STATUS_FAILED,
+                            "Failed to update tenant subscription",
+                            null
+                    )
+            );
+        }
+    }
 }

@@ -205,6 +205,47 @@ public class TenantService {
     }
 
     /**
+     * Update tenant's subscription plan
+     */
+    @Transactional
+    public TenantDTO updateTenantSubscription(String tenantCode, String newSubscriptionCode) {
+        log.info("Updating tenant subscription - tenant: {}, new subscription: {}", tenantCode, newSubscriptionCode);
+
+        // Find the tenant by tenant code
+        Tenant tenant = tenantRepository.findByTenantCode(tenantCode)
+                .orElseThrow(() -> new EntityNotFoundException("Tenant not found with code: " + tenantCode));
+
+        // Find the new subscription by subscription code
+        AppSubscription newSubscription = appSubscriptionRepository.findBySubscriptionCode(newSubscriptionCode)
+                .orElseThrow(() -> new EntityNotFoundException("Subscription not found with code: " + newSubscriptionCode));
+
+        // Validate that the subscription is active
+        if (!newSubscription.getIsActive()) {
+            throw new IllegalArgumentException("Cannot assign inactive subscription: " + newSubscriptionCode);
+        }
+
+        Long oldSubscriptionId = tenant.getAppSubscriptionId();
+
+        // Update tenant's subscription
+        tenant.setAppSubscriptionId(newSubscription.getAppSubscriptionId());
+
+        // Save updated tenant
+        Tenant updatedTenant = tenantRepository.save(tenant);
+        log.info("Successfully updated tenant {} subscription from {} to {}",
+                tenantCode, oldSubscriptionId, newSubscription.getAppSubscriptionId());
+
+        // Create DTO with fresh subscription data to avoid lazy loading issues
+        TenantDTO tenantDTO = convertToDTO(updatedTenant);
+
+        // Ensure we set the correct subscription details from the new subscription
+        tenantDTO.setSubscriptionCode(newSubscription.getSubscriptionCode());
+        tenantDTO.setSubscriptionName(newSubscription.getSubscriptionName());
+        tenantDTO.setAppSubscriptionId(newSubscription.getAppSubscriptionId());
+
+        return tenantDTO;
+    }
+
+    /**
      * Get tenant statistics
      */
     public TenantDTO getTenantStats(Long tenantId) {
