@@ -12,12 +12,13 @@ import org.springframework.stereotype.Component;
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 
 /**
  * JWT utility class for token generation, validation, and claim extraction.
- * Supports enhanced tokens with user details (userId, username, role).
+ * Supports enhanced tokens with user details (userId, username, role, platformId, tenantId).
  */
 @Component
 public class JwtUtil {
@@ -68,38 +69,67 @@ public class JwtUtil {
         return builder.compact();
     }
 
-    /** Convenience overload with no extra claims and default TTL */
+    /**
+     * Convenience overload with no extra claims and default TTL
+     */
     public String generateToken(String subject) {
         return generateToken(subject, null, -1);
     }
 
-    /** Convenience overload with extra claims and default TTL */
+    /**
+     * Convenience overload with extra claims and default TTL
+     */
     public String generateToken(String subject, Map<String, Object> extraClaims) {
         return generateToken(subject, extraClaims, -1);
     }
 
     /**
-     * Generate JWT with additional user claims (role, userId, username)
+     * Generate JWT with additional user claims (role, userId, username, platformId, tenantId)
      *
-     * @param subject     subject (email)
-     * @param userId      user ID
-     * @param username    username/name
-     * @param role        user role
-     * @param ttlMillis   optional TTL override (if <=0, default expirationTimeMs is used)
+     * @param subject    subject (email)
+     * @param userId     user ID
+     * @param username   username/name
+     * @param role       user role
+     * @param platformId platform ID
+     * @param tenantId   tenant ID
+     * @param ttlMillis  optional TTL override (if <=0, default expirationTimeMs is used)
      * @return compact JWT string
      */
-    public String generateTokenWithUserDetails(String subject, Long userId, String username, String role, long ttlMillis) {
-        Map<String, Object> extraClaims = Map.of(
-                "userId", userId,
-                "username", username,
-                "role", role
-        );
+    public String generateTokenWithUserDetails(String subject, Long userId, String username, String role,
+                                               Long platformId, Long tenantId, long ttlMillis) {
+        // Use LinkedHashMap to preserve insertion order for JWT claims
+        Map<String, Object> extraClaims = new LinkedHashMap<>();
+        extraClaims.put("userId", userId);
+        extraClaims.put("username", username);
+        // Note: "sub" (subject) will be added automatically by JWT builder
+        extraClaims.put("role", role);
+        extraClaims.put("tenantId", tenantId != null ? tenantId : 0L);
+        extraClaims.put("platformId", platformId != null ? platformId : 0L);
+        // Note: "iat" and "exp" will be added automatically by JWT builder
+
         return generateToken(subject, extraClaims, ttlMillis);
     }
 
-    /** Convenience overload with default TTL */
+    /**
+     * Convenience overload with default TTL
+     */
+    public String generateTokenWithUserDetails(String subject, Long userId, String username, String role,
+                                               Long platformId, Long tenantId) {
+        return generateTokenWithUserDetails(subject, userId, username, role, platformId, tenantId, -1);
+    }
+
+    /**
+     * Convenience overload with default TTL for backward compatibility
+     */
+    public String generateTokenWithUserDetails(String subject, Long userId, String username, String role, long ttlMillis) {
+        return generateTokenWithUserDetails(subject, userId, username, role, null, null, ttlMillis);
+    }
+
+    /**
+     * Convenience overload with default TTL for backward compatibility
+     */
     public String generateTokenWithUserDetails(String subject, Long userId, String username, String role) {
-        return generateTokenWithUserDetails(subject, userId, username, role, -1);
+        return generateTokenWithUserDetails(subject, userId, username, role, null, null, -1);
     }
 
     /**
@@ -219,9 +249,33 @@ public class JwtUtil {
     }
 
     /**
+     * Extract platform ID from token.
+     */
+    public Long extractPlatformId(String token) {
+        Object platformIdObj = extractClaim(token, "platformId");
+        if (platformIdObj instanceof Number) {
+            Long platformId = ((Number) platformIdObj).longValue();
+            return platformId.equals(0L) ? null : platformId;
+        }
+        return null;
+    }
+
+    /**
+     * Extract tenant ID from token.
+     */
+    public Long extractTenantId(String token) {
+        Object tenantIdObj = extractClaim(token, "tenantId");
+        if (tenantIdObj instanceof Number) {
+            Long tenantId = ((Number) tenantIdObj).longValue();
+            return tenantId.equals(0L) ? null : tenantId;
+        }
+        return null;
+    }
+
+    /**
      * Utility to refresh token by issuing a new token with same subject and optional new TTL.
      * Caller should verify refresh policy (e.g., only when token is near expiry or a valid refresh token exists).
-     *
+     * <p>
      * NOTE: This method expects the provided token to be valid (not expired). If token is expired, parseClaims will return empty.
      * Ideally refresh should be driven by a refresh-token (HTTP-only cookie) rather than by supplying an expired access token.
      */
@@ -233,12 +287,15 @@ public class JwtUtil {
         Claims claims = claimsOpt.get();
         String subject = claims.getSubject();
 
-        // Copy claims except standard ones (sub/iat/exp)
-        Map<String, Object> extraClaims = Map.of(
-                "userId", claims.get("userId"),
-                "username", claims.get("username"),
-                "role", claims.get("role")
-        );
+        // Copy claims with proper ordering using LinkedHashMap
+        Map<String, Object> extraClaims = new LinkedHashMap<>();
+        extraClaims.put("userId", claims.get("userId"));
+        extraClaims.put("username", claims.get("username"));
+        // Note: "sub" (subject) will be added automatically by JWT builder
+        extraClaims.put("role", claims.get("role"));
+        extraClaims.put("tenantId", claims.get("tenantId") != null ? claims.get("tenantId") : 0L);
+        extraClaims.put("platformId", claims.get("platformId") != null ? claims.get("platformId") : 0L);
+        // Note: "iat" and "exp" will be added automatically by JWT builder
 
         return generateToken(subject, extraClaims, newTtlMillis);
     }
@@ -248,8 +305,8 @@ public class JwtUtil {
      */
     public boolean hasUserDetails(String token) {
         return extractUserId(token) != null &&
-               extractUserDisplayName(token) != null &&
-               extractRole(token) != null;
+                extractUserDisplayName(token) != null &&
+                extractRole(token) != null;
     }
 
     /**

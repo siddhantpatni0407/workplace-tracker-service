@@ -449,11 +449,14 @@ public class AuthService {
         Optional<UserRole> roleOpt = userRoleRepository.findById(tenantUser.getRoleId());
         String roleName = roleOpt.map(UserRole::getRole).orElse("UNKNOWN");
 
+        // Generate JWT token with user details including platformId and tenantId
         String jwtToken = jwtUtil.generateTokenWithUserDetails(
                 tenantUser.getEmail(),
                 tenantUser.getTenantUserId(),
                 tenantUser.getName(),
-                roleName
+                roleName,
+                tenantUser.getPlatformUserId(), // platformId
+                tenantUser.getTenantId()        // tenantId
         );
 
         return new AuthResponse(
@@ -521,12 +524,25 @@ public class AuthService {
         Optional<UserRole> roleOpt = userRoleRepository.findById(user.getRoleId());
         String roleName = roleOpt.map(UserRole::getRole).orElse("UNKNOWN");
 
-        // Generate JWT token with user details
+        // Get platformId and tenantId from associated TenantUser (Admin)
+        Long platformId = null;
+        Long tenantId = null;
+
+        Optional<TenantUser> tenantUserOpt = tenantUserRepository.findById(user.getTenantUserId());
+        if (tenantUserOpt.isPresent()) {
+            TenantUser tenantUser = tenantUserOpt.get();
+            platformId = tenantUser.getPlatformUserId();
+            tenantId = tenantUser.getTenantId();
+        }
+
+        // Generate JWT token with user details including platformId and tenantId
         String jwtToken = jwtUtil.generateTokenWithUserDetails(
                 user.getEmail(),
                 user.getUserId(),
                 user.getName(),
-                roleName
+                roleName,
+                platformId, // platformId from associated TenantUser
+                tenantId    // tenantId from associated TenantUser
         );
 
         return new AuthResponse(

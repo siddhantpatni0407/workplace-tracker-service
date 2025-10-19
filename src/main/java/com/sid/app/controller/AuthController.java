@@ -123,7 +123,8 @@ public class AuthController {
     }
 
     @PostMapping(EndpointConstants.USER_LOGIN_ENDPOINT)
-    public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request, HttpServletResponse servletResponse) {
+    public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request,
+                                              HttpServletResponse servletResponse) {
         log.info("Login request -> {}", ApplicationUtils.getJSONString(request));
         AuthResponse response = authService.login(request);
 
