@@ -43,7 +43,7 @@ public class AuthController {
      */
     @PostMapping(EndpointConstants.USER_REGISTER_ENDPOINT)
     public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
-        log.info("Register request -> {}", ApplicationUtils.getJSONString(request));
+        log.info("Register request -> {}", ApplicationUtils.getSecureJSONString(request));
 
         // Validate basic request fields
         AuthResponse validationResponse = validateRegisterRequest(request);
@@ -125,7 +125,7 @@ public class AuthController {
     @PostMapping(EndpointConstants.USER_LOGIN_ENDPOINT)
     public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request,
                                               HttpServletResponse servletResponse) {
-        log.info("Login request -> {}", ApplicationUtils.getJSONString(request));
+        log.info("Login request -> {}", ApplicationUtils.getSecureJSONString(request));
         AuthResponse response = authService.login(request);
 
         if (AppConstants.STATUS_SUCCESS.equals(response.getStatus())) {

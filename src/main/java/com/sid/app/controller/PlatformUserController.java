@@ -7,6 +7,7 @@ import com.sid.app.dto.request.PlatformUserSignupRequest;
 import com.sid.app.dto.response.PlatformUserAuthResponse;
 import com.sid.app.dto.response.PlatformUserResponse;
 import com.sid.app.service.PlatformUserService;
+import com.sid.app.utils.ApplicationUtils;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,7 +24,7 @@ public class PlatformUserController {
 
     @PostMapping(EndpointConstants.PLATFORM_AUTH_SIGNUP_ENDPOINT)
     public ResponseEntity<PlatformUserAuthResponse> signup(@Valid @RequestBody PlatformUserSignupRequest request) {
-        log.info("Platform user signup request received for email: {}", request.getEmail());
+        log.info("Platform user signup request -> {}", ApplicationUtils.getSecureJSONString(request));
 
         try {
             PlatformUserAuthResponse response = platformUserService.signup(request);
@@ -45,7 +46,7 @@ public class PlatformUserController {
 
     @PostMapping(EndpointConstants.PLATFORM_AUTH_LOGIN_ENDPOINT)
     public ResponseEntity<PlatformUserAuthResponse> login(@Valid @RequestBody PlatformUserLoginRequest request) {
-        log.info("Platform user login request received for: {}", request.getEmailOrMobile());
+        log.info("Platform user login request -> {}", ApplicationUtils.getSecureJSONString(request));
 
         try {
             PlatformUserAuthResponse response = platformUserService.login(request);
