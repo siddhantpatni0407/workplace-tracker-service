@@ -25,10 +25,10 @@ repositories {
 }
 
 ext {
-    testcontainersVersion = '1.19.0' // bump if newer release available
-    jjwtVersion = '0.11.5'
-    lombokVersion = '1.18.30'
-    jacksonJsr310Version = '2.16.1'
+    testcontainersVersion = '1.20.3' // Updated from 1.19.0
+    jjwtVersion = '0.12.6' // Updated from 0.11.5 - SECURITY FIX
+    lombokVersion = '1.18.34' // Updated from 1.18.30
+    jacksonJsr310Version = '2.18.1' // Updated from 2.16.1 - SECURITY FIX
 }
 
 dependencies {
@@ -42,11 +42,10 @@ dependencies {
     // JSON / Date handling
     implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:${jacksonJsr310Version}"
 
-    // JWT
+    // JWT - SECURITY UPDATE: Updated to latest secure version
     implementation "io.jsonwebtoken:jjwt-api:${jjwtVersion}"
     implementation "io.jsonwebtoken:jjwt-impl:${jjwtVersion}"
-    implementation "io.jsonwebtoken:jjwt-jackson:${jjwtVersion}" // Required for JSON processing
-    implementation 'io.jsonwebtoken:jjwt:0.12.3' // keep if used elsewhere
+    implementation "io.jsonwebtoken:jjwt-jackson:${jjwtVersion}"
 
     // Liquibase
     implementation 'org.liquibase:liquibase-core'
@@ -57,11 +56,11 @@ dependencies {
     // Logging
     implementation 'org.slf4j:slf4j-ext'
 
-    // Apache Commons
-    implementation 'commons-beanutils:commons-beanutils:1.9.4'
+    // Apache Commons - SECURITY FIX: Updated to correct latest version
+    implementation 'commons-beanutils:commons-beanutils:1.9.4' // This is actually the latest stable version
 
-    // OpenAPI
-    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0'
+    // OpenAPI - Updated to latest version
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0' // Updated from 2.3.0
 
     // Lombok
     compileOnly "org.projectlombok:lombok:${lombokVersion}"

@@ -138,12 +138,12 @@ public class JwtUtil {
      */
     private Optional<Claims> parseClaims(String token) {
         try {
-            Jws<Claims> parsed = Jwts.parserBuilder()
-                    .setSigningKey(secretKey)
-                    .setAllowedClockSkewSeconds(appProperties.getJwtAllowedClockSkewSec())
+            Jws<Claims> parsed = Jwts.parser()
+                    .verifyWith(secretKey)
+                    .clockSkewSeconds(appProperties.getJwtAllowedClockSkewSec())
                     .build()
-                    .parseClaimsJws(token);
-            return Optional.of(parsed.getBody());
+                    .parseSignedClaims(token);
+            return Optional.of(parsed.getPayload());
         } catch (ExpiredJwtException eje) {
             // token expired - caller may want to treat specially
             log.debug("JWT expired when parsing token: {}", eje.getMessage());
@@ -161,12 +161,12 @@ public class JwtUtil {
      */
     public String extractUsername(String token) throws ExpiredJwtException {
         try {
-            Jws<Claims> parsed = Jwts.parserBuilder()
-                    .setSigningKey(secretKey)
-                    .setAllowedClockSkewSeconds(appProperties.getJwtAllowedClockSkewSec())
+            Jws<Claims> parsed = Jwts.parser()
+                    .verifyWith(secretKey)
+                    .clockSkewSeconds(appProperties.getJwtAllowedClockSkewSec())
                     .build()
-                    .parseClaimsJws(token);
-            return parsed.getBody().getSubject();
+                    .parseSignedClaims(token);
+            return parsed.getPayload().getSubject();
         } catch (ExpiredJwtException eje) {
             // Re-throw ExpiredJwtException so callers can handle it specifically
             throw eje;
