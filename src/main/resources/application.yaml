@@ -55,7 +55,6 @@ spring:
       hibernate:
         default_schema: ${JPA_DEFAULT_SCHEMA:test}
         globally_quoted_identifiers: ${JPA_GLOBALLY_QUOTED_IDENTIFIERS:true}
-        dialect: ${JPA_DIALECT:org.hibernate.dialect.PostgreSQLDialect}
         format_sql: ${JPA_FORMAT_SQL:true}
         jdbc:
           time_zone: ${JPA_JDBC_TIME_ZONE:Asia/Kolkata}

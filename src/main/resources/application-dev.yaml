@@ -41,7 +41,6 @@ spring:
       hibernate:
         default_schema: ${JPA_DEFAULT_SCHEMA:dev}
         globally_quoted_identifiers: true
-        dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
         jdbc:
           time_zone: Asia/Kolkata
