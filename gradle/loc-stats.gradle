@@ -1,0 +1,477 @@
+import java.nio.file.Files
+import java.nio.charset.StandardCharsets
+import java.text.SimpleDateFormat
+
+tasks.register('locStats', DefaultTask) {
+    group = 'Reporting'
+    description = 'Generate detailed LOC reports (text + HTML) under build/reports/loc/'
+
+    // define patterns (customizable via -PlocInclude / -PlocExclude) - Added SQL and BAT files
+    def includePatterns = project.hasProperty('locInclude') ? project.property('locInclude').split(',') as List : ['**/*.java','**/*.kt','**/*.groovy','**/*.xml','**/*.properties','**/*.yml','**/*.yaml','**/*.sql','**/*.bat','**/*.sh','**/*.js','**/*.ts','**/*.css','**/*.html']
+    def excludePatterns = project.hasProperty('locExclude') ? project.property('locExclude').split(',') as List : []
+
+    // source dirs as FileCollection
+    def srcDirs = sourceSets.main.allSource.srcDirs.findAll { it.exists() }
+    // create a FileTree for inputs (matched by include/exclude)
+    def inputFileTree = files(srcDirs).asFileTree.matching {
+        includePatterns.each { include it }
+        excludePatterns.each { exclude it }
+    }
+
+    // Define report directory at configuration time
+    def reportDir = file("$buildDir/reports/loc")
+
+    // register inputs and outputs for up-to-date/incremental support
+    inputs.files(inputFileTree)
+    outputs.dir(reportDir)
+    outputs.file(file("$buildDir/reports/loc/loc.txt"))
+    outputs.file(file("$buildDir/reports/loc/loc-report.html"))
+
+    // ensure compiled classes/source generation (if any) are executed before counting
+    dependsOn classes
+
+    doLast {
+        if (srcDirs.isEmpty()) {
+            println "locStats: No source directories found for sourceSets.main"
+            return
+        }
+
+        def extCounts = [:].withDefault { 0L }
+        def fileDetails = []
+        long totalLines = 0L
+
+        // iterate file-by-file using streaming read to count lines
+        inputFileTree.files.each { File f ->
+            if (!f.isFile()) return
+            long lines = 0L
+            try {
+                Files.newBufferedReader(f.toPath(), StandardCharsets.UTF_8).withCloseable { reader ->
+                    while (reader.readLine() != null) { lines++ }
+                }
+            } catch (Exception e) {
+                println "locStats: warning reading ${f}: ${e.message}"
+                lines = 0L
+            }
+            totalLines += lines
+            def ext = (f.name.contains('.')) ? f.name.substring(f.name.lastIndexOf('.') + 1).toLowerCase() : 'noext'
+            extCounts[ext] = extCounts[ext] + lines
+
+            // compute relative path to nearest srcDir
+            def relBase = srcDirs.find { f.absolutePath.startsWith(it.absolutePath) }
+            def relPath = relBase ? f.absolutePath.substring(relBase.absolutePath.length() + 1) : project.rootDir.toPath().relativize(f.toPath()).toString()
+
+            fileDetails << [
+                    path     : relPath,
+                    name     : f.name,
+                    extension: ext.toUpperCase(),
+                    lines    : lines,
+                    size     : f.length()
+            ]
+        }
+
+        fileDetails.sort { -it.lines } // largest first
+
+        // Ensure report directory exists
+        reportDir.mkdirs()
+        def textReport = file("$reportDir/loc.txt")
+        def htmlReport = file("$reportDir/loc-report.html")
+
+        // write text report
+        textReport.withWriter('UTF-8') { writer ->
+            writer << "Lines of Code report\nGenerated: ${new Date()}\n\n"
+            extCounts.sort { -it.value }.each { ext, lines ->
+                writer << String.format("%-10s : %d%n", ext.toUpperCase(), lines)
+            }
+            writer << "\nTOTAL      : ${totalLines}\n"
+        }
+
+        // Enhanced HTML report with better styling and colors
+        def now = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date())
+        def totalSizeKB = fileDetails.collect { Math.round(it.size / 1024) }.sum() ?: 0
+        def html = new StringBuilder()
+
+        html << '''<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📊 Lines of Code Report</title>
+    <style>
+        * { box-sizing: border-box; }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+            animation: fadeInUp 0.6s ease-out;
+        }
+        
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-align: center;
+            font-weight: 700;
+        }
+        
+        h2 {
+            font-size: 1.8rem;
+            margin: 30px 0 20px 0;
+            color: #4a5568;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+        
+        h2:before {
+            content: "📈";
+            margin-right: 10px;
+            font-size: 1.2em;
+        }
+        
+        .timestamp {
+            text-align: center;
+            color: #718096;
+            font-size: 0.9rem;
+            margin-bottom: 30px;
+            padding: 10px;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 10px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+            transform: translateY(0);
+            transition: all 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
+        }
+        
+        .stat-number {
+            font-size: 2.2rem;
+            font-weight: bold;
+            display: block;
+            margin-bottom: 8px;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 25px 0;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            animation: slideIn 0.6s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        th {
+            padding: 18px 15px;
+            text-align: left;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 0.85rem;
+        }
+        
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #e2e8f0;
+            transition: background-color 0.2s ease;
+        }
+        
+        tr:nth-child(even) {
+            background-color: #f8fafc;
+        }
+        
+        tr:hover {
+            background: linear-gradient(90deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+            transform: scale(1.002);
+        }
+        
+        .number {
+            text-align: right;
+            font-weight: 600;
+            color: #4a5568;
+        }
+        
+        .file-path {
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 0.85rem;
+            color: #718096;
+            background: #f7fafc;
+            padding: 8px 12px;
+            border-radius: 6px;
+            border-left: 3px solid #667eea;
+        }
+        
+        .file-name {
+            font-weight: 600;
+            color: #2d3748;
+        }
+        
+        .extension-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        
+        .ext-java { background: #ff6b6b; color: white; }
+        .ext-yaml { background: #4ecdc4; color: white; }
+        .ext-yml { background: #4ecdc4; color: white; }
+        .ext-xml { background: #45b7d1; color: white; }
+        .ext-sql { background: #96ceb4; color: white; }
+        .ext-bat { background: #feca57; color: #333; }
+        .ext-sh { background: #48dbfb; color: white; }
+        .ext-js { background: #f9ca24; color: #333; }
+        .ext-ts { background: #0984e3; color: white; }
+        .ext-css { background: #6c5ce7; color: white; }
+        .ext-html { background: #fd79a8; color: white; }
+        .ext-properties { background: #a29bfe; color: white; }
+        .ext-default { background: #636e72; color: white; }
+        
+        .summary {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+            padding: 25px;
+            border-radius: 15px;
+            margin-top: 30px;
+            border-left: 5px solid #667eea;
+        }
+        
+        .summary strong {
+            color: #4a5568;
+            font-size: 1.1rem;
+        }
+        
+        .summary-item {
+            margin: 8px 0;
+            padding: 5px 0;
+            color: #718096;
+        }
+        
+        .rank-badge {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.8rem;
+            min-width: 30px;
+            text-align: center;
+        }
+        
+        .top-file {
+            background: linear-gradient(90deg, rgba(255, 107, 107, 0.1) 0%, rgba(255, 107, 107, 0.05) 100%);
+        }
+        
+        .large-file {
+            background: linear-gradient(90deg, rgba(255, 193, 7, 0.1) 0%, rgba(255, 193, 7, 0.05) 100%);
+        }
+        
+        .footer-info {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(102, 126, 234, 0.05);
+            border-radius: 10px;
+            color: #718096;
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 768px) {
+            .container { padding: 15px; }
+            h1 { font-size: 2rem; }
+            .stats-grid { grid-template-columns: 1fr; }
+            table { font-size: 0.85rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 Lines of Code Report</h1>
+        <div class="timestamp">Generated: ''' + now + ''' | Project: ''' + project.name + '''</div>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <span class="stat-number">''' + String.format('%,d', totalLines) + '''</span>
+                <span class="stat-label">Total Lines</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-number">''' + fileDetails.size() + '''</span>
+                <span class="stat-label">Total Files</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-number">''' + extCounts.size() + '''</span>
+                <span class="stat-label">File Types</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-number">''' + totalSizeKB + '''</span>
+                <span class="stat-label">Total Size (KB)</span>
+            </div>
+        </div>
+
+        <h2>Summary by File Type</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Extension</th>
+                    <th>Lines</th>
+                    <th>Percentage</th>
+                    <th>Files</th>
+                </tr>
+            </thead>
+            <tbody>'''
+
+        extCounts.sort { -it.value }.each { ext, lines ->
+            def percentage = String.format("%.1f", (lines / totalLines * 100))
+            def fileCount = fileDetails.count { it.extension.toLowerCase() == ext }
+            def extClass = "ext-${ext.toLowerCase()}"
+            if (!['java', 'yaml', 'yml', 'xml', 'sql', 'bat', 'sh', 'js', 'ts', 'css', 'html', 'properties'].contains(ext.toLowerCase())) {
+                extClass = 'ext-default'
+            }
+
+            html << """
+                <tr>
+                    <td><span class="extension-badge ${extClass}">${ext.toUpperCase()}</span></td>
+                    <td class="number">${String.format('%,d', lines)}</td>
+                    <td class="number">${percentage}%</td>
+                    <td class="number">${fileCount}</td>
+                </tr>"""
+        }
+
+        html << '''
+            </tbody>
+        </table>
+
+        <h2>Detailed File Analysis</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Rank</th>
+                    <th>File</th>
+                    <th>Type</th>
+                    <th>Lines</th>
+                    <th>Size (KB)</th>
+                </tr>
+            </thead>
+            <tbody>'''
+
+        fileDetails.eachWithIndex { file, index ->
+            def sizeKB = Math.round(file.size / 1024.0 * 100) / 100
+            def extClass = "ext-${file.extension.toLowerCase()}"
+            if (!['java', 'yaml', 'yml', 'xml', 'sql', 'bat', 'sh', 'js', 'ts', 'css', 'html', 'properties'].contains(file.extension.toLowerCase())) {
+                extClass = 'ext-default'
+            }
+
+            def rowClass = ''
+            if (index < 5) rowClass = 'top-file'
+            else if (file.lines > 200) rowClass = 'large-file'
+
+            html << """
+                <tr class="${rowClass}">
+                    <td><span class="rank-badge">${index + 1}</span></td>
+                    <td>
+                        <div class="file-name">${file.name}</div>
+                        <div class="file-path">${file.path}</div>
+                    </td>
+                    <td><span class="extension-badge ${extClass}">${file.extension}</span></td>
+                    <td class="number">${file.lines}</td>
+                    <td class="number">${sizeKB}</td>
+                </tr>"""
+        }
+
+        html << '''
+            </tbody>
+        </table>
+        
+        <div class="summary">
+            <strong>📋 Report Summary</strong>
+            <div class="summary-item">📁 Total files analyzed: ''' + fileDetails.size() + '''</div>
+            <div class="summary-item">📝 Total lines of code: ''' + String.format('%,d', totalLines) + '''</div>'''
+
+        if (fileDetails.size() > 0) {
+            html << '''<div class="summary-item">🏆 Largest file: ''' + fileDetails[0].name + ''' (''' + fileDetails[0].lines + ''' lines)</div>'''
+        } else {
+            html << '''<div class="summary-item">🏆 Largest file: N/A</div>'''
+        }
+
+        if (extCounts.size() > 0) {
+            html << '''<div class="summary-item">📊 Most common file type: ''' + extCounts.max { it.value }.key.toUpperCase() + '''</div>'''
+        } else {
+            html << '''<div class="summary-item">📊 Most common file type: N/A</div>'''
+        }
+
+        html << '''
+        </div>
+        
+        <div class="footer-info">
+            <strong>Included file types:</strong> ''' + includePatterns.join(', ') + '''<br>
+            Report generated with ❤️ by Workplace Tracker LOC Stats
+        </div>
+    </div>
+</body>
+</html>'''
+
+        htmlReport.withWriter('UTF-8') { w -> w << html.toString() }
+
+        println "locStats: text report -> ${textReport.absolutePath}"
+        println "locStats: html report -> ${htmlReport.absolutePath}"
+    } // doLast
+}

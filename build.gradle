@@ -114,5 +114,9 @@ jacocoTestCoverageVerification {
     }
 }
 
-// Make build depend on code coverage verification
+// Apply stats configuration from separate file
+apply from: 'gradle/loc-stats.gradle'
+
+// Make build depend on code coverage verification and also run locStats as part of build
 build.dependsOn jacocoTestCoverageVerification
+build.dependsOn locStats
