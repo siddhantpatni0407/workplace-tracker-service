@@ -3,7 +3,10 @@
 .idea
 # Ignore Gradle build output directory
 build
-gradle*
+# Ignore gradle wrapper files but keep gradle.properties
+gradle/wrapper/
+gradlew
+gradlew.bat
 .mvn*
 target*
 mvnw*

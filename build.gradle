@@ -1,17 +1,17 @@
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '3.5.5'
-    id 'io.spring.dependency-management' version '1.1.7'
+    id 'org.springframework.boot' version "${springBootVersion}"
+    id 'io.spring.dependency-management' version "${springDependencyManagementVersion}"
     id 'jacoco'
 }
 
-group = 'com.sid.app'
-version = '0.0.1-SNAPSHOT'
-description = 'Workplace Tracker Application'
+group = "${group}"
+version = "${version}"
+description = "${description}"
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
+        languageVersion = JavaLanguageVersion.of("${javaVersion}" as Integer)
     }
 }
 
@@ -23,14 +23,6 @@ configurations {
 
 repositories {
     mavenCentral()
-}
-
-ext {
-    testcontainersVersion = '1.20.3' // Updated from 1.19.0
-    jjwtVersion = '0.12.6' // Updated from 0.11.5 - SECURITY FIX
-    lombokVersion = '1.18.34' // Updated from 1.18.30
-    jacksonJsr310Version = '2.18.1' // Updated from 2.16.1 - SECURITY FIX
-    jacocoVersion = '0.8.11'
 }
 
 dependencies {
@@ -59,10 +51,10 @@ dependencies {
     implementation 'org.slf4j:slf4j-ext'
 
     // Apache Commons - SECURITY FIX: Updated to correct latest version
-    implementation 'commons-beanutils:commons-beanutils:1.9.4' // This is actually the latest stable version
+    implementation "commons-beanutils:commons-beanutils:${commonsBeanutilsVersion}"
 
     // OpenAPI - Updated to latest version
-    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0' // Updated from 2.3.0
+    implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:${springdocVersion}"
 
     // Lombok
     compileOnly "org.projectlombok:lombok:${lombokVersion}"
