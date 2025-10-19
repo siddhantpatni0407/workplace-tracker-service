@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '3.5.5'
     id 'io.spring.dependency-management' version '1.1.7'
+    id 'jacoco'
 }
 
 group = 'com.sid.app'
@@ -29,6 +30,7 @@ ext {
     jjwtVersion = '0.12.6' // Updated from 0.11.5 - SECURITY FIX
     lombokVersion = '1.18.34' // Updated from 1.18.30
     jacksonJsr310Version = '2.18.1' // Updated from 2.16.1 - SECURITY FIX
+    jacocoVersion = '0.8.11'
 }
 
 dependencies {
@@ -77,4 +79,48 @@ dependencies {
 
 tasks.named('test') {
     useJUnitPlatform()
+    finalizedBy jacocoTestReport
 }
+
+// JaCoCo Configuration
+jacoco {
+    toolVersion = "${jacocoVersion}"
+}
+
+jacocoTestReport {
+    dependsOn test
+    reports {
+        xml.required = true
+        html.required = true
+        csv.required = false
+    }
+
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, exclude: [
+                "**/config/**",
+                "**/dto/**",
+                "**/entity/**",
+                "**/model/**",
+                "**/*Application*",
+                "**/*Config*"
+            ])
+        }))
+    }
+}
+
+jacocoTestCoverageVerification {
+    dependsOn jacocoTestReport
+    violationRules {
+        rule {
+            limit {
+                // Set to 0% for now since no test cases exist yet
+                // Change to 0.70 (70%) when test cases are added
+                minimum = 0.0
+            }
+        }
+    }
+}
+
+// Make build depend on code coverage verification
+build.dependsOn jacocoTestCoverageVerification
