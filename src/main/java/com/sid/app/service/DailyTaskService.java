@@ -19,6 +19,7 @@ import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import com.sid.app.annotation.CorrelationId;
 
 /**
  * Service class for handling Daily Task operations.
@@ -47,6 +48,7 @@ public class DailyTaskService {
      * @throws EntityNotFoundException if the user is not found
      */
     @Transactional
+    @CorrelationId
     public DailyTaskDTO createDailyTask(DailyTaskDTO dailyTaskDTO) {
         log.info("createDailyTask() : Creating daily task for user ID: {}", dailyTaskDTO.getUserId());
 
@@ -78,6 +80,7 @@ public class DailyTaskService {
      * @throws EntityNotFoundException if the task or user is not found
      */
     @Transactional
+    @CorrelationId
     public DailyTaskDTO updateDailyTask(Long taskId, DailyTaskDTO dailyTaskDTO) {
         log.info("updateDailyTask() : Updating daily task with ID: {}", taskId);
 
@@ -106,6 +109,7 @@ public class DailyTaskService {
      * @throws EntityNotFoundException if the task is not found
      */
     @Transactional
+    @CorrelationId
     public void deleteDailyTask(Long taskId) {
         log.info("deleteDailyTask() : Deleting daily task with ID: {}", taskId);
 
@@ -124,6 +128,7 @@ public class DailyTaskService {
      * @return the task DTO
      * @throws EntityNotFoundException if the task is not found
      */
+    @CorrelationId
     public DailyTaskDTO getDailyTaskById(Long taskId) {
         log.info("getDailyTaskById() : Retrieving daily task with ID: {}", taskId);
 
@@ -140,6 +145,7 @@ public class DailyTaskService {
      * @return list of task DTOs
      * @throws EntityNotFoundException if the user is not found
      */
+    @CorrelationId
     public List<DailyTaskDTO> getUserDailyTasks(Long userId) {
         log.info("getUserDailyTasks() : Fetching daily tasks for user ID: {}", userId);
 
@@ -161,6 +167,7 @@ public class DailyTaskService {
      * @return list of task DTOs
      * @throws EntityNotFoundException if the user is not found
      */
+    @CorrelationId
     public List<DailyTaskDTO> getDailyTasksByUserIdAndDateRange(Long userId, LocalDate startDate, LocalDate endDate) {
         log.info("getDailyTasksByUserIdAndDateRange() : Retrieving daily tasks for user ID: {} between {} and {}",
                 userId, startDate, endDate);
@@ -182,6 +189,7 @@ public class DailyTaskService {
      * @return list of task DTOs
      * @throws EntityNotFoundException if the user is not found
      */
+    @CorrelationId
     public List<DailyTaskDTO> getDailyTasksByUserIdAndDate(Long userId, LocalDate date) {
         log.info("getDailyTasksByUserIdAndDate() : Retrieving daily tasks for user ID: {} on date: {}", userId, date);
 

@@ -18,6 +18,7 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
+import com.sid.app.annotation.CorrelationId;
 
 /**
  * Service that manages UserLeave rows and keeps user leave balances in sync.
@@ -32,6 +33,7 @@ public class UserLeaveService {
     private final LeavePolicyRepository leavePolicyRepo;
     private final UserLeaveBalanceService userLeaveBalanceService;
 
+    @CorrelationId
     public List<UserLeaveDTO> getLeavesForUser(Long userId) {
         log.debug("getLeavesForUser() userId={}", userId);
         return userLeaveRepo.findByUserId(userId).stream().map(this::toDto).collect(Collectors.toList());
@@ -42,6 +44,7 @@ public class UserLeaveService {
      * Transactional: if balance adjustment fails, leave creation rolls back.
      */
     @Transactional
+    @CorrelationId
     public UserLeaveDTO createLeave(UserLeaveDTO dto) {
         log.info("createLeave() userId={} policyId={} startDate={} endDate={} dayPart={} days={}",
                 dto.getUserId(), dto.getPolicyId(), dto.getStartDate(), dto.getEndDate(), dto.getDayPart(), dto.getDays());
@@ -87,6 +90,7 @@ public class UserLeaveService {
      * If a leave's policy changes, adjustments are applied to both old and new policy rows.
      */
     @Transactional
+    @CorrelationId
     public UserLeaveDTO updateLeave(Long userLeaveId, UserLeaveDTO dto) {
         log.info("updateLeave() userLeaveId={} userId={} policyId={}", userLeaveId, dto.getUserId(), dto.getPolicyId());
         UserLeave existing = userLeaveRepo.findById(userLeaveId)
@@ -168,6 +172,7 @@ public class UserLeaveService {
      * Delete leave and subtract its days from user leave balances.
      */
     @Transactional
+    @CorrelationId
     public void deleteLeave(Long userLeaveId) {
         log.info("deleteLeave() userLeaveId={}", userLeaveId);
         UserLeave ul = userLeaveRepo.findById(userLeaveId)

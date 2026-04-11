@@ -86,6 +86,31 @@ ui:
 server:
   port: ${SERVER_PORT:8010}
 
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+    enabled: true
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+    try-it-out-enabled: true
+    operations-sorter: alpha
+    tags-sorter: alpha
+    display-request-duration: true
+    default-model-rendering: model
+    persist-authorization: true
+    filter: true
+    doc-expansion: none
+    default-models-expand-depth: 2
+    default-model-expand-depth: 2
+    show-extensions: true
+    show-common-extensions: true
+    syntax-highlight:
+      activated: true
+      theme: monokai
+  show-actuator: false
+  packages-to-scan: com.sid.app.controller
+
 logging:
   level:
     root: ${LOGGING_LEVEL_ROOT:INFO}

@@ -60,6 +60,10 @@ dependencies {
     compileOnly "org.projectlombok:lombok:${lombokVersion}"
     annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
 
+    // Lombok for test sources (needed by Cucumber step/helper/hooks classes)
+    testCompileOnly "org.projectlombok:lombok:${lombokVersion}"
+    testAnnotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+
     // Testing - Spring Boot test
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
@@ -67,11 +71,63 @@ dependencies {
     testImplementation "org.testcontainers:junit-jupiter:${testcontainersVersion}"
     testImplementation "org.testcontainers:postgresql:${testcontainersVersion}"
     testImplementation "org.testcontainers:testcontainers:${testcontainersVersion}"
+
+    // Cucumber BDD - Java + Spring + JUnit Platform Engine
+    testImplementation "io.cucumber:cucumber-java:${cucumberVersion}"
+    testImplementation "io.cucumber:cucumber-spring:${cucumberVersion}"
+    testImplementation "io.cucumber:cucumber-junit-platform-engine:${cucumberVersion}"
+
+    // JUnit Platform Suite - needed to drive @Suite runner for Cucumber
+    testImplementation "org.junit.platform:junit-platform-suite"
+    testRuntimeOnly  "org.junit.platform:junit-platform-suite-engine"
+
+    // RestAssured - HTTP client for Cucumber step definitions
+    testImplementation "io.rest-assured:rest-assured:${restAssuredVersion}"
 }
 
 tasks.named('test') {
     useJUnitPlatform()
+    // Exclude Cucumber suite runners from the default test task to prevent double-execution
+    exclude '**/cucumber/runner/**'
     finalizedBy jacocoTestReport
+    // Ensure Gradle test runner has DOCKER_HOST set (Windows named pipe fallback) so Testcontainers
+    // can find Docker when tests are run via IDE or the default 'test' task.
+    environment 'DOCKER_HOST', (System.getenv('DOCKER_HOST') ?: 'npipe:////./pipe/docker_engine')
+}
+
+// -------------------------------------------------------
+// Dedicated task: runs only Cucumber BDD integration tests
+// Usage: ./gradlew cucumberTest
+// -------------------------------------------------------
+tasks.register('cucumberTest', Test) {
+    description = 'Runs Cucumber BDD integration tests (Auth API scenarios)'
+    group = 'verification'
+    useJUnitPlatform()
+    include '**/cucumber/runner/**'
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
+    systemProperty 'cucumber.junit-platform.naming-strategy', 'long'
+    outputs.upToDateWhen { false }
+
+    // On Windows (Rancher Desktop / Docker Desktop), the Testcontainers Docker client
+    // needs DOCKER_HOST set to the named-pipe path.  We honour the env var if already
+    // set, and fall back to the Windows named-pipe default so the task works out-of-the-box.
+    environment 'DOCKER_HOST',
+            (System.getenv('DOCKER_HOST') ?: 'npipe:////./pipe/docker_engine')
+
+    // Disable JaCoCo agent on this task entirely:
+    // 1. Integration tests don't need code-coverage tracking.
+    // 2. JaCoCo's bytecode transformer crashes on JDK-internal classes
+    //    compiled with Java 23 (class file version 67) if the JaCoCo
+    //    version does not yet support that version.
+    jacoco {
+        enabled = false
+    }
+
+    testLogging {
+        events 'passed', 'skipped', 'failed'
+        showStandardStreams = false
+    }
 }
 
 // JaCoCo Configuration

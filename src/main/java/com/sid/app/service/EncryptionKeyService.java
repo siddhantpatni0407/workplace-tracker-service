@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+import com.sid.app.annotation.CorrelationId;
 
 @Slf4j
 @Service
@@ -26,6 +27,7 @@ public class EncryptionKeyService {
     private volatile EncryptionKey latestKey;
 
     @PostConstruct
+    @CorrelationId
     public void init() {
         updateLatestKey();
     }
@@ -55,6 +57,7 @@ public class EncryptionKeyService {
      * @return The corresponding EncryptionKey entity.
      * @throws InvalidEncryptionKeyException if the key is not found.
      */
+    @CorrelationId
     public EncryptionKey getKeyByVersion(int keyVersion) {
         Optional<EncryptionKey> encryptionKey = Optional.ofNullable(repository.findByKeyVersion(keyVersion));
         return encryptionKey.orElseThrow(() -> {

@@ -7,6 +7,9 @@ import com.sid.app.enums.UserRole;
 import com.sid.app.model.LeavePolicyDTO;
 import com.sid.app.model.ResponseDTO;
 import com.sid.app.service.LeavePolicyService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,16 +19,21 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
+import com.sid.app.annotation.CorrelationId;
 
 @RestController
 @Slf4j
 @RequiredArgsConstructor
+@Tag(name = "Leave Policy", description = "Define and manage tenant-specific leave policies")
+@SecurityRequirement(name = "bearerAuth")
 public class LeavePolicyController {
 
     private final LeavePolicyService policyService;
 
+    @Operation(summary = "Get all leave policies")
     @GetMapping(EndpointConstants.LEAVE_POLICY_ENDPOINT)
     @RequiredRole({UserRole.USER, UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.MANAGER})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<List<LeavePolicyDTO>>> getAllPolicies() {
         log.info("getAllPolicies() - request");
         List<LeavePolicyDTO> list = policyService.getAllPolicies();
@@ -40,8 +48,10 @@ public class LeavePolicyController {
         return ResponseEntity.ok(new ResponseDTO<>(AppConstants.STATUS_SUCCESS, AppConstants.SUCCESS_POLICY_RETRIEVED, list));
     }
 
+    @Operation(summary = "Get leave policy by ID")
     @GetMapping(EndpointConstants.EXACT_LEAVE_POLICY_ENDPOINT)
     @RequiredRole({UserRole.USER, UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.MANAGER})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<LeavePolicyDTO>> getPolicy(@RequestParam("policyId") Long policyId) {
         log.info("getPolicy() - policyId={}", policyId);
 
@@ -63,8 +73,10 @@ public class LeavePolicyController {
         }
     }
 
+    @Operation(summary = "Create leave policy", description = "Create a new leave policy. Requires ADMIN role.")
     @PostMapping(EndpointConstants.LEAVE_POLICY_ENDPOINT)
     @RequiredRole({UserRole.ADMIN})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<LeavePolicyDTO>> createPolicy(@Valid @RequestBody LeavePolicyDTO req) {
         log.info("createPolicy() - code={}", req.getPolicyCode());
         try {
@@ -81,8 +93,10 @@ public class LeavePolicyController {
         }
     }
 
+    @Operation(summary = "Update leave policy", description = "Update an existing leave policy. Requires ADMIN role.")
     @PutMapping(EndpointConstants.LEAVE_POLICY_ENDPOINT)
     @RequiredRole({UserRole.ADMIN})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<LeavePolicyDTO>> updatePolicy(@RequestParam("policyId") Long policyId,
                                                                     @Valid @RequestBody LeavePolicyDTO req) {
         log.info("updatePolicy() - policyId={} code={}", policyId, req.getPolicyCode());

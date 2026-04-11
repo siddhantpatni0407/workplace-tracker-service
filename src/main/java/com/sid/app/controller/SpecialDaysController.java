@@ -8,11 +8,15 @@ import com.sid.app.model.CurrentMonthSpecialDaysDTO;
 import com.sid.app.model.ResponseDTO;
 import com.sid.app.model.SpecialDaysDataDTO;
 import com.sid.app.service.SpecialDaysService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.sid.app.annotation.CorrelationId;
 
 /**
  * Controller for Special Days API endpoints with role-based authorization (birthdays and work anniversaries)
@@ -20,6 +24,8 @@ import org.springframework.web.bind.annotation.*;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
+@Tag(name = "Special Days", description = "Birthdays, anniversaries and current-month special day listings")
+@SecurityRequirement(name = "bearerAuth")
 public class SpecialDaysController {
 
     private final SpecialDaysService specialDaysService;
@@ -28,8 +34,10 @@ public class SpecialDaysController {
      * Get special days with filtering and pagination.
      * All authenticated users can view special days.
      */
+    @Operation(summary = "Get special days", description = "List birthdays and anniversaries with optional filtering by month, year, type, department and location.")
     @GetMapping(value = EndpointConstants.SPECIAL_DAYS_ENDPOINT, produces = MediaType.APPLICATION_JSON_VALUE)
     @RequiredRole({UserRole.USER, UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.MANAGER})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<SpecialDaysDataDTO>> getSpecialDays(@RequestParam(required = false) Integer month,
                                                                           @RequestParam(required = false) Integer year,
                                                                           @RequestParam(required = false) Integer page,
@@ -51,8 +59,10 @@ public class SpecialDaysController {
      * Get current month special days for dashboard.
      * All authenticated users can view special days.
      */
+    @Operation(summary = "Get current month special days", description = "Retrieve birthdays and anniversaries for the current (or specified) month.")
     @GetMapping(value = EndpointConstants.SPECIAL_DAYS_CURRENT_MONTH_ENDPOINT, produces = MediaType.APPLICATION_JSON_VALUE)
     @RequiredRole({UserRole.USER, UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.MANAGER})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<CurrentMonthSpecialDaysDTO>> getCurrentMonthSpecialDays(@RequestParam(required = false) Integer month,
                                                                                               @RequestParam(required = false) Integer year,
                                                                                               @RequestParam(required = false) Integer limit) {
@@ -68,8 +78,10 @@ public class SpecialDaysController {
      * Get birthdays with filtering.
      * All authenticated users can view birthdays.
      */
+    @Operation(summary = "Get birthdays", description = "List only birthday special days with optional filtering.")
     @GetMapping(value = EndpointConstants.SPECIAL_DAYS_BIRTHDAYS_ENDPOINT, produces = MediaType.APPLICATION_JSON_VALUE)
     @RequiredRole({UserRole.USER, UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.MANAGER})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<SpecialDaysDataDTO>> getBirthdays(@RequestParam(required = false) Integer month,
                                                                         @RequestParam(required = false) Integer year,
                                                                         @RequestParam(required = false) Integer page,
@@ -90,8 +102,10 @@ public class SpecialDaysController {
      * Get work anniversaries with filtering.
      * All authenticated users can view anniversaries.
      */
+    @Operation(summary = "Get anniversaries", description = "List only work-anniversary special days with optional filtering.")
     @GetMapping(value = EndpointConstants.SPECIAL_DAYS_ANNIVERSARIES_ENDPOINT, produces = MediaType.APPLICATION_JSON_VALUE)
     @RequiredRole({UserRole.USER, UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.MANAGER})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<SpecialDaysDataDTO>> getAnniversaries(@RequestParam(required = false) Integer month,
                                                                             @RequestParam(required = false) Integer year,
                                                                             @RequestParam(required = false) Integer page,

@@ -7,6 +7,9 @@ import com.sid.app.enums.UserRole;
 import com.sid.app.model.HolidayDTO;
 import com.sid.app.model.ResponseDTO;
 import com.sid.app.service.HolidayService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,17 +21,22 @@ import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Optional;
+import com.sid.app.annotation.CorrelationId;
 
 @RestController
 @Slf4j
 @RequiredArgsConstructor
 @RequestMapping(EndpointConstants.HOLIDAYS_ENDPOINT)
+@Tag(name = "Holiday Management", description = "Create, retrieve, update and delete public holidays")
+@SecurityRequirement(name = "bearerAuth")
 public class HolidayController {
 
     private final HolidayService holidayService;
 
+    @Operation(summary = "Get holidays", description = "Retrieve all holidays or filter by date range using 'from' and 'to' query params (yyyy-MM-dd).")
     @GetMapping
     @RequiredRole({UserRole.USER, UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.MANAGER})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<List<HolidayDTO>>> getHolidays(@RequestParam(value = "from", required = false) String from,
                                                                      @RequestParam(value = "to", required = false) String to) {
 
@@ -72,8 +80,10 @@ public class HolidayController {
         }
     }
 
+    @Operation(summary = "Create holiday", description = "Create a new public holiday. Requires ADMIN role.")
     @PostMapping
     @RequiredRole({UserRole.ADMIN})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<HolidayDTO>> createHoliday(@Valid @RequestBody HolidayDTO req) {
         log.info("createHoliday() name='{}' date='{}'", req.getName(), req.getHolidayDate());
         HolidayDTO created = holidayService.createHoliday(req);
@@ -85,8 +95,10 @@ public class HolidayController {
      * Update existing holiday.
      * Accepts: PUT /holidays?holidayId={id}  OR  (if you prefer path param, you can change to @PutMapping("/{holidayId}"))
      */
+    @Operation(summary = "Update holiday", description = "Update an existing holiday by ID. Requires ADMIN role.")
     @PutMapping
     @RequiredRole({UserRole.ADMIN})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<HolidayDTO>> updateHoliday(@RequestParam("holidayId") Long holidayId,
                                                                  @Valid @RequestBody HolidayDTO req) {
         log.info("updateHoliday() holidayId={} name={} date={}", holidayId, req.getName(), req.getHolidayDate());
@@ -103,8 +115,10 @@ public class HolidayController {
         }
     }
 
+    @Operation(summary = "Delete holiday", description = "Delete a holiday by ID. Requires ADMIN role.")
     @DeleteMapping
     @RequiredRole({UserRole.ADMIN})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<Void>> deleteHoliday(@RequestParam("holidayId") Long holidayId) {
         log.info("deleteHoliday() holidayId={}", holidayId);
         try {

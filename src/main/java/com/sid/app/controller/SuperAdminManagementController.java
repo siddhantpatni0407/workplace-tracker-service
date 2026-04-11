@@ -9,6 +9,9 @@ import com.sid.app.model.ResponseDTO;
 import com.sid.app.model.TenantUserDTO;
 import com.sid.app.model.UserStatusUpdateRequest;
 import com.sid.app.service.TenantUserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
 import java.util.List;
+import com.sid.app.annotation.CorrelationId;
 
 /**
  * Controller for Super Admin to manage Admins
@@ -29,6 +33,8 @@ import java.util.List;
 @RestController
 @Slf4j
 @CrossOrigin
+@Tag(name = "Super Admin Management", description = "Super Admin management of Admin users")
+@SecurityRequirement(name = "bearerAuth")
 public class SuperAdminManagementController {
 
     @Autowired
@@ -40,8 +46,10 @@ public class SuperAdminManagementController {
     /**
      * Get all Admins in the current Super Admin's tenant (tenant-isolated)
      */
+    @Operation(summary = "Get all Admins in tenant")
     @GetMapping(EndpointConstants.ADMIN_MANAGEMENT_ENDPOINT)
     @RequiredRole({UserRole.SUPER_ADMIN})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<List<TenantUserDTO>>> getAllAdmins() {
         log.info("getAllAdmins() : Super Admin requesting all Admins in their tenant");
 
@@ -79,8 +87,10 @@ public class SuperAdminManagementController {
     /**
      * Get all Admins in the same tenant as Super Admin
      */
+    @Operation(summary = "Get Admins by tenant")
     @GetMapping(EndpointConstants.ADMIN_BY_TENANT_ENDPOINT)
     @RequiredRole({UserRole.SUPER_ADMIN})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<List<TenantUserDTO>>> getAdminsByTenant() {
         log.info("getAdminsByTenant() : Super Admin requesting all Admins in tenant");
 
@@ -117,8 +127,10 @@ public class SuperAdminManagementController {
     /**
      * Search Admins in Super Admin's tenant by name or email
      */
+    @Operation(summary = "Search Admins in tenant")
     @GetMapping(EndpointConstants.ADMIN_SEARCH_ENDPOINT)
     @RequiredRole({UserRole.SUPER_ADMIN})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<List<TenantUserDTO>>> searchAdmins(@RequestParam String searchTerm) {
         log.info("searchAdmins() : Super Admin searching Admins with term: {}", searchTerm);
 
@@ -154,8 +166,10 @@ public class SuperAdminManagementController {
     /**
      * Get Admin by ID (must be in same tenant as Super Admin)
      */
+    @Operation(summary = "Get Admin by ID")
     @GetMapping(EndpointConstants.ADMIN_DETAILS_ENDPOINT)
     @RequiredRole({UserRole.SUPER_ADMIN})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<TenantUserDTO>> getAdminById(@RequestParam Long adminId) {
         log.info("getAdminById() : Super Admin requesting Admin with ID: {}", adminId);
 
@@ -199,8 +213,10 @@ public class SuperAdminManagementController {
     /**
      * Update Admin status (activate/deactivate) - Super Admin access
      */
+    @Operation(summary = "Update Admin status")
     @PutMapping(EndpointConstants.ADMIN_STATUS_ENDPOINT)
     @RequiredRole({UserRole.SUPER_ADMIN})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<TenantUserDTO>> updateAdminStatus(@RequestParam Long adminId,
                                                                         @RequestBody @Valid UserStatusUpdateRequest statusRequest) {
         log.info("updateAdminStatus() : Super Admin updating status for Admin ID: {}", adminId);

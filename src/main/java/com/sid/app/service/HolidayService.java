@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
+import com.sid.app.annotation.CorrelationId;
 
 @Service
 @RequiredArgsConstructor
@@ -21,17 +22,20 @@ public class HolidayService {
 
     private final HolidayRepository holidayRepo;
 
+    @CorrelationId
     public List<HolidayDTO> getAllHolidays() {
         log.debug("getAllHolidays()");
         return holidayRepo.findAll().stream().map(this::toDto).collect(Collectors.toList());
     }
 
+    @CorrelationId
     public List<HolidayDTO> getHolidaysBetween(LocalDate from, LocalDate to) {
         log.debug("getHolidaysBetween() from={} to={}", from, to);
         return holidayRepo.findByHolidayDateBetween(from, to).stream().map(this::toDto).collect(Collectors.toList());
     }
 
     @Transactional
+    @CorrelationId
     public HolidayDTO createHoliday(HolidayDTO dto) {
         log.info("createHoliday() name={} date={}", dto.getName(), dto.getHolidayDate());
         Holiday h = Holiday.builder()
@@ -48,6 +52,7 @@ public class HolidayService {
      * Update an existing holiday row. Throws EntityNotFoundException if id not present.
      */
     @Transactional
+    @CorrelationId
     public HolidayDTO updateHoliday(Long holidayId, HolidayDTO dto) {
         log.info("updateHoliday() id={} name={} date={}", holidayId, dto.getName(), dto.getHolidayDate());
         Holiday existing = holidayRepo.findById(holidayId)
@@ -70,6 +75,7 @@ public class HolidayService {
     }
 
     @Transactional
+    @CorrelationId
     public void deleteHoliday(Long holidayId) {
         log.info("deleteHoliday() holidayId={}", holidayId);
         if (!holidayRepo.existsById(holidayId)) {

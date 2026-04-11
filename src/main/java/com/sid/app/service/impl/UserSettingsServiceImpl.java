@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
+import com.sid.app.annotation.CorrelationId;
 
 @Service
 @RequiredArgsConstructor
@@ -22,6 +23,7 @@ public class UserSettingsServiceImpl implements UserSettingsService {
 
     @Override
     @Transactional(readOnly = true)
+    @CorrelationId
     public UserSettingsDTO getSettings(Long userId) {
         UserSettings settings = settingsRepository.findByUserId(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User settings not found for userId: " + userId));
@@ -30,6 +32,7 @@ public class UserSettingsServiceImpl implements UserSettingsService {
 
     @Override
     @Transactional
+    @CorrelationId
     public UserSettingsDTO upsertSettings(UserSettingsDTO dto) {
         Long userId = dto.getUserId();
         // validate user exists
@@ -70,6 +73,7 @@ public class UserSettingsServiceImpl implements UserSettingsService {
 
     @Override
     @Transactional
+    @CorrelationId
     public void deleteSettings(Long userId) {
         UserSettings settings = settingsRepository.findByUserId(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User settings not found for userId: " + userId));

@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import com.sid.app.annotation.CorrelationId;
 
 @Service
 @RequiredArgsConstructor
@@ -19,11 +20,13 @@ public class LeavePolicyService {
 
     private final LeavePolicyRepository policyRepo;
 
+    @CorrelationId
     public List<LeavePolicyDTO> getAllPolicies() {
         log.debug("getAllPolicies()");
         return policyRepo.findAll().stream().map(this::toDto).collect(Collectors.toList());
     }
 
+    @CorrelationId
     public LeavePolicyDTO getPolicy(Long policyId) {
         log.debug("getPolicy() policyId={}", policyId);
         LeavePolicy p = policyRepo.findById(policyId)
@@ -32,6 +35,7 @@ public class LeavePolicyService {
     }
 
     @Transactional
+    @CorrelationId
     public LeavePolicyDTO createPolicy(LeavePolicyDTO dto) {
         log.info("createPolicy() code={}", dto.getPolicyCode());
         LeavePolicy p = LeavePolicy.builder()
@@ -45,6 +49,7 @@ public class LeavePolicyService {
     }
 
     @Transactional
+    @CorrelationId
     public LeavePolicyDTO updatePolicy(Long policyId, LeavePolicyDTO dto) {
         log.info("updatePolicy() policyId={}", policyId);
         LeavePolicy p = policyRepo.findById(policyId)

@@ -8,6 +8,9 @@ import com.sid.app.enums.UserRole;
 import com.sid.app.model.ResponseDTO;
 import com.sid.app.model.UserSettingsDTO;
 import com.sid.app.service.UserSettingsService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,10 +18,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.sid.app.annotation.CorrelationId;
 
 @RestController
 @RequiredArgsConstructor
 @Slf4j
+@Tag(name = "User Settings", description = "Manage personal user settings and preferences")
+@SecurityRequirement(name = "bearerAuth")
 public class UserSettingsController {
 
     private final UserSettingsService userSettingsService;
@@ -29,8 +35,10 @@ public class UserSettingsController {
     /**
      * Get user settings
      */
+    @Operation(summary = "Get user settings", description = "Retrieve settings for the authenticated user.")
     @GetMapping(EndpointConstants.USER_SETTINGS_ENDPOINT)
     @RequiredRole({UserRole.USER, UserRole.MANAGER, UserRole.ADMIN, UserRole.SUPER_ADMIN})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<UserSettingsDTO>> getUserSettings() {
         Long userId = jwtAuthenticationContext.getCurrentUserId();
         log.info("getUserSettings() -> userId={}", userId);
@@ -50,8 +58,10 @@ public class UserSettingsController {
     /**
      * Create or update user settings
      */
+    @Operation(summary = "Create or update user settings", description = "Create or update settings for the authenticated user.")
     @PutMapping(EndpointConstants.USER_SETTINGS_ENDPOINT)
     @RequiredRole({UserRole.USER, UserRole.MANAGER, UserRole.ADMIN, UserRole.SUPER_ADMIN})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<UserSettingsDTO>> upsertUserSettings(
             @Valid @RequestBody UserSettingsDTO dto) {
 
@@ -79,8 +89,10 @@ public class UserSettingsController {
     /**
      * Delete user settings
      */
+    @Operation(summary = "Delete user settings", description = "Delete settings for the authenticated user.")
     @DeleteMapping(EndpointConstants.USER_SETTINGS_ENDPOINT)
     @RequiredRole({UserRole.USER, UserRole.MANAGER, UserRole.ADMIN, UserRole.SUPER_ADMIN})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<Void>> deleteUserSettings() {
         Long userId = jwtAuthenticationContext.getCurrentUserId();
         try {

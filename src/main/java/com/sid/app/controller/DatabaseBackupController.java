@@ -7,6 +7,9 @@ import com.sid.app.enums.UserRole;
 import com.sid.app.exception.SchemaNotFoundException;
 import com.sid.app.model.ResponseDTO;
 import com.sid.app.service.DatabaseBackupService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -15,9 +18,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
+import com.sid.app.annotation.CorrelationId;
 
 @Slf4j
 @RestController
+@Tag(name = "Database Backup", description = "Trigger and manage database backup operations")
+@SecurityRequirement(name = "bearerAuth")
 public class DatabaseBackupController {
 
     private final DatabaseBackupService backupService;
@@ -27,8 +33,10 @@ public class DatabaseBackupController {
         this.backupService = backupService;
     }
 
+    @Operation(summary = "Create database backup", description = "Triggers a database backup. Supports 'sql' and 'dump' types, with optional db/schema filters. Requires PLATFORM_USER role.")
     @GetMapping(EndpointConstants.DB_BACKUP_ENDPOINT)
     @RequiredRole({UserRole.PLATFORM_USER})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<Map<String, String>>> createBackup(
             @RequestParam(name = "type", defaultValue = "sql") String type,
             @RequestParam(name = "db", required = false) String databaseName,

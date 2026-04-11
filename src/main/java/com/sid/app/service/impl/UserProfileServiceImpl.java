@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
+import com.sid.app.annotation.CorrelationId;
 
 @Service
 @RequiredArgsConstructor
@@ -30,6 +31,7 @@ public class UserProfileServiceImpl implements UserProfileService {
 
     @Override
     @Transactional(readOnly = true)
+    @CorrelationId
     public UserProfileDTO getProfile(Long userId) {
         log.info("getProfile() - start, userId={}", userId);
 
@@ -72,6 +74,7 @@ public class UserProfileServiceImpl implements UserProfileService {
 
     @Override
     @Transactional
+    @CorrelationId
     public UserProfileDTO upsertProfile(UserProfileDTO dto) {
         log.info("upsertProfile() - start for userId={}", dto != null ? dto.getUserId() : null);
 

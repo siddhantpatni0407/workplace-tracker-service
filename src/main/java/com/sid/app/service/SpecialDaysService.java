@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import com.sid.app.annotation.CorrelationId;
 
 /**
  * Service for handling Special Days operations (birthdays and work anniversaries)
@@ -43,6 +44,7 @@ public class SpecialDaysService {
     /**
      * Get special days with filtering and pagination
      */
+    @CorrelationId
     public ResponseDTO<SpecialDaysDataDTO> getSpecialDays(Integer month, Integer year,
                                                           Integer page, Integer limit,
                                                           String type, String department,
@@ -129,6 +131,7 @@ public class SpecialDaysService {
     /**
      * Get current month special days for dashboard
      */
+    @CorrelationId
     public ResponseDTO<CurrentMonthSpecialDaysDTO> getCurrentMonthSpecialDays(Integer month, Integer year, Integer limit) {
         try {
             if (month == null) month = LocalDate.now().getMonthValue();

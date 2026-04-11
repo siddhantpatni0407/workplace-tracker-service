@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
+import com.sid.app.annotation.CorrelationId;
 
 @Service
 @Slf4j
@@ -27,6 +28,7 @@ public class UserNotesServiceImpl implements UserNotesService {
     private final UserNotesRepository userNotesRepository;
 
     @Override
+    @CorrelationId
     public UserNotesDTO createNote(Long userId, UserNotesDTO noteDTO) {
         log.info("Creating note for user: {}", userId);
 
@@ -53,6 +55,7 @@ public class UserNotesServiceImpl implements UserNotesService {
 
     @Override
     @Transactional
+    @CorrelationId
     public UserNotesDTO getNoteById(Long userId, Long noteId) {
         log.info("Fetching note {} for user {}", noteId, userId);
 
@@ -67,6 +70,7 @@ public class UserNotesServiceImpl implements UserNotesService {
 
     @Override
     @Transactional(readOnly = true)
+    @CorrelationId
     public UserNotesListResponseDTO getAllUserNotes(Long userId, Pageable pageable) {
         log.info("Fetching all notes for user: {} with pagination: {}", userId, pageable);
 
@@ -92,6 +96,7 @@ public class UserNotesServiceImpl implements UserNotesService {
     }
 
     @Override
+    @CorrelationId
     public UserNotesDTO updateNote(Long userId, Long noteId, UserNotesDTO noteDTO) {
         log.info("Updating note {} for user {}", noteId, userId);
 
@@ -117,6 +122,7 @@ public class UserNotesServiceImpl implements UserNotesService {
     }
 
     @Override
+    @CorrelationId
     public void deleteNote(Long userId, Long noteId, boolean permanent) {
         log.info("Deleting note {} for user {} (permanent: {})", noteId, userId, permanent);
 
@@ -135,6 +141,7 @@ public class UserNotesServiceImpl implements UserNotesService {
 
     @Override
     @Transactional(readOnly = true)
+    @CorrelationId
     public UserNotesListResponseDTO getNotesWithFilters(Long userId, NoteType noteType, NoteColor color,
                                                   NoteCategory category, NotePriority priority,
                                                   NoteStatus status, Boolean isPinned, Boolean isShared,
@@ -156,6 +163,7 @@ public class UserNotesServiceImpl implements UserNotesService {
 
     @Override
     @Transactional(readOnly = true)
+    @CorrelationId
     public UserNotesListResponseDTO getNotesByType(Long userId, NoteType noteType, Pageable pageable) {
         log.info("Fetching notes by type {} for user: {}", noteType, userId);
 
@@ -165,6 +173,7 @@ public class UserNotesServiceImpl implements UserNotesService {
 
     @Override
     @Transactional(readOnly = true)
+    @CorrelationId
     public UserNotesListResponseDTO getNotesByCategory(Long userId, NoteCategory category, Pageable pageable) {
         log.info("Fetching notes by category {} for user: {}", category, userId);
 
@@ -174,6 +183,7 @@ public class UserNotesServiceImpl implements UserNotesService {
 
     @Override
     @Transactional(readOnly = true)
+    @CorrelationId
     public UserNotesListResponseDTO getPinnedNotes(Long userId, Pageable pageable) {
         log.info("Fetching pinned notes for user: {}", userId);
 
@@ -183,6 +193,7 @@ public class UserNotesServiceImpl implements UserNotesService {
 
     @Override
     @Transactional(readOnly = true)
+    @CorrelationId
     public UserNotesListResponseDTO getArchivedNotes(Long userId, Pageable pageable) {
         log.info("Fetching archived notes for user: {}", userId);
 
@@ -192,6 +203,7 @@ public class UserNotesServiceImpl implements UserNotesService {
 
     @Override
     @Transactional(readOnly = true)
+    @CorrelationId
     public UserNotesListResponseDTO searchNotes(Long userId, String searchTerm, Pageable pageable) {
         log.info("Searching notes for user: {} with term: {}", userId, searchTerm);
 
@@ -200,6 +212,7 @@ public class UserNotesServiceImpl implements UserNotesService {
     }
 
     @Override
+    @CorrelationId
     public UserNotesDTO updateNoteStatus(Long userId, Long noteId, NoteStatus status) {
         log.info("Updating note status {} for note {} and user {}", status, noteId, userId);
 
@@ -214,6 +227,7 @@ public class UserNotesServiceImpl implements UserNotesService {
     }
 
     @Override
+    @CorrelationId
     public UserNotesDTO togglePinStatus(Long userId, Long noteId) {
         log.info("Toggling pin status for note {} and user {}", noteId, userId);
 
@@ -228,6 +242,7 @@ public class UserNotesServiceImpl implements UserNotesService {
     }
 
     @Override
+    @CorrelationId
     public UserNotesDTO updateNoteColor(Long userId, Long noteId, NoteColor color) {
         log.info("Updating note color {} for note {} and user {}", color, noteId, userId);
 
@@ -243,6 +258,7 @@ public class UserNotesServiceImpl implements UserNotesService {
 
     @Override
     @Transactional(readOnly = true)
+    @CorrelationId
     public UserNotesStatsDTO getNoteStats(Long userId) {
         log.info("Fetching note statistics for user: {}", userId);
 
@@ -278,6 +294,7 @@ public class UserNotesServiceImpl implements UserNotesService {
     }
 
     @Override
+    @CorrelationId
     public List<UserNotesDTO> bulkUpdateNotes(Long userId, UserNotesBulkUpdateRequest request) {
         log.info("Bulk updating {} notes for user {}", request.getNoteIds().size(), userId);
 
@@ -304,6 +321,7 @@ public class UserNotesServiceImpl implements UserNotesService {
     }
 
     @Override
+    @CorrelationId
     public void bulkDeleteNotes(Long userId, UserNotesBulkDeleteRequest request) {
         log.info("Bulk deleting {} notes for user {} (permanent: {})",
                 request.getNoteIds().size(), userId, request.getPermanentDelete());
@@ -323,6 +341,7 @@ public class UserNotesServiceImpl implements UserNotesService {
     }
 
     @Override
+    @CorrelationId
     public UserNotesDTO duplicateNote(Long userId, Long noteId) {
         log.info("Duplicating note {} for user {}", noteId, userId);
 

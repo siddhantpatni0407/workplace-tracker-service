@@ -20,6 +20,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
+import com.sid.app.annotation.CorrelationId;
 
 /**
  * Analytics service: aggregates visits / leaves / holidays by period (month|year|week).
@@ -43,6 +44,7 @@ public class AnalyticsService {
     // scale & rounding when dividing days
     private static final int DIVIDE_SCALE = 8;
 
+    @CorrelationId
     public List<AggregatePeriodDTO> aggregateByPeriod(Long userId, LocalDate from, LocalDate to, String groupBy) {
         log.debug("aggregateByPeriod() userId={} from={} to={} groupBy={}", userId, from, to, groupBy);
 

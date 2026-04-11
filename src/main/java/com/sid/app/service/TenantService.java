@@ -23,6 +23,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import com.sid.app.annotation.CorrelationId;
 
 /**
  * Service class for managing tenants.
@@ -46,6 +47,7 @@ public class TenantService {
      * Create a new tenant
      */
     @Transactional
+    @CorrelationId
     public TenantDTO createTenant(TenantCreateRequest request) {
         log.info("Creating new tenant with name: {}", request.getTenantName());
 
@@ -76,6 +78,7 @@ public class TenantService {
     /**
      * Get all tenants with pagination
      */
+    @CorrelationId
     public Page<TenantDTO> getAllTenants(Pageable pageable) {
         log.info("Fetching all tenants with pagination");
         Page<Tenant> tenants = tenantRepository.findAll(pageable);
@@ -85,6 +88,7 @@ public class TenantService {
     /**
      * Get all active tenants
      */
+    @CorrelationId
     public List<TenantDTO> getActiveTenants() {
         log.info("Fetching all active tenants");
         List<Tenant> activeTenants = tenantRepository.findAllActive();
@@ -96,6 +100,7 @@ public class TenantService {
     /**
      * Get tenant by ID
      */
+    @CorrelationId
     public TenantDTO getTenantById(Long tenantId) {
         log.info("Fetching tenant by ID: {}", tenantId);
         Tenant tenant = tenantRepository.findById(tenantId)
@@ -106,6 +111,7 @@ public class TenantService {
     /**
      * Get tenant by tenant code
      */
+    @CorrelationId
     public TenantDTO getTenantByCode(String tenantCode) {
         log.info("Fetching tenant by code: {}", tenantCode);
         Tenant tenant = tenantRepository.findByTenantCode(tenantCode)
@@ -117,6 +123,7 @@ public class TenantService {
      * Update tenant
      */
     @Transactional
+    @CorrelationId
     public TenantDTO updateTenant(Long tenantId, TenantUpdateRequest request) {
         log.info("Updating tenant with ID: {}", tenantId);
 
@@ -161,6 +168,7 @@ public class TenantService {
      * Update tenant status (activate/deactivate)
      */
     @Transactional
+    @CorrelationId
     public TenantDTO updateTenantStatus(TenantStatusUpdateRequest request) {
         log.info("Updating status for tenant ID: {} to {}", request.getTenantId(), request.getIsActive());
 
@@ -180,6 +188,7 @@ public class TenantService {
      * Delete tenant (soft delete by deactivating)
      */
     @Transactional
+    @CorrelationId
     public void deleteTenant(Long tenantId) {
         log.info("Deleting (deactivating) tenant with ID: {}", tenantId);
 
@@ -195,6 +204,7 @@ public class TenantService {
     /**
      * Search tenants by name
      */
+    @CorrelationId
     public List<TenantDTO> searchTenantsByName(String searchTerm) {
         log.info("Searching tenants by name containing: {}", searchTerm);
 
@@ -208,6 +218,7 @@ public class TenantService {
      * Update tenant's subscription plan
      */
     @Transactional
+    @CorrelationId
     public TenantDTO updateTenantSubscription(String tenantCode, String newSubscriptionCode) {
         log.info("Updating tenant subscription - tenant: {}, new subscription: {}", tenantCode, newSubscriptionCode);
 
@@ -248,6 +259,7 @@ public class TenantService {
     /**
      * Get tenant statistics
      */
+    @CorrelationId
     public TenantDTO getTenantStats(Long tenantId) {
         log.info("Fetching statistics for tenant ID: {}", tenantId);
 
@@ -272,6 +284,7 @@ public class TenantService {
     /**
      * Get users for a specific tenant
      */
+    @CorrelationId
     public List<Object> getTenantUsers(Long tenantId) {
         log.info("Fetching users for tenant ID: {}", tenantId);
 

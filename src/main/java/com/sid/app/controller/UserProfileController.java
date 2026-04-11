@@ -9,6 +9,9 @@ import com.sid.app.model.ResponseDTO;
 import com.sid.app.model.UserProfileDTO;
 import com.sid.app.service.UserProfileService;
 import com.sid.app.exception.UserProfileValidationException;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,10 +21,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
+import com.sid.app.annotation.CorrelationId;
 
 @RestController
 @RequiredArgsConstructor
 @Slf4j
+@Tag(name = "User Profile", description = "Manage user profile information and addresses")
+@SecurityRequirement(name = "bearerAuth")
 public class UserProfileController {
 
     private final UserProfileService userProfileService;
@@ -33,8 +39,10 @@ public class UserProfileController {
      * Get user profile
      * GET /user-profile
      */
+    @Operation(summary = "Get user profile", description = "Retrieve the authenticated user's profile.")
     @GetMapping(value = EndpointConstants.USER_PROFILE_ENDPOINT, produces = "application/json")
     @RequiredRole({UserRole.USER, UserRole.MANAGER, UserRole.ADMIN, UserRole.SUPER_ADMIN})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<UserProfileDTO>> getProfile() {
         Long userId = jwtAuthenticationContext.getCurrentUserId();
         log.info("GET /user/profile called - userId={}", userId);
@@ -57,8 +65,10 @@ public class UserProfileController {
      * Create or update user profile
      * PUT /user-profile
      */
+    @Operation(summary = "Create or update user profile", description = "Create or update the authenticated user's profile.")
     @PutMapping(value = EndpointConstants.USER_PROFILE_ENDPOINT, produces = "application/json")
     @RequiredRole({UserRole.USER, UserRole.MANAGER, UserRole.ADMIN, UserRole.SUPER_ADMIN})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<?>> upsertProfile(@Valid @RequestBody UserProfileDTO dto) {
 
         Long userId = jwtAuthenticationContext.getCurrentUserId();

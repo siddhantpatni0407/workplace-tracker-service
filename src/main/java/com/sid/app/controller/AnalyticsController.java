@@ -8,6 +8,9 @@ import com.sid.app.enums.UserRole;
 import com.sid.app.model.AggregatePeriodDTO;
 import com.sid.app.model.ResponseDTO;
 import com.sid.app.service.AnalyticsService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,11 +22,14 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Locale;
+import com.sid.app.annotation.CorrelationId;
 
 @RestController
 @Slf4j
 @RequiredArgsConstructor
 @RequestMapping(EndpointConstants.ANALYTICS_VISITS_LEAVES_AGG_ENDPOINT)
+@Tag(name = "Analytics", description = "Aggregate analytics for visits and leaves over time")
+@SecurityRequirement(name = "bearerAuth")
 public class AnalyticsController {
 
     private final AnalyticsService analyticsService;
@@ -40,8 +46,10 @@ public class AnalyticsController {
      * - to   (yyyy-MM-dd) required
      * - groupBy = month | year | week
      */
+    @Operation(summary = "Get visits & leaves aggregate", description = "Aggregate visits and leaves for the authenticated user grouped by month, week, or year.")
     @GetMapping
     @RequiredRole({UserRole.USER, UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.MANAGER})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<List<AggregatePeriodDTO>>> getVisitsLeavesAggregate(@RequestParam(value = "from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
                                                                                           @RequestParam(value = "to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
                                                                                           @RequestParam(value = "groupBy") String groupBy) {

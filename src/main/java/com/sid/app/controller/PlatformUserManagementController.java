@@ -9,6 +9,9 @@ import com.sid.app.model.ResponseDTO;
 import com.sid.app.model.TenantUserDTO;
 import com.sid.app.model.UserStatusUpdateRequest;
 import com.sid.app.service.TenantUserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
 import java.util.List;
+import com.sid.app.annotation.CorrelationId;
 
 /**
  * Controller for Platform User to manage Super Admins
@@ -29,6 +33,8 @@ import java.util.List;
 @RestController
 @Slf4j
 @CrossOrigin
+@Tag(name = "Platform User Management", description = "Platform user management of Super Admins")
+@SecurityRequirement(name = "bearerAuth")
 public class PlatformUserManagementController {
 
     @Autowired
@@ -40,8 +46,10 @@ public class PlatformUserManagementController {
     /**
      * Get all Super Admins in the system
      */
+    @Operation(summary = "Get all Super Admins")
     @GetMapping(EndpointConstants.SUPER_ADMIN_MANAGEMENT_ENDPOINT)
     @RequiredRole({UserRole.PLATFORM_USER})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<List<TenantUserDTO>>> getAllSuperAdmins() {
         log.info("getAllSuperAdmins() : Platform User requesting all Super Admins");
 
@@ -77,8 +85,10 @@ public class PlatformUserManagementController {
     /**
      * Get Super Admins by tenant ID
      */
+    @Operation(summary = "Get Super Admins by tenant")
     @GetMapping(EndpointConstants.SUPER_ADMIN_BY_TENANT_ENDPOINT)
     @RequiredRole({UserRole.PLATFORM_USER})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<List<TenantUserDTO>>> getSuperAdminsByTenant(@RequestParam Long tenantId) {
         log.info("getSuperAdminsByTenant() : Platform User requesting Super Admins for tenant ID: {}", tenantId);
 
@@ -122,8 +132,10 @@ public class PlatformUserManagementController {
     /**
      * Search Super Admins by name or email
      */
+    @Operation(summary = "Search Super Admins")
     @GetMapping(EndpointConstants.SUPER_ADMIN_SEARCH_ENDPOINT)
     @RequiredRole({UserRole.PLATFORM_USER})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<List<TenantUserDTO>>> searchSuperAdmins(@RequestParam String searchTerm) {
         log.info("searchSuperAdmins() : Platform User searching Super Admins with term: {}", searchTerm);
 
@@ -158,8 +170,10 @@ public class PlatformUserManagementController {
     /**
      * Get Super Admin by ID
      */
+    @Operation(summary = "Get Super Admin by ID")
     @GetMapping(EndpointConstants.SUPER_ADMIN_DETAILS_ENDPOINT)
     @RequiredRole({UserRole.PLATFORM_USER})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<TenantUserDTO>> getSuperAdminById(@RequestParam Long tenantUserId) {
         log.info("getSuperAdminById() : Platform User requesting Super Admin with ID: {}", tenantUserId);
 
@@ -201,8 +215,10 @@ public class PlatformUserManagementController {
     /**
      * Update Super Admin status (activate/deactivate)
      */
+    @Operation(summary = "Update Super Admin status")
     @PutMapping(EndpointConstants.SUPER_ADMIN_STATUS_ENDPOINT)
     @RequiredRole({UserRole.PLATFORM_USER})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<TenantUserDTO>> updateSuperAdminStatus(@RequestParam Long tenantUserId,
                                                                              @RequestBody @Valid UserStatusUpdateRequest statusRequest) {
         log.info("updateSuperAdminStatus() : Platform User updating status for Super Admin ID: {}", tenantUserId);

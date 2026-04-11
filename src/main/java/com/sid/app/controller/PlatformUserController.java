@@ -9,6 +9,8 @@ import com.sid.app.dto.response.PlatformUserResponse;
 import com.sid.app.service.PlatformUserService;
 import com.sid.app.annotation.CorrelationId;
 import com.sid.app.utils.ApplicationUtils;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,10 +21,12 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @Slf4j
+@Tag(name = "Platform User Auth", description = "Platform-level user signup, login and token refresh")
 public class PlatformUserController {
 
     private final PlatformUserService platformUserService;
 
+    @Operation(summary = "Platform user signup", description = "Register a new platform-level user account.")
     @PostMapping(EndpointConstants.PLATFORM_AUTH_SIGNUP_ENDPOINT)
     @CorrelationId
     public ResponseEntity<PlatformUserAuthResponse> signup(@Valid @RequestBody PlatformUserSignupRequest request) {
@@ -46,6 +50,7 @@ public class PlatformUserController {
         }
     }
 
+    @Operation(summary = "Platform user login", description = "Authenticate a platform user and receive a JWT token.")
     @PostMapping(EndpointConstants.PLATFORM_AUTH_LOGIN_ENDPOINT)
     @CorrelationId
     public ResponseEntity<PlatformUserAuthResponse> login(@Valid @RequestBody PlatformUserLoginRequest request) {
@@ -69,6 +74,7 @@ public class PlatformUserController {
         }
     }
 
+    @Operation(summary = "Refresh platform user token", description = "Obtain a new access token using a valid refresh token.")
     @PostMapping(EndpointConstants.PLATFORM_AUTH_REFRESH_ENDPOINT)
     @CorrelationId
     public ResponseEntity<PlatformUserAuthResponse> refreshToken(@RequestBody String refreshToken) {
@@ -92,6 +98,8 @@ public class PlatformUserController {
         }
     }
 
+    @Operation(summary = "Get platform user profile")
+    @io.swagger.v3.oas.annotations.security.SecurityRequirement(name = "bearerAuth")
     @GetMapping(EndpointConstants.PLATFORM_AUTH_PROFILE_ENDPOINT)
     @CorrelationId
     public ResponseEntity<PlatformUserResponse> getProfile(@RequestParam Long platformUserId) {

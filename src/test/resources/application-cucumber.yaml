@@ -1,0 +1,42 @@
+# ============================================================
+# Cucumber integration-test profile
+# Active when: @ActiveProfiles("cucumber") is set on
+# CucumberSpringConfiguration.
+#
+# The datasource URL / username / password are ALWAYS
+# overridden at runtime by @DynamicPropertySource in
+# CucumberSpringConfiguration (Testcontainers PostgreSQL).
+# The settings here just make sure every schema reference
+# that is baked into other properties points to "public"
+# instead of the default "dev" schema.
+# ============================================================
+
+spring:
+
+  jpa:
+    show-sql: false
+    properties:
+      hibernate:
+        default_schema: public
+        format_sql: false
+
+  datasource:
+    hikari:
+      schema: public
+      minimum-idle: 1
+      maximum-pool-size: 5
+
+  liquibase:
+    enabled: true
+    # Activate the "init" context so that all baseline changesets execute
+    contexts: init
+    default-schema: public
+    liquibase-schema: public
+
+logging:
+  level:
+    root: WARN
+    com.sid: INFO
+    org.liquibase: INFO
+    org.testcontainers: INFO
+

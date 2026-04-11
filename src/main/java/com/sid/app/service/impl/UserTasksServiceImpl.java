@@ -23,6 +23,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
+import com.sid.app.annotation.CorrelationId;
 
 @Service
 @Slf4j
@@ -33,6 +34,7 @@ public class UserTasksServiceImpl implements UserTasksService {
     private final UserTasksRepository userTasksRepository;
 
     @Override
+    @CorrelationId
     public UserTasksDTO createTask(Long userId, UserTasksDTO taskDTO) {
         log.info("Creating task for user: {}", userId);
 
@@ -64,6 +66,7 @@ public class UserTasksServiceImpl implements UserTasksService {
 
     @Override
     @Transactional
+    @CorrelationId
     public UserTasksDTO getTaskById(Long userId, Long userTaskId) {
         log.info("Fetching task {} for user {}", userTaskId, userId);
 
@@ -78,6 +81,7 @@ public class UserTasksServiceImpl implements UserTasksService {
 
     @Override
     @Transactional(readOnly = true)
+    @CorrelationId
     public UserTasksListResponseDTO getAllUserTasks(Long userId, Pageable pageable) {
         log.info("Fetching all tasks for user: {} with pagination: {}", userId, pageable);
 
@@ -86,6 +90,7 @@ public class UserTasksServiceImpl implements UserTasksService {
     }
 
     @Override
+    @CorrelationId
     public UserTasksDTO updateTask(Long userId, Long userTaskId, UserTasksDTO taskDTO) {
         log.info("Updating task {} for user {}", userTaskId, userId);
 
@@ -115,6 +120,7 @@ public class UserTasksServiceImpl implements UserTasksService {
     }
 
     @Override
+    @CorrelationId
     public void deleteTask(Long userId, Long userTaskId) {
         log.info("Deleting task {} for user {}", userTaskId, userId);
 
@@ -133,6 +139,7 @@ public class UserTasksServiceImpl implements UserTasksService {
 
     @Override
     @Transactional(readOnly = true)
+    @CorrelationId
     public UserTasksListResponseDTO getTasksWithFilters(Long userId, TaskStatus status, TaskPriority priority,
                                                         TaskCategory category, TaskType taskType,
                                                         LocalDate startDate, LocalDate endDate,
@@ -157,6 +164,7 @@ public class UserTasksServiceImpl implements UserTasksService {
 
     @Override
     @Transactional(readOnly = true)
+    @CorrelationId
     public UserTasksListResponseDTO getTasksByStatus(Long userId, TaskStatus status, Pageable pageable) {
         log.info("Fetching tasks by status {} for user: {}", status, userId);
 
@@ -166,6 +174,7 @@ public class UserTasksServiceImpl implements UserTasksService {
 
     @Override
     @Transactional(readOnly = true)
+    @CorrelationId
     public UserTasksListResponseDTO getTasksByPriority(Long userId, TaskPriority priority, Pageable pageable) {
         log.info("Fetching tasks by priority {} for user: {}", priority, userId);
 
@@ -175,6 +184,7 @@ public class UserTasksServiceImpl implements UserTasksService {
 
     @Override
     @Transactional(readOnly = true)
+    @CorrelationId
     public UserTasksListResponseDTO getTasksByCategory(Long userId, TaskCategory category, Pageable pageable) {
         log.info("Fetching tasks by category {} for user: {}", category, userId);
 
@@ -184,6 +194,7 @@ public class UserTasksServiceImpl implements UserTasksService {
 
     @Override
     @Transactional(readOnly = true)
+    @CorrelationId
     public UserTasksListResponseDTO getTasksByType(Long userId, TaskType taskType, Pageable pageable) {
         log.info("Fetching tasks by type {} for user: {}", taskType, userId);
 
@@ -193,6 +204,7 @@ public class UserTasksServiceImpl implements UserTasksService {
 
     @Override
     @Transactional(readOnly = true)
+    @CorrelationId
     public UserTasksListResponseDTO searchTasks(Long userId, String searchTerm, Pageable pageable) {
         log.info("Searching tasks for user: {} with term: {}", userId, searchTerm);
 
@@ -202,6 +214,7 @@ public class UserTasksServiceImpl implements UserTasksService {
 
     @Override
     @Transactional(readOnly = true)
+    @CorrelationId
     public UserTasksListResponseDTO getOverdueTasks(Long userId, Pageable pageable) {
         log.info("Fetching overdue tasks for user: {}", userId);
 
@@ -211,6 +224,7 @@ public class UserTasksServiceImpl implements UserTasksService {
     }
 
     @Override
+    @CorrelationId
     public UserTasksDTO updateTaskStatus(Long userId, Long userTaskId, TaskStatus status) {
         log.info("Updating task status {} for task {} and user {}", status, userTaskId, userId);
 
@@ -225,6 +239,7 @@ public class UserTasksServiceImpl implements UserTasksService {
     }
 
     @Override
+    @CorrelationId
     public UserTasksDTO updateTaskPriority(Long userId, Long userTaskId, TaskPriority priority) {
         log.info("Updating task priority {} for task {} and user {}", priority, userTaskId, userId);
 
@@ -240,6 +255,7 @@ public class UserTasksServiceImpl implements UserTasksService {
 
     @Override
     @Transactional(readOnly = true)
+    @CorrelationId
     public UserTasksStatsDTO getTaskStats(Long userId) {
         log.info("Fetching task statistics for user: {}", userId);
 
@@ -300,6 +316,7 @@ public class UserTasksServiceImpl implements UserTasksService {
     }
 
     @Override
+    @CorrelationId
     public List<UserTasksDTO> bulkUpdateTasks(Long userId, UserTasksBulkUpdateRequest request) {
         log.info("Bulk updating {} tasks for user {}", request.getUserTaskIds().size(), userId);
 
@@ -326,6 +343,7 @@ public class UserTasksServiceImpl implements UserTasksService {
     }
 
     @Override
+    @CorrelationId
     public void bulkDeleteTasks(Long userId, UserTasksBulkDeleteRequest request) {
         log.info("Bulk deleting {} tasks for user {}", request.getUserTaskIds().size(), userId);
 
@@ -349,6 +367,7 @@ public class UserTasksServiceImpl implements UserTasksService {
     }
 
     @Override
+    @CorrelationId
     public UserTasksDTO duplicateTask(Long userId, Long userTaskId) {
         log.info("Duplicating task {} for user {}", userTaskId, userId);
 
@@ -382,6 +401,7 @@ public class UserTasksServiceImpl implements UserTasksService {
 
     @Override
     @Transactional(readOnly = true)
+    @CorrelationId
     public List<UserTasksDTO> getSubtasks(Long userId, Long parentTaskId) {
         log.info("Fetching subtasks for parent task {} and user {}", parentTaskId, userId);
 

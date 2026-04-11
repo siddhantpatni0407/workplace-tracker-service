@@ -14,6 +14,9 @@ import com.sid.app.model.PasswordChangeRequest;
 import com.sid.app.exception.UserNotFoundException;
 import com.sid.app.service.AuthService;
 import com.sid.app.utils.ApplicationUtils;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -23,10 +26,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.sid.app.annotation.CorrelationId;
 
 @RestController
 @Slf4j
 @CrossOrigin
+@Tag(name = "Authentication", description = "User registration, login, password management and token refresh")
 public class AuthController {
 
     @Autowired
@@ -41,7 +46,9 @@ public class AuthController {
      * - ADMIN: requires tenantCode
      * - USER/MANAGER: requires tenantUserCode
      */
+    @Operation(summary = "Register a new user", description = "Register a new user with role-based code validation. SUPER_ADMIN requires platformUserCode + tenantCode; ADMIN requires tenantUserCode; USER/MANAGER require tenantUserCode.")
     @PostMapping(EndpointConstants.USER_REGISTER_ENDPOINT)
+    @CorrelationId
     public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
         log.info("Register request -> {}", ApplicationUtils.getSecureJSONString(request));
 
@@ -122,7 +129,9 @@ public class AuthController {
         return new AuthResponse(null, null, null, null, AppConstants.STATUS_SUCCESS, null, null, null, null, null);
     }
 
+    @Operation(summary = "Login", description = "Authenticate a user and receive a JWT access token.")
     @PostMapping(EndpointConstants.USER_LOGIN_ENDPOINT)
+    @CorrelationId
     public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request,
                                               HttpServletResponse servletResponse) {
         log.info("Login request -> {}", ApplicationUtils.getSecureJSONString(request));
@@ -147,13 +156,17 @@ public class AuthController {
         }
     }
 
+    @Operation(summary = "Reset forgotten password", description = "Reset password using a valid reset token sent to the user's email.")
     @PostMapping(EndpointConstants.FORGOT_PASSWORD_RESET_ENDPOINT)
+    @CorrelationId
     public ResponseEntity<ResponseDTO<Void>> resetPassword(@Valid @RequestBody ForgotPasswordResetRequest request) {
         log.info("Reset password for email: {}", request.getEmail());
         return authService.resetPassword(request);
     }
 
+    @Operation(summary = "Refresh access token", description = "Obtain a new JWT access token using a refresh token (cookie or Authorization header).")
     @PostMapping(EndpointConstants.AUTH_REFRESH_ENDPOINT)
+    @CorrelationId
     public ResponseEntity<AuthResponse> refreshToken(
             @CookieValue(value = "refreshToken", required = false) String refreshTokenCookie,
             @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authorizationHeader,
@@ -194,8 +207,11 @@ public class AuthController {
      * Change password for a user (partial update).
      * Accepts userId in body (optional) or derive from JWT in production.
      */
+    @Operation(summary = "Change password", description = "Change the authenticated user's password by providing the current and new password.")
+    @SecurityRequirement(name = "bearerAuth")
     @PatchMapping(value = EndpointConstants.USER_CHANGE_PASSWORD_ENDPOINT, consumes = MediaType.APPLICATION_JSON_VALUE)
     @RequiredRole({UserRole.USER, UserRole.MANAGER, UserRole.ADMIN, UserRole.SUPER_ADMIN})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<Void>> changePassword(@RequestBody @Valid PasswordChangeRequest request,
                                                             @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authorizationHeader) {
 

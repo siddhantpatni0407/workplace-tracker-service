@@ -8,6 +8,9 @@ import com.sid.app.enums.UserRole;
 import com.sid.app.model.ResponseDTO;
 import com.sid.app.model.UserLeaveDTO;
 import com.sid.app.service.UserLeaveService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
+import com.sid.app.annotation.CorrelationId;
 
 /**
  * Controller for handling user leave operations with role-based authorization.
@@ -26,6 +30,8 @@ import java.util.Optional;
 @Slf4j
 @RequiredArgsConstructor
 @RequestMapping(EndpointConstants.USER_LEAVE_ENDPOINT)
+@Tag(name = "User Leave", description = "Apply for, approve, reject and track user leaves")
+@SecurityRequirement(name = "bearerAuth")
 public class UserLeaveController {
 
     private final UserLeaveService userLeaveService;
@@ -37,8 +43,10 @@ public class UserLeaveController {
      * Gets all leaves for a specific user.
      * Users can only view their own leaves unless they are admin.
      */
+    @Operation(summary = "Get leaves for authenticated user")
     @GetMapping
     @RequiredRole({UserRole.USER, UserRole.MANAGER, UserRole.ADMIN, UserRole.SUPER_ADMIN})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<List<UserLeaveDTO>>> getUserLeaves() {
         Long userId = authContext.getCurrentUserId();
         log.info("getUserLeaves() - userId={}", userId);
@@ -73,8 +81,10 @@ public class UserLeaveController {
      * Creates a new leave request.
      * Users can only create leaves for themselves unless they are admin.
      */
+    @Operation(summary = "Create a new leave request")
     @PostMapping
     @RequiredRole({UserRole.USER, UserRole.MANAGER, UserRole.ADMIN, UserRole.SUPER_ADMIN})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<UserLeaveDTO>> createLeave(@Valid @RequestBody UserLeaveDTO req) {
         log.info("createLeave() - userId={} policyId={} startDate={} endDate={}",
                 req.getUserId(), req.getPolicyId(), req.getStartDate(), req.getEndDate());
@@ -104,8 +114,10 @@ public class UserLeaveController {
      * Updates an existing leave request.
      * Users can only update their own leaves unless they are admin.
      */
+    @Operation(summary = "Update an existing leave request")
     @PutMapping
     @RequiredRole({UserRole.USER, UserRole.MANAGER, UserRole.ADMIN, UserRole.SUPER_ADMIN})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<UserLeaveDTO>> updateLeave(@RequestParam("userLeaveId") Long userLeaveId,
                                                                  @Valid @RequestBody UserLeaveDTO req) {
 
@@ -142,8 +154,10 @@ public class UserLeaveController {
      * Deletes a leave request.
      * Users can only delete their own leaves unless they are admin.
      */
+    @Operation(summary = "Delete a leave request")
     @DeleteMapping
     @RequiredRole({UserRole.USER, UserRole.MANAGER, UserRole.ADMIN, UserRole.SUPER_ADMIN})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<Void>> deleteLeave(@RequestParam("userLeaveId") Long userLeaveId) {
         log.info("deleteLeave() - userLeaveId={}", userLeaveId);
 

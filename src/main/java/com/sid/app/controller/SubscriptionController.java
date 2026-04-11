@@ -7,6 +7,9 @@ import com.sid.app.enums.UserRole;
 import com.sid.app.model.ResponseDTO;
 import com.sid.app.model.SubscriptionDTO;
 import com.sid.app.service.SubscriptionService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
 import java.util.List;
+import com.sid.app.annotation.CorrelationId;
 
 /**
  * Controller for managing subscriptions.
@@ -27,6 +31,8 @@ import java.util.List;
 @RestController
 @Slf4j
 @CrossOrigin
+@Tag(name = "Subscription Management", description = "Manage subscription plans and assignments")
+@SecurityRequirement(name = "bearerAuth")
 public class SubscriptionController {
 
     @Autowired
@@ -35,8 +41,10 @@ public class SubscriptionController {
     /**
      * Get all subscriptions
      */
+    @Operation(summary = "Get all subscriptions")
     @GetMapping(EndpointConstants.SUBSCRIPTIONS_ENDPOINT)
     @RequiredRole({UserRole.PLATFORM_USER})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<List<SubscriptionDTO>>> getAllSubscriptions() {
         log.info("getAllSubscriptions() : Fetching all subscriptions");
 
@@ -73,8 +81,10 @@ public class SubscriptionController {
     /**
      * Get all active subscriptions
      */
+    @Operation(summary = "Get active subscriptions")
     @GetMapping(EndpointConstants.ACTIVE_SUBSCRIPTIONS_ENDPOINT)
     @RequiredRole({UserRole.PLATFORM_USER})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<List<SubscriptionDTO>>> getActiveSubscriptions() {
         log.info("getActiveSubscriptions() : Fetching all active subscriptions");
 
@@ -111,8 +121,10 @@ public class SubscriptionController {
     /**
      * Get subscription by code
      */
+    @Operation(summary = "Get subscription by code")
     @GetMapping(EndpointConstants.SUBSCRIPTION_BY_CODE_ENDPOINT)
     @RequiredRole({UserRole.PLATFORM_USER})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<SubscriptionDTO>> getSubscriptionByCode(@RequestParam String subscriptionCode) {
         log.info("getSubscriptionByCode() : Fetching subscription with code: {}", subscriptionCode);
 

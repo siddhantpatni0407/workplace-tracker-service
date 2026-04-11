@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
+import com.sid.app.annotation.CorrelationId;
 
 @Service
 @RequiredArgsConstructor
@@ -21,6 +22,7 @@ public class OfficeVisitService {
 
     private final OfficeVisitRepository officeVisitRepo;
 
+    @CorrelationId
     public List<OfficeVisitDTO> getVisitsForUserBetween(Long userId, LocalDate from, LocalDate to) {
         log.debug("getVisitsForUserBetween() userId={} from={} to={}", userId, from, to);
         return officeVisitRepo.findByUserIdAndVisitDateBetweenOrderByVisitDate(userId, from, to)
@@ -28,6 +30,7 @@ public class OfficeVisitService {
     }
 
     @Transactional
+    @CorrelationId
     public OfficeVisitDTO createOrUpdateVisit(OfficeVisitDTO dto) {
         log.info("createOrUpdateVisit() userId={} visitDate={}", dto.getUserId(), dto.getVisitDate());
         List<OfficeVisit> existing = officeVisitRepo.findByUserIdAndVisitDate(dto.getUserId(), dto.getVisitDate());
@@ -51,6 +54,7 @@ public class OfficeVisitService {
     }
 
     @Transactional
+    @CorrelationId
     public void deleteVisit(Long id) {
         log.info("deleteVisit() id={}", id);
         if (!officeVisitRepo.existsById(id)) {

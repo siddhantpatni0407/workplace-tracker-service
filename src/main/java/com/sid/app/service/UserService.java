@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import com.sid.app.annotation.CorrelationId;
 
 /**
  * Service for managing users, including retrieval, update, and deletion operations.
@@ -39,6 +40,7 @@ public class UserService {
     /**
      * Get all users with tenant information
      */
+    @CorrelationId
     public List<UserDTO> getAllUsers() {
         log.info("Fetching all users from the database with tenant information.");
         List<User> users = userRepository.findAll();
@@ -53,6 +55,7 @@ public class UserService {
     /**
      * Get users by tenant ID
      */
+    @CorrelationId
     public List<UserDTO> getUsersByTenantId(Long tenantId) {
         log.info("Fetching users for tenant ID: {}", tenantId);
         List<User> users = userRepository.findByTenantId(tenantId);
@@ -64,6 +67,7 @@ public class UserService {
     /**
      * Get active users by tenant ID
      */
+    @CorrelationId
     public List<UserDTO> getActiveUsersByTenantId(Long tenantId) {
         log.info("Fetching active users for tenant ID: {}", tenantId);
         List<User> users = userRepository.findActiveByTenantId(tenantId);
@@ -72,6 +76,7 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
+    @CorrelationId
     public UserDTO getUserById(Long userId) {
         log.info("Fetching user with ID: {}", userId);
         return userRepository.findById(userId)
@@ -83,6 +88,7 @@ public class UserService {
     }
 
     @Transactional
+    @CorrelationId
     public UserDTO updateUser(Long userId, UserDTO updatedUserDTO) {
         log.info("Updating user with ID: {}", userId);
         return userRepository.findById(userId)
@@ -121,6 +127,7 @@ public class UserService {
      * Update user's isActive / isAccountLocked flags (both optional).
      */
     @Transactional
+    @CorrelationId
     public UserDTO updateUserStatus(UserStatusUpdateRequest req) {
         Long userId = req.getUserId();
         Optional<User> opt = userRepository.findById(userId);
@@ -148,6 +155,7 @@ public class UserService {
     }
 
     @Transactional
+    @CorrelationId
     public void deleteUser(Long userId) {
         log.info("Deleting user with ID: {}", userId);
         if (!userRepository.existsById(userId)) {
@@ -160,6 +168,7 @@ public class UserService {
     /**
      * Search users by name or email within a tenant
      */
+    @CorrelationId
     public List<UserDTO> searchUsersByTenant(Long tenantId, String searchTerm) {
         log.info("Searching users in tenant {} with term: {}", tenantId, searchTerm);
         List<User> users = userRepository.searchUsersByTenant(tenantId, searchTerm);
@@ -172,6 +181,7 @@ public class UserService {
      * /**
      * Get users by current user's tenant (same tenant_id)
      */
+    @CorrelationId
     public List<UserDTO> getUsersByCurrentUserTenant(Long currentUserTenantUserId) {
         log.info("Fetching users for tenant_user_id: {}", currentUserTenantUserId);
         if (currentUserTenantUserId == null) {

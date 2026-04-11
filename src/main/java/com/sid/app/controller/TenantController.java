@@ -7,6 +7,9 @@ import com.sid.app.enums.UserRole;
 import com.sid.app.model.*;
 import com.sid.app.service.TenantService;
 import com.sid.app.utils.ApplicationUtils;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
 import java.util.List;
+import com.sid.app.annotation.CorrelationId;
 
 /**
  * Controller for managing tenants.
@@ -33,6 +37,8 @@ import java.util.List;
 @RestController
 @Slf4j
 @CrossOrigin
+@Tag(name = "Tenant Management", description = "Platform-level CRUD for tenants and tenant subscriptions")
+@SecurityRequirement(name = "bearerAuth")
 public class TenantController {
 
     @Autowired
@@ -41,8 +47,10 @@ public class TenantController {
     /**
      * Create a new tenant
      */
+    @Operation(summary = "Create tenant")
     @PostMapping(EndpointConstants.TENANT_ENDPOINT)
     @RequiredRole({UserRole.PLATFORM_USER})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<TenantDTO>> createTenant(@Valid @RequestBody TenantCreateRequest request) {
         log.info("createTenant() : Received request to create tenant: {}", ApplicationUtils.getJSONString(request));
 
@@ -81,8 +89,10 @@ public class TenantController {
     /**
      * Get all tenants with pagination
      */
+    @Operation(summary = "Get all tenants", description = "Paginated list of all tenants.")
     @GetMapping(EndpointConstants.TENANTS_ENDPOINT)
     @RequiredRole({UserRole.PLATFORM_USER})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<Page<TenantDTO>>> getAllTenants(@RequestParam(defaultValue = "0") int page,
                                                                       @RequestParam(defaultValue = "10") int size,
                                                                       @RequestParam(defaultValue = "tenantId") String sortBy,
@@ -129,8 +139,10 @@ public class TenantController {
     /**
      * Get all active tenants
      */
+    @Operation(summary = "Get active tenants")
     @GetMapping(EndpointConstants.ACTIVE_TENANTS_ENDPOINT)
     @RequiredRole({UserRole.PLATFORM_USER})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<List<TenantDTO>>> getActiveTenants() {
         log.info("getActiveTenants() : Fetching all active tenants");
 
@@ -167,8 +179,10 @@ public class TenantController {
     /**
      * Get tenant by ID
      */
+    @Operation(summary = "Get tenant by ID")
     @GetMapping(EndpointConstants.TENANT_BY_ID_ENDPOINT)
     @RequiredRole({UserRole.PLATFORM_USER})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<TenantDTO>> getTenantById(@RequestParam Long tenantId) {
         log.info("getTenantById() : Fetching tenant with ID: {}", tenantId);
 
@@ -205,8 +219,10 @@ public class TenantController {
     /**
      * Get tenant by code
      */
+    @Operation(summary = "Get tenant by code")
     @GetMapping(EndpointConstants.TENANT_BY_CODE_ENDPOINT)
     @RequiredRole({UserRole.PLATFORM_USER})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<TenantDTO>> getTenantByCode(@RequestParam String tenantCode) {
         log.info("getTenantByCode() : Fetching tenant with code: {}", tenantCode);
 
@@ -243,8 +259,10 @@ public class TenantController {
     /**
      * Update tenant
      */
+    @Operation(summary = "Update tenant")
     @PutMapping(value = EndpointConstants.TENANT_UPDATE_ENDPOINT, consumes = MediaType.APPLICATION_JSON_VALUE)
     @RequiredRole({UserRole.PLATFORM_USER})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<TenantDTO>> updateTenant(@RequestParam Long tenantId,
                                                                @Valid @RequestBody TenantUpdateRequest request) {
 
@@ -293,18 +311,20 @@ public class TenantController {
     /**
      * Update tenant status (activate/deactivate)
      */
+    @Operation(summary = "Update tenant status")
     @PatchMapping(value = EndpointConstants.TENANT_STATUS_ENDPOINT, consumes = MediaType.APPLICATION_JSON_VALUE)
     @RequiredRole({UserRole.PLATFORM_USER})
-    public ResponseEntity<ResponseDTO<TenantDTO>> updateTenantStatus(
-            @Valid @RequestBody TenantStatusUpdateRequest request) {
+    @CorrelationId
+    public ResponseEntity<ResponseDTO<TenantDTO>> updateTenantStatus(@RequestParam Long tenantId,
+                                                                     @RequestBody TenantStatusUpdateRequest req) {
 
         log.info("updateTenantStatus() : Received request to update status: {}",
-                ApplicationUtils.getJSONString(request));
+                ApplicationUtils.getJSONString(req));
 
         try {
-            TenantDTO updatedTenant = tenantService.updateTenantStatus(request);
+            TenantDTO updatedTenant = tenantService.updateTenantStatus(req);
             log.info("updateTenantStatus() : Tenant status updated successfully for ID: {}",
-                    request.getTenantId());
+                    req.getTenantId());
 
             return ResponseEntity.ok(new ResponseDTO<>(
                     AppConstants.STATUS_SUCCESS,
@@ -312,7 +332,7 @@ public class TenantController {
                     updatedTenant
             ));
         } catch (EntityNotFoundException ex) {
-            log.warn("updateTenantStatus() : Tenant not found with ID: {}", request.getTenantId());
+            log.warn("updateTenantStatus() : Tenant not found with ID: {}", req.getTenantId());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
                     new ResponseDTO<>(
                             AppConstants.STATUS_FAILED,
@@ -322,7 +342,7 @@ public class TenantController {
             );
         } catch (Exception ex) {
             log.error("updateTenantStatus() : Error updating tenant status for ID {}: {}",
-                    request.getTenantId(), ex.getMessage(), ex);
+                    req.getTenantId(), ex.getMessage(), ex);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                     new ResponseDTO<>(
                             AppConstants.STATUS_FAILED,
@@ -336,8 +356,10 @@ public class TenantController {
     /**
      * Delete tenant (soft delete by deactivation)
      */
+    @Operation(summary = "Delete tenant")
     @DeleteMapping(EndpointConstants.TENANT_DELETE_ENDPOINT)
     @RequiredRole({UserRole.PLATFORM_USER})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<Void>> deleteTenant(@RequestParam Long tenantId) {
         log.info("deleteTenant() : Received request to delete tenant with ID: {}", tenantId);
 
@@ -374,8 +396,10 @@ public class TenantController {
     /**
      * Search tenants by name
      */
+    @Operation(summary = "Search tenants")
     @GetMapping(EndpointConstants.TENANT_SEARCH_ENDPOINT)
     @RequiredRole({UserRole.PLATFORM_USER})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<List<TenantDTO>>> searchTenants(@RequestParam String searchTerm) {
         log.info("searchTenants() : Searching tenants with term: {}", searchTerm);
 
@@ -422,8 +446,10 @@ public class TenantController {
     /**
      * Get tenant statistics
      */
+    @Operation(summary = "Get tenant stats")
     @GetMapping(EndpointConstants.TENANT_STATS_ENDPOINT)
     @RequiredRole({UserRole.PLATFORM_USER})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<TenantDTO>> getTenantStats(@RequestParam Long tenantId) {
         log.info("getTenantStats() : Fetching statistics for tenant ID: {}", tenantId);
 
@@ -460,8 +486,10 @@ public class TenantController {
     /**
      * Get users for a specific tenant
      */
+    @Operation(summary = "Get tenant users")
     @GetMapping(EndpointConstants.TENANT_USERS_ENDPOINT)
     @RequiredRole({UserRole.PLATFORM_USER})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<List<Object>>> getTenantUsers(@RequestParam Long tenantId) {
         log.info("getTenantUsers() : Fetching users for tenant ID: {}", tenantId);
 
@@ -507,8 +535,10 @@ public class TenantController {
     /**
      * Update tenant's subscription plan
      */
-    @PatchMapping(EndpointConstants.TENANT_SUBSCRIPTION_UPDATE_ENDPOINT)
+    @Operation(summary = "Update tenant subscription")
+    @PutMapping(EndpointConstants.TENANT_SUBSCRIPTION_UPDATE_ENDPOINT)
     @RequiredRole({UserRole.PLATFORM_USER})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<TenantDTO>> updateTenantSubscription(@RequestParam String tenantCode,
                                                                            @RequestParam String subscriptionCode) {
         log.info("updateTenantSubscription() : Updating subscription for tenant: {} to subscription: {}",

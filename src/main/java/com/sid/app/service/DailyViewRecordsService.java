@@ -20,6 +20,7 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
+import com.sid.app.annotation.CorrelationId;
 
 @Service
 @RequiredArgsConstructor
@@ -36,6 +37,7 @@ public class DailyViewRecordsService {
      * Public method accepts the raw request parameters (userId, year/month or from/to).
      * Validation & date-range resolution is delegated to DailyViewRequestValidator.
      */
+    @CorrelationId
     public List<DailyViewRecordsDTO> getDailyView(Long userId,
                                                   Integer year,
                                                   Integer month,

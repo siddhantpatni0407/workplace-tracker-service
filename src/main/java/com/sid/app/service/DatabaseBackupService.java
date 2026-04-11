@@ -12,6 +12,7 @@ import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import com.sid.app.annotation.CorrelationId;
 
 @Slf4j
 @Service
@@ -40,6 +41,7 @@ public class DatabaseBackupService {
         }
     }
 
+    @CorrelationId
     public String createBackup(String type, String databaseName, String schemaName)
             throws IOException, InterruptedException, SQLException, SchemaNotFoundException {
 
@@ -210,6 +212,7 @@ public class DatabaseBackupService {
         }
     }
 
+    @CorrelationId
     public void cleanup() {
         try {
             if (adminConnection != null && !adminConnection.isClosed()) {

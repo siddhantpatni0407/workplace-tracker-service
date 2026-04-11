@@ -8,6 +8,9 @@ import com.sid.app.enums.UserRole;
 import com.sid.app.model.DailyTaskDTO;
 import com.sid.app.model.ResponseDTO;
 import com.sid.app.service.DailyTaskService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
+import com.sid.app.annotation.CorrelationId;
 
 /**
  * Controller for handling daily task-related operations with role-based authorization.
@@ -30,6 +34,8 @@ import java.util.List;
 @RestController
 @Slf4j
 @CrossOrigin
+@Tag(name = "Daily Tasks", description = "Create and manage day-level task records")
+@SecurityRequirement(name = "bearerAuth")
 public class DailyTaskController {
 
     @Autowired
@@ -45,8 +51,10 @@ public class DailyTaskController {
      * @param dailyTaskDTO the daily task information
      * @return ResponseEntity with a ResponseDTO containing the created daily task
      */
+    @Operation(summary = "Create daily task")
     @PostMapping(EndpointConstants.DAILY_TASKS_ENDPOINT)
     @RequiredRole({UserRole.USER, UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.MANAGER})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<DailyTaskDTO>> createDailyTask(@RequestBody @Valid DailyTaskDTO dailyTaskDTO) {
         log.info("createDailyTask() : Creating daily task for user ID: {}", dailyTaskDTO.getUserId());
 
@@ -83,8 +91,10 @@ public class DailyTaskController {
      * @param dailyTaskDTO the updated task information
      * @return ResponseEntity with a ResponseDTO containing the updated daily task
      */
+    @Operation(summary = "Update daily task")
     @PutMapping(EndpointConstants.DAILY_TASKS_ENDPOINT)
     @RequiredRole({UserRole.USER, UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.MANAGER})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<DailyTaskDTO>> updateDailyTask(@RequestParam("taskId") Long taskId,
                                                                      @RequestBody @Valid DailyTaskDTO dailyTaskDTO) {
 
@@ -122,8 +132,10 @@ public class DailyTaskController {
      * @param taskId the ID of the task to delete
      * @return ResponseEntity with a ResponseDTO indicating the result of the operation
      */
+    @Operation(summary = "Delete daily task")
     @DeleteMapping(EndpointConstants.DAILY_TASKS_ENDPOINT)
     @RequiredRole({UserRole.USER, UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.MANAGER})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<Void>> deleteDailyTask(@RequestParam("taskId") Long taskId) {
         log.info("deleteDailyTask() : Deleting daily task with ID: {}", taskId);
 
@@ -162,8 +174,10 @@ public class DailyTaskController {
      * @param taskId the ID of the task to retrieve
      * @return ResponseEntity with a ResponseDTO containing the retrieved daily task
      */
+    @Operation(summary = "Get daily task by ID")
     @GetMapping(EndpointConstants.DAILY_TASKS_ENDPOINT)
     @RequiredRole({UserRole.USER, UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.MANAGER})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<DailyTaskDTO>> getDailyTaskById(@RequestParam("taskId") Long taskId) {
         log.info("getDailyTaskById() : Retrieving daily task with ID: {}", taskId);
 
@@ -199,8 +213,10 @@ public class DailyTaskController {
      *
      * @return ResponseEntity with a ResponseDTO containing the list of daily tasks
      */
+    @Operation(summary = "Get all daily tasks for authenticated user")
     @GetMapping(EndpointConstants.USER_DAILY_TASKS_ENDPOINT)
     @RequiredRole({UserRole.USER, UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.MANAGER})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<List<DailyTaskDTO>>> getUserDailyTasks() {
 
         Long userId = authContext.getCurrentUserId();
@@ -235,8 +251,10 @@ public class DailyTaskController {
      * @param endDate   the end date of the range
      * @return ResponseEntity with a ResponseDTO containing the list of daily tasks
      */
+    @Operation(summary = "Get daily tasks by date range", description = "Retrieve tasks for the authenticated user between startDate and endDate.")
     @GetMapping(EndpointConstants.USER_DAILY_TASKS_DATE_RANGE_ENDPOINT)
     @RequiredRole({UserRole.USER, UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.MANAGER})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<List<DailyTaskDTO>>> getDailyTasksByUserIdAndDateRange(@RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
                                                                                              @RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
 
@@ -284,8 +302,10 @@ public class DailyTaskController {
      * @param date the date to filter by
      * @return ResponseEntity with a ResponseDTO containing the list of daily tasks
      */
+    @Operation(summary = "Get daily tasks by date", description = "Retrieve tasks for the authenticated user on a specific date.")
     @GetMapping(EndpointConstants.USER_DAILY_TASKS_DATE_ENDPOINT)
     @RequiredRole({UserRole.USER, UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.MANAGER})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<List<DailyTaskDTO>>> getDailyTasksByUserIdAndDate(@RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
 
         Long userId = authContext.getCurrentUserId();

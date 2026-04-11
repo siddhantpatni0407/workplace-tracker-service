@@ -7,6 +7,9 @@ import com.sid.app.constants.EndpointConstants;
 import com.sid.app.enums.*;
 import com.sid.app.model.*;
 import com.sid.app.service.UserTasksService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import com.sid.app.annotation.CorrelationId;
 
 /**
  * Controller for handling UserTasks-related operations.
@@ -35,6 +39,8 @@ import java.util.Map;
 @Slf4j
 @CrossOrigin
 @RequiredArgsConstructor
+@Tag(name = "User Tasks", description = "Personal task tracker — create, assign priority/status, overdue and bulk operations")
+@SecurityRequirement(name = "bearerAuth")
 public class UserTasksController {
 
     private final UserTasksService userTasksService;
@@ -50,8 +56,10 @@ public class UserTasksController {
      * @param taskDTO The task data to create
      * @return ResponseEntity with the created task
      */
+    @Operation(summary = "Create task")
     @PostMapping(EndpointConstants.TASKS_ENDPOINT)
     @RequiredRole({UserRole.USER, UserRole.MANAGER})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<UserTasksDTO>> createTask(@RequestBody @Valid UserTasksDTO taskDTO) {
         Long userId = jwtAuthenticationContext.getCurrentUserId();
         log.info("createTask() : Creating task for user: {}", userId);
@@ -75,8 +83,10 @@ public class UserTasksController {
      * @param userTaskId The ID of the task to retrieve
      * @return ResponseEntity with the task data
      */
+    @Operation(summary = "Get task by ID")
     @GetMapping(EndpointConstants.TASKS_DETAILS_ENDPOINT)
     @RequiredRole({UserRole.USER, UserRole.MANAGER})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<UserTasksDTO>> getTaskById(@RequestParam Long userTaskId) {
         Long userId = jwtAuthenticationContext.getCurrentUserId();
         log.info("getTaskById() : Fetching task {} for user {}", userTaskId, userId);
@@ -116,8 +126,10 @@ public class UserTasksController {
      * @param sortOrder    Sort direction
      * @return ResponseEntity with the list of tasks
      */
+    @Operation(summary = "Get all user tasks", description = "Returns paginated tasks for the authenticated user with optional filters.")
     @GetMapping(EndpointConstants.TASKS_USER_ENDPOINT)
     @RequiredRole({UserRole.USER, UserRole.MANAGER})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<UserTasksListResponseDTO>> getUserTasks(@RequestParam(defaultValue = "0") int page,
                                                                               @RequestParam(defaultValue = "50") int limit,
                                                                               @RequestParam(required = false) TaskStatus status,
@@ -169,8 +181,10 @@ public class UserTasksController {
      * @param taskDTO    The updated task data
      * @return ResponseEntity with the updated task
      */
+    @Operation(summary = "Update task")
     @PutMapping(EndpointConstants.TASKS_UPDATE_ENDPOINT)
     @RequiredRole({UserRole.USER, UserRole.MANAGER})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<UserTasksDTO>> updateTask(@RequestParam Long userTaskId,
                                                                 @RequestBody @Valid UserTasksDTO taskDTO) {
         Long userId = jwtAuthenticationContext.getCurrentUserId();
@@ -197,8 +211,10 @@ public class UserTasksController {
      * @param userTaskId The ID of the task to delete
      * @return ResponseEntity with success message
      */
+    @Operation(summary = "Delete task")
     @DeleteMapping(EndpointConstants.TASKS_DELETE_ENDPOINT)
     @RequiredRole({UserRole.USER, UserRole.MANAGER})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<Void>> deleteTask(@RequestParam Long userTaskId) {
         Long userId = jwtAuthenticationContext.getCurrentUserId();
         log.info("deleteTask() : Deleting task {} for user {}", userTaskId, userId);
@@ -227,8 +243,10 @@ public class UserTasksController {
      * @param statusRequest The new status data
      * @return ResponseEntity with updated task status
      */
+    @Operation(summary = "Update task status")
     @PatchMapping(EndpointConstants.TASKS_STATUS_UPDATE_ENDPOINT)
     @RequiredRole({UserRole.USER, UserRole.MANAGER})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<UserTasksDTO>> updateTaskStatus(@RequestParam Long userTaskId,
                                                                       @RequestBody Map<String, TaskStatus> statusRequest) {
         Long userId = jwtAuthenticationContext.getCurrentUserId();
@@ -262,8 +280,10 @@ public class UserTasksController {
      * @param priorityRequest The new priority data
      * @return ResponseEntity with updated task priority
      */
+    @Operation(summary = "Update task priority")
     @PatchMapping(EndpointConstants.TASKS_PRIORITY_UPDATE_ENDPOINT)
     @RequiredRole({UserRole.USER, UserRole.MANAGER})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<UserTasksDTO>> updateTaskPriority(@RequestParam Long userTaskId,
                                                                         @RequestBody Map<String, TaskPriority> priorityRequest) {
         Long userId = jwtAuthenticationContext.getCurrentUserId();
@@ -305,8 +325,10 @@ public class UserTasksController {
      * @param sortOrder  Sort direction
      * @return ResponseEntity with search results
      */
+    @Operation(summary = "Search tasks")
     @GetMapping(EndpointConstants.TASKS_SEARCH_ENDPOINT)
     @RequiredRole({UserRole.USER, UserRole.MANAGER})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<UserTasksListResponseDTO>> searchTasks(@RequestParam String searchTerm,
                                                                              @RequestParam(defaultValue = "0") int page,
                                                                              @RequestParam(defaultValue = "50") int limit,
@@ -342,8 +364,10 @@ public class UserTasksController {
      * @param sortOrder Sort direction
      * @return ResponseEntity with overdue tasks
      */
+    @Operation(summary = "Get overdue tasks")
     @GetMapping(EndpointConstants.TASKS_OVERDUE_ENDPOINT)
     @RequiredRole({UserRole.USER, UserRole.MANAGER})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<UserTasksListResponseDTO>> getOverdueTasks(@RequestParam(defaultValue = "0") int page,
                                                                                  @RequestParam(defaultValue = "50") int limit,
                                                                                  @RequestParam(defaultValue = "dueDate") String sortBy,
@@ -376,8 +400,10 @@ public class UserTasksController {
      * @param sortOrder Sort direction
      * @return ResponseEntity with tasks filtered by status
      */
+    @Operation(summary = "Get tasks by status")
     @GetMapping(EndpointConstants.TASKS_BY_STATUS_ENDPOINT)
     @RequiredRole({UserRole.USER, UserRole.MANAGER})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<UserTasksListResponseDTO>> getTasksByStatus(@RequestParam TaskStatus status,
                                                                                   @RequestParam(defaultValue = "0") int page,
                                                                                   @RequestParam(defaultValue = "50") int limit,
@@ -411,8 +437,10 @@ public class UserTasksController {
      * @param sortOrder Sort direction
      * @return ResponseEntity with tasks filtered by priority
      */
+    @Operation(summary = "Get tasks by priority")
     @GetMapping(EndpointConstants.TASKS_BY_PRIORITY_ENDPOINT)
     @RequiredRole({UserRole.USER, UserRole.MANAGER})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<UserTasksListResponseDTO>> getTasksByPriority(@RequestParam TaskPriority priority,
                                                                                     @RequestParam(defaultValue = "0") int page,
                                                                                     @RequestParam(defaultValue = "50") int limit,
@@ -443,8 +471,10 @@ public class UserTasksController {
      *
      * @return ResponseEntity with task statistics
      */
+    @Operation(summary = "Get task statistics")
     @GetMapping(EndpointConstants.TASKS_STATS_ENDPOINT)
     @RequiredRole({UserRole.USER, UserRole.MANAGER})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<UserTasksStatsDTO>> getTaskStats() {
         Long userId = jwtAuthenticationContext.getCurrentUserId();
         log.info("getTaskStats() : Fetching task statistics for user {}", userId);
@@ -468,8 +498,10 @@ public class UserTasksController {
      * @param bulkUpdateRequest The bulk update request
      * @return ResponseEntity with bulk update result
      */
+    @Operation(summary = "Bulk update tasks")
     @PutMapping(EndpointConstants.TASKS_BULK_UPDATE_ENDPOINT)
     @RequiredRole({UserRole.USER, UserRole.MANAGER})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<List<UserTasksDTO>>> bulkUpdateTasks(@RequestBody @Valid UserTasksBulkUpdateRequest bulkUpdateRequest) {
         Long userId = jwtAuthenticationContext.getCurrentUserId();
         log.info("bulkUpdateTasks() : Bulk updating tasks for user {}", userId);
@@ -491,8 +523,10 @@ public class UserTasksController {
      * @param bulkDeleteRequest The bulk delete request
      * @return ResponseEntity with bulk delete result
      */
+    @Operation(summary = "Bulk delete tasks")
     @DeleteMapping(EndpointConstants.TASKS_BULK_DELETE_ENDPOINT)
     @RequiredRole({UserRole.USER, UserRole.MANAGER})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<Void>> bulkDeleteTasks(@RequestBody @Valid UserTasksBulkDeleteRequest bulkDeleteRequest) {
         Long userId = jwtAuthenticationContext.getCurrentUserId();
         log.info("bulkDeleteTasks() : Bulk deleting tasks for user {}", userId);
@@ -514,8 +548,10 @@ public class UserTasksController {
      * @param userTaskId The ID of the task to duplicate
      * @return ResponseEntity with the duplicated task
      */
+    @Operation(summary = "Duplicate task")
     @PostMapping(EndpointConstants.TASKS_DUPLICATE_ENDPOINT)
     @RequiredRole({UserRole.USER, UserRole.MANAGER})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<UserTasksDTO>> duplicateTask(@RequestParam Long userTaskId) {
         Long userId = jwtAuthenticationContext.getCurrentUserId();
         log.info("duplicateTask() : Duplicating task {} for user {}", userTaskId, userId);

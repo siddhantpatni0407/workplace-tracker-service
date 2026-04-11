@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import com.sid.app.annotation.CorrelationId;
 
 /**
  * Service for managing tenant users (SUPER_ADMIN, ADMIN)
@@ -37,6 +38,7 @@ public class TenantUserService {
     /**
      * Get all Super Admins (Platform User access)
      */
+    @CorrelationId
     public List<TenantUserDTO> getAllSuperAdmins() {
         log.info("Fetching all Super Admins from the database");
 
@@ -55,6 +57,7 @@ public class TenantUserService {
     /**
      * Get Super Admins by tenant ID
      */
+    @CorrelationId
     public List<TenantUserDTO> getSuperAdminsByTenantId(Long tenantId) {
         log.info("Fetching Super Admins for tenant ID: {}", tenantId);
 
@@ -73,6 +76,7 @@ public class TenantUserService {
     /**
      * Search Super Admins by name or email
      */
+    @CorrelationId
     public List<TenantUserDTO> searchSuperAdmins(String searchTerm) {
         log.info("Searching Super Admins with term: {}", searchTerm);
 
@@ -91,6 +95,7 @@ public class TenantUserService {
     /**
      * Get Super Admin by ID
      */
+    @CorrelationId
     public TenantUserDTO getSuperAdminById(Long tenantUserId) {
         log.info("Fetching Super Admin with ID: {}", tenantUserId);
 
@@ -110,6 +115,7 @@ public class TenantUserService {
      * Update Super Admin status (Platform User access)
      */
     @Transactional
+    @CorrelationId
     public TenantUserDTO updateSuperAdminStatus(Long tenantUserId, UserStatusUpdateRequest statusRequest) {
         log.info("Updating Super Admin status for ID: {}", tenantUserId);
 
@@ -136,6 +142,7 @@ public class TenantUserService {
     /**
      * Get all Admins under a specific Super Admin
      */
+    @CorrelationId
     public List<TenantUserDTO> getAdminsBySuperAdmin(Long superAdminId) {
         log.info("Fetching Admins under Super Admin ID: {}", superAdminId);
 
@@ -159,6 +166,7 @@ public class TenantUserService {
     /**
      * Get all Admins in the same tenant as Super Admin
      */
+    @CorrelationId
     public List<TenantUserDTO> getAdminsByTenant(Long superAdminId) {
         log.info("Fetching all Admins in tenant for Super Admin ID: {}", superAdminId);
 
@@ -180,6 +188,7 @@ public class TenantUserService {
     /**
      * Search Admins in Super Admin's tenant
      */
+    @CorrelationId
     public List<TenantUserDTO> searchAdminsByTenant(Long superAdminId, String searchTerm) {
         log.info("Searching Admins in Super Admin's tenant with term: {}", searchTerm);
 
@@ -201,6 +210,7 @@ public class TenantUserService {
     /**
      * Get Admin by ID (Super Admin access - must be in same tenant)
      */
+    @CorrelationId
     public TenantUserDTO getAdminById(Long superAdminId, Long adminId) {
         log.info("Fetching Admin with ID: {} for Super Admin: {}", adminId, superAdminId);
 
@@ -228,6 +238,7 @@ public class TenantUserService {
      * Update Admin status (Super Admin access)
      */
     @Transactional
+    @CorrelationId
     public TenantUserDTO updateAdminStatus(Long superAdminId, Long adminId, UserStatusUpdateRequest statusRequest) {
         log.info("Updating Admin status for ID: {} by Super Admin: {}", adminId, superAdminId);
 

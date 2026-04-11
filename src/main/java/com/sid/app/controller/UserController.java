@@ -10,6 +10,9 @@ import com.sid.app.model.UserDTO;
 import com.sid.app.model.UserStatusUpdateRequest;
 import com.sid.app.service.UserService;
 import com.sid.app.utils.ApplicationUtils;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -21,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
 import java.util.List;
+import com.sid.app.annotation.CorrelationId;
 
 /**
  * Controller for handling user-related operations.
@@ -32,6 +36,8 @@ import java.util.List;
 @RestController
 @Slf4j
 @CrossOrigin
+@Tag(name = "User Management", description = "Fetch, update, activate/deactivate and delete tenant users")
+@SecurityRequirement(name = "bearerAuth")
 public class UserController {
 
     @Autowired
@@ -46,8 +52,10 @@ public class UserController {
      *
      * @return ResponseEntity with a ResponseDTO containing a list of UserDTOs.
      */
+    @Operation(summary = "Get all users", description = "ADMIN sees only their tenant users; SUPER_ADMIN and PLATFORM_USER see all users.")
     @GetMapping(EndpointConstants.FETCH_ALL_USERS_ENDPOINT)
     @RequiredRole({UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.PLATFORM_USER})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<List<UserDTO>>> getAllUsers() {
         String currentUserRole = jwtAuthenticationContext.getCurrentUserRole();
         log.info("getAllUsers() : Received request to fetch users. Current user role: {}", currentUserRole);
@@ -117,8 +125,10 @@ public class UserController {
     /**
      * Fetches users by tenant ID.
      */
+    @Operation(summary = "Get users by tenant", description = "Retrieve all users belonging to a specific tenant.")
     @GetMapping(EndpointConstants.USERS_BY_TENANT_ENDPOINT)
     @RequiredRole({UserRole.USER, UserRole.MANAGER, UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.PLATFORM_USER})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<List<UserDTO>>> getUsersByTenant(@RequestParam Long tenantId) {
         log.info("getUsersByTenant() : Received request to fetch users for tenant ID: {}", tenantId);
 
@@ -144,8 +154,10 @@ public class UserController {
     /**
      * Fetches active users by tenant ID.
      */
+    @Operation(summary = "Get active users by tenant", description = "Retrieve only active users belonging to a specific tenant.")
     @GetMapping(EndpointConstants.ACTIVE_USERS_BY_TENANT_ENDPOINT)
     @RequiredRole({UserRole.USER, UserRole.MANAGER, UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.PLATFORM_USER})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<List<UserDTO>>> getActiveUsersByTenant(@RequestParam Long tenantId) {
         log.info("getActiveUsersByTenant() : Received request to fetch active users for tenant ID: {}", tenantId);
 
@@ -162,8 +174,10 @@ public class UserController {
     /**
      * Search users within a tenant.
      */
+    @Operation(summary = "Search users within a tenant", description = "Search users by name or email within a specific tenant.")
     @GetMapping(EndpointConstants.SEARCH_USERS_BY_TENANT_ENDPOINT)
     @RequiredRole({UserRole.USER, UserRole.MANAGER, UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.PLATFORM_USER})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<List<UserDTO>>> searchUsersByTenant(
             @RequestParam Long tenantId,
             @RequestParam String searchTerm) {
@@ -192,8 +206,10 @@ public class UserController {
      *
      * @return ResponseEntity with a ResponseDTO containing the UserDTO.
      */
+    @Operation(summary = "Get user by ID", description = "Retrieve a user by ID. If userId is omitted, the authenticated user's details are returned.")
     @GetMapping(EndpointConstants.USER_ENDPOINT)
     @RequiredRole({UserRole.USER, UserRole.MANAGER, UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.PLATFORM_USER})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<UserDTO>> getUserById(@RequestParam(required = false) Long userId) {
         // If userId not provided in request param, get from JWT context
         if (userId == null) {
@@ -235,8 +251,10 @@ public class UserController {
      * @param updatedUserDTO The updated user details.
      * @return ResponseEntity with a ResponseDTO indicating the update status.
      */
+    @Operation(summary = "Update user", description = "Update an existing user's details. If userId is omitted, the authenticated user is updated.")
     @PutMapping(EndpointConstants.USER_ENDPOINT)
     @RequiredRole({UserRole.USER, UserRole.MANAGER, UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.PLATFORM_USER})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<UserDTO>> updateUser(
             @RequestParam(required = false) Long userId,
             @RequestBody @Valid UserDTO updatedUserDTO) {
@@ -287,8 +305,10 @@ public class UserController {
     /**
      * Update user active / locked status in a single API call.
      */
+    @Operation(summary = "Update user status", description = "Activate/deactivate or lock/unlock a user account.")
     @PatchMapping(value = EndpointConstants.USER_STATUS_ENDPOINT, consumes = MediaType.APPLICATION_JSON_VALUE)
     @RequiredRole({UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.PLATFORM_USER})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<UserDTO>> updateUserStatus(@RequestBody UserStatusUpdateRequest req) {
         log.info("updateUserStatus() : Received request -> {}", ApplicationUtils.getJSONString(req));
 
@@ -341,8 +361,10 @@ public class UserController {
      *
      * @return ResponseEntity with a ResponseDTO indicating the deletion status.
      */
+    @Operation(summary = "Delete user", description = "Permanently delete a user. If userId is omitted, the authenticated user is deleted.")
     @DeleteMapping(EndpointConstants.USER_ENDPOINT)
     @RequiredRole({UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.PLATFORM_USER})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<Void>> deleteUser(@RequestParam(required = false) Long userId) {
         // If userId not provided in request param, get from JWT context
         if (userId == null) {
@@ -379,4 +401,3 @@ public class UserController {
     }
 
 }
-

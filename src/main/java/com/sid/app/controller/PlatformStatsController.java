@@ -7,11 +7,15 @@ import com.sid.app.enums.UserRole;
 import com.sid.app.model.PlatformStatsDTO;
 import com.sid.app.model.ResponseDTO;
 import com.sid.app.service.PlatformStatsService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.sid.app.annotation.CorrelationId;
 
 /**
  * Controller for platform statistics operations.
@@ -22,6 +26,8 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @Slf4j
 @CrossOrigin
+@Tag(name = "Platform Stats", description = "High-level platform-wide statistics")
+@SecurityRequirement(name = "bearerAuth")
 public class PlatformStatsController {
 
     @Autowired
@@ -33,8 +39,10 @@ public class PlatformStatsController {
      *
      * @return ResponseEntity with platform statistics
      */
+    @Operation(summary = "Get platform statistics", description = "Retrieve platform-wide stats including tenant counts and user role distributions. Requires PLATFORM_USER role.")
     @GetMapping(EndpointConstants.PLATFORM_STATS_ENDPOINT)
     @RequiredRole({UserRole.PLATFORM_USER})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<PlatformStatsDTO>> getPlatformStats() {
         log.info("getPlatformStats() : Received request to fetch platform statistics");
 

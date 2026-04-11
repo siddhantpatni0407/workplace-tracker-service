@@ -20,6 +20,7 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
+import com.sid.app.annotation.CorrelationId;
 
 /**
  * Service responsible for user leave balance operations.
@@ -37,6 +38,7 @@ public class UserLeaveBalanceService {
     private static final int DIVIDE_SCALE = 8;
     private static final RoundingMode DIVIDE_ROUNDING = RoundingMode.HALF_UP;
 
+    @CorrelationId
     public UserLeaveBalanceDTO getBalance(Long userId, Long policyId, Integer year) {
         log.debug("getBalance() userId={} policyId={} year={}", userId, policyId, year);
         validateIdsExist(userId, policyId);
@@ -51,6 +53,7 @@ public class UserLeaveBalanceService {
      * Admin upsert. Use for manual overrides only.
      */
     @Transactional
+    @CorrelationId
     public UserLeaveBalanceDTO upsertBalance(UserLeaveBalanceDTO dto) {
         log.info("upsertBalance() (ADMIN) userId={} policyId={} year={}", dto.getUserId(), dto.getPolicyId(), dto.getYear());
         validateIdsExist(dto.getUserId(), dto.getPolicyId());
@@ -89,6 +92,7 @@ public class UserLeaveBalanceService {
      * This method locks the balance row (pessimistic) to avoid concurrent races.
      */
     @Transactional
+    @CorrelationId
     public UserLeaveBalanceDTO adjustBalance(Long userId, Long policyId, Integer year, BigDecimal deltaDays) {
         log.info("adjustBalance() userId={} policyId={} year={} delta={}", userId, policyId, year, deltaDays);
         validateIdsExist(userId, policyId);
@@ -140,6 +144,7 @@ public class UserLeaveBalanceService {
      * Recalculate the balance for a given user/policy/year by summing leaves overlapping that year.
      */
     @Transactional
+    @CorrelationId
     public UserLeaveBalanceDTO recalculateBalanceFromLeaves(Long userId, Long policyId, Integer year) {
         log.info("recalculateBalanceFromLeaves() userId={} policyId={} year={}", userId, policyId, year);
         validateIdsExist(userId, policyId);

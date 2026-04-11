@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import com.sid.app.annotation.CorrelationId;
 
 /**
  * Service class for managing subscriptions.
@@ -29,6 +30,7 @@ public class SubscriptionService {
     /**
      * Get all subscriptions
      */
+    @CorrelationId
     public List<SubscriptionDTO> getAllSubscriptions() {
         log.info("Fetching all subscriptions");
         List<AppSubscription> subscriptions = appSubscriptionRepository.findAll();
@@ -40,6 +42,7 @@ public class SubscriptionService {
     /**
      * Get all active subscriptions
      */
+    @CorrelationId
     public List<SubscriptionDTO> getActiveSubscriptions() {
         log.info("Fetching all active subscriptions");
         List<AppSubscription> activeSubscriptions = appSubscriptionRepository.findAllActive();
@@ -51,6 +54,7 @@ public class SubscriptionService {
     /**
      * Get subscription by code
      */
+    @CorrelationId
     public SubscriptionDTO getSubscriptionByCode(String subscriptionCode) {
         log.info("Fetching subscription by code: {}", subscriptionCode);
         Optional<AppSubscription> subscription = appSubscriptionRepository.findBySubscriptionCode(subscriptionCode);

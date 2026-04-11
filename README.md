@@ -4,7 +4,7 @@ A comprehensive multi-tenant workplace management system built with Spring Boot.
 
 ---
 
-## **📝 Last Updated :** **`2025-10-17`**
+## **📝 Last Updated :** **`2026-04-11`**
 
 ## Table of Contents
 
@@ -22,9 +22,11 @@ A comprehensive multi-tenant workplace management system built with Spring Boot.
 * [Quick Start (Local)](#quick-start-local)
 * [Environment Variables](#environment-variables)
 * [API Overview](#api-overview)
+* [Swagger / API Documentation](#swagger--api-documentation)
 * [Authentication](#authentication)
 * [Database & Migrations](#database--migrations)
 * [Testing](#testing)
+* [BDD / Cucumber Automation Tests](#bdd--cucumber-automation-tests)
 * [Logging & Monitoring](#logging--monitoring)
 * [Deployment](#deployment)
 * [Troubleshooting](#troubleshooting)
@@ -230,6 +232,13 @@ graph LR
 * **Kubernetes** - Container orchestration
 * **Redis** - Caching (optional)
 * **Swagger/OpenAPI** - API documentation
+
+### Testing
+* **JUnit 5** - Unit and integration test framework
+* **Cucumber 7** - BDD / behaviour-driven test scenarios (Gherkin)
+* **RestAssured 5** - HTTP client for API automation step definitions
+* **Testcontainers** - Ephemeral PostgreSQL container for full integration testing
+* **JaCoCo** - Code coverage reporting
 
 ---
 
@@ -621,8 +630,32 @@ UI_PORT=3000
 http://localhost:8010/api/v1/workplace-tracker-service
 ```
 
+---
+
+## Swagger / API Documentation
+
+Interactive API documentation is provided via **Swagger UI** (SpringDoc OpenAPI 3).
+
+| Resource | URL |
+|---|---|
+| 🔗 Swagger UI | `http://localhost:8010/swagger-ui.html` |
+| 📄 OpenAPI JSON Spec | `http://localhost:8010/v3/api-docs` |
+
+### How to Authenticate in Swagger UI
+1. Open `http://localhost:8010/swagger-ui.html`
+2. Click the **Authorize 🔒** button (top right)
+3. Enter your JWT token in the format:
+```
+Bearer <your-jwt-token>
+```
+4. Click **Authorize**, then **Close**
+5. All secured endpoints will now include the token automatically
+
+> **Note:** Public endpoints (register, login, forgot-password, platform signup/login) do not require authorization.
+
+---
+
 ### Authentication Endpoints
-- `POST /register` - Multi-role user registration
 - `POST /login` - User authentication
 - `POST /forgot/reset` - Password reset
 - `POST /auth/refresh` - Token refresh
@@ -726,17 +759,13 @@ Content-Type: application/json
 
 ### Unit Tests
 ```bash
+# Runs JUnit 5 unit tests (Cucumber suite runner excluded automatically)
 ./gradlew test
 ```
 
-### Integration Tests
+### Integration Tests — quick curl examples
 ```bash
-./gradlew integrationTest
-```
-
-### API Testing Examples
-```bash
-# Register Platform User
+# Register a Platform User
 curl -X POST http://localhost:8010/api/v1/workplace-tracker-service/register \
   -H "Content-Type: application/json" \
   -d '{
@@ -755,11 +784,167 @@ curl -X POST http://localhost:8010/api/v1/workplace-tracker-service/login \
     "password": "SecurePass123"
   }'
 
-# Access protected endpoint
+# Access a protected endpoint
 curl -X GET http://localhost:8010/api/v1/workplace-tracker-service/platform/super-admins \
   -H "Authorization: Bearer <your-jwt-token>" \
   -H "Content-Type: application/json"
 ```
+
+---
+
+## BDD / Cucumber Automation Tests
+
+The project ships a full **Behaviour-Driven Development (BDD)** test suite built with
+[Cucumber 7](https://cucumber.io/), [RestAssured 5](https://rest-assured.io/), and
+[Testcontainers](https://testcontainers.com/).  Every scenario targets the *running*
+Spring Boot application (started on a random port with a real PostgreSQL container), so
+the tests exercise the entire stack — controller → service → database — in one shot.
+
+> 📖 Full integration guide: [`docs/CUCUMBER_AUTOMATION_README.md`](docs/CUCUMBER_AUTOMATION_README.md)
+
+---
+
+### How It Works
+
+```
+./gradlew cucumberTest
+         │
+         ▼
+  JUnit 5 Platform discovers AuthApiCucumberRunner (@Suite)
+         │
+         ▼
+  PostgreSQL Testcontainer starts (once per run)
+         │
+         ▼
+  @SpringBootTest(RANDOM_PORT) boots the full application
+    ├── Liquibase runs all baseline changesets
+    └── EncryptionKeyService seeds the encryption key
+         │
+         ▼
+  Cucumber runs each Gherkin scenario via RestAssured HTTP calls
+    ├── @Before hook   → logs scenario start
+    ├── @Before(@RequiresSeedData) → JDBC seeds prerequisite rows
+    ├── Given / When / Then steps execute
+    ├── @After(@RequiresSeedData) → JDBC cleans up seed rows
+    └── @After hook    → clears ScenarioContext, logs result
+```
+
+---
+
+### Test Structure
+
+```
+src/test/
+├── java/com/sid/app/cucumber/
+│   ├── config/   CucumberSpringConfiguration  ← Spring context + Testcontainer bootstrap
+│   ├── context/  ScenarioContext              ← @ScenarioScope shared state per scenario
+│   ├── helper/   TestDataHelper               ← JDBC seed / cleanup utilities
+│   ├── hooks/    CucumberHooks                ← @Before / @After lifecycle hooks
+│   ├── runner/   AuthApiCucumberRunner        ← JUnit 5 @Suite entry point
+│   └── steps/    AuthApiStepDefinitions       ← All step implementations (RestAssured)
+└── resources/
+    ├── application-cucumber.yaml             ← Cucumber Spring profile (schema overrides)
+    ├── cucumber.properties                   ← Cucumber engine settings
+    └── features/auth/
+        └── auth_api.feature                  ← 22 Gherkin scenarios
+```
+
+---
+
+### Running the BDD Tests
+
+#### Prerequisites
+| Requirement | Notes |
+|---|---|
+| Java 23 | Set `JAVA_HOME` |
+| Docker Desktop **or** Rancher Desktop | Testcontainers needs a running Docker daemon |
+| No external PostgreSQL needed | Testcontainers spins one up automatically |
+
+#### Commands
+
+```bash
+# Run the full Cucumber BDD suite (22 scenarios)
+./gradlew cucumberTest
+
+# Windows PowerShell
+.\gradlew.bat cucumberTest
+
+# Run only validation scenarios (no Docker seed data needed)
+./gradlew cucumberTest -Dcucumber.filter.tags="not @RequiresSeedData"
+
+# Run only happy-path scenarios that need seed data
+./gradlew cucumberTest -Dcucumber.filter.tags="@RequiresSeedData"
+
+# Run unit tests + BDD in one go
+./gradlew test cucumberTest
+```
+
+> **Windows / Rancher Desktop note:** `DOCKER_HOST` is baked into the Gradle task
+> (`npipe:////./pipe/docker_engine`), so no manual environment variable is needed.
+
+---
+
+### Auth API Scenario Catalogue — 22 scenarios, 0 failures ✅
+
+| # | Section | Scenario | Expected HTTP |
+|---|---|---|---|
+| 1 | Registration Validation | Missing `name` field | `400` |
+| 2 | Registration Validation | Missing `email` field | `400` |
+| 3 | Registration Validation | Missing `password` field | `400` |
+| 4 | Registration Validation | Missing `role` field | `400` |
+| 5 | Registration Validation | Invalid email format | `400` |
+| 6 | Registration Validation | Password shorter than 8 chars | `400` |
+| 7 | Registration Validation | Unsupported role value | `400` |
+| 8 | Registration Validation | SUPER_ADMIN without `platformUserCode` | `400` |
+| 9 | Registration Validation | SUPER_ADMIN without `tenantCode` | `400` |
+| 10 | Registration Validation | ADMIN without `tenantUserCode` | `400` |
+| 11 | Registration Happy Path | Register SUPER_ADMIN successfully | `200` + JWT |
+| 12 | Registration Happy Path | Duplicate email rejected | `400` |
+| 13 | Login | Non-existent user | `401` |
+| 14 | Login | Valid credentials | `200` + JWT |
+| 15 | Login | Wrong password | `401` |
+| 16 | Refresh Token | No token provided | `401` |
+| 17 | Refresh Token | Malformed token | `401` |
+| 18 | Forgot Password Reset | Invalid OTP | `400` |
+| 19 | Change Password | No JWT token | `403` |
+| 20 | Change Password | Incorrect current password | `400` |
+| 21 | Change Password | New == current password | `400` |
+| 22 | Change Password | Successful change | `200` |
+
+---
+
+### Test Reports
+
+After each run, reports are written to `build/reports/cucumber/`:
+
+| Format | Path |
+|---|---|
+| **HTML** (human-readable) | `build/reports/cucumber/auth-api-report.html` |
+| **JSON** (CI integration) | `build/reports/cucumber/auth-api-report.json` |
+| **JUnit XML** (pipeline artifacts) | `build/reports/cucumber/auth-api-report.xml` |
+
+```bash
+# Open HTML report (macOS)
+open build/reports/cucumber/auth-api-report.html
+
+# Open HTML report (Windows)
+start build/reports/cucumber/auth-api-report.html
+```
+
+---
+
+### Adding New Scenarios
+
+1. **Add Gherkin steps** to an existing `.feature` file or create a new one under
+   `src/test/resources/features/`.
+2. **Implement step definitions** in an existing `*StepDefinitions` class or create
+   a new one under `com.sid.app.cucumber.steps`.
+3. **Tag with `@RequiresSeedData`** if the scenario needs database records — the
+   `CucumberHooks` will automatically seed before and clean up after.
+4. **Run** `./gradlew cucumberTest` to verify.
+
+See [`docs/CUCUMBER_AUTOMATION_README.md`](docs/CUCUMBER_AUTOMATION_README.md) for the
+full guide including CI/CD integration (GitHub Actions & GitLab CI) and troubleshooting.
 
 ---
 
@@ -894,6 +1079,7 @@ Detailed API documentation is available in the `/docs` folder:
 - [Tenant Management API](docs/TENANT_MANAGEMENT_API_README.md)
 - [User Tasks API](docs/USER_TASKS_API_README.md)
 - [User Notes API](docs/USER_NOTES_API_README.md)
+- [Cucumber BDD Automation Guide](docs/CUCUMBER_AUTOMATION_README.md)
 
 ---
 

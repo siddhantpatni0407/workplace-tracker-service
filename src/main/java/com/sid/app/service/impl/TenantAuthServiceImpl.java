@@ -23,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
+import com.sid.app.annotation.CorrelationId;
 
 /**
  * Implementation of TenantAuthService for handling tenant-based user authentication
@@ -42,6 +43,7 @@ public class TenantAuthServiceImpl implements TenantAuthService {
 
     @Override
     @Transactional
+    @CorrelationId
     public AuthResponse registerTenantUser(RegisterRequest request) {
         try {
             log.info("Processing tenant user registration for email: {} with role: {}",
@@ -107,6 +109,7 @@ public class TenantAuthServiceImpl implements TenantAuthService {
     }
 
     @Override
+    @CorrelationId
     public AuthResponse loginTenantUser(LoginRequest request) {
         try {
             log.info("Processing tenant user login for email: {}", request.getEmail());

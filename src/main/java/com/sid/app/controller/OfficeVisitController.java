@@ -8,6 +8,9 @@ import com.sid.app.enums.UserRole;
 import com.sid.app.model.OfficeVisitDTO;
 import com.sid.app.model.ResponseDTO;
 import com.sid.app.service.OfficeVisitService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import com.sid.app.annotation.CorrelationId;
 
 /**
  * Controller for handling office visit operations with role-based authorization.
@@ -27,6 +31,8 @@ import java.util.Optional;
 @Slf4j
 @RequiredArgsConstructor
 @RequestMapping(EndpointConstants.VISITS_ENDPOINT)
+@Tag(name = "Office Visit", description = "Record and query office visit check-ins")
+@SecurityRequirement(name = "bearerAuth")
 public class OfficeVisitController {
 
     private final OfficeVisitService visitService;
@@ -38,8 +44,10 @@ public class OfficeVisitController {
      * Gets office visits for a user within a specific month.
      * Users can only view their own visits unless they are admin.
      */
+    @Operation(summary = "Get office visits for a month", description = "Retrieve all office visit records for the authenticated user in a given year/month.")
     @GetMapping
     @RequiredRole({UserRole.USER, UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.MANAGER})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<List<OfficeVisitDTO>>> getVisitsForMonth(@RequestParam("year") int year,
                                                                                @RequestParam("month") int month) {
 
@@ -79,8 +87,10 @@ public class OfficeVisitController {
      * Creates or updates an office visit.
      * Users can only create visits for themselves unless they are admin.
      */
+    @Operation(summary = "Create or update office visit", description = "Create a new visit record or update an existing one for the given date.")
     @PostMapping
     @RequiredRole({UserRole.USER, UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.MANAGER})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<OfficeVisitDTO>> upsertVisit(@Valid @RequestBody OfficeVisitDTO req) {
         log.info("upsertVisit() userId={} visitDate={}", req.getUserId(), req.getVisitDate());
 
@@ -109,8 +119,10 @@ public class OfficeVisitController {
      * Deletes an office visit by ID.
      * Users can only delete their own visits unless they are admin.
      */
+    @Operation(summary = "Delete office visit", description = "Delete an office visit record by ID.")
     @DeleteMapping
     @RequiredRole({UserRole.USER, UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.MANAGER})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<Void>> deleteVisit(@RequestParam("officeVisitId") Long officeVisitId) {
         log.info("deleteVisit() officeVisitId={}", officeVisitId);
 

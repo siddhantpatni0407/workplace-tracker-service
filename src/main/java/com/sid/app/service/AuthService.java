@@ -33,6 +33,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import com.sid.app.annotation.CorrelationId;
 
 /**
  * AuthService - handles registration, login, refresh token, password reset, etc.
@@ -62,6 +63,7 @@ public class AuthService {
      * - ADMIN: requires tenantUserCode (SUPER_ADMIN's code - tenant derived automatically)
      * - USER/MANAGER: requires tenantUserCode (ADMIN's code)
      */
+    @CorrelationId
     public AuthResponse register(RegisterRequest request) {
         try {
             // Validate role exists
@@ -384,6 +386,7 @@ public class AuthService {
      * Login using email + password (AES-encrypted password in DB).
      * Handles both tenant_user table (SUPER_ADMIN, ADMIN) and users table (USER, MANAGER) logins.
      */
+    @CorrelationId
     public AuthResponse login(LoginRequest request) {
         // First check in tenant_user table for SUPER_ADMIN/ADMIN
         Optional<TenantUser> tenantUserOpt = tenantUserRepository.findActiveByEmail(request.getEmail());
@@ -564,6 +567,7 @@ public class AuthService {
     /**
      * Create and attach a refresh token cookie for the given user's email.
      */
+    @CorrelationId
     public void createRefreshCookieForUser(String email, HttpServletResponse servletResponse) {
         long refreshTtlMs = 7L * 24L * 60L * 60L * 1000L;
         String refreshToken = jwtUtil.generateToken(email, null, refreshTtlMs);
@@ -579,6 +583,7 @@ public class AuthService {
         servletResponse.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
     }
 
+    @CorrelationId
     public ResponseEntity<ResponseDTO<Void>> resetPassword(ForgotPasswordResetRequest request) {
         String email = request.getEmail();
         String otp = request.getOtp();
@@ -609,6 +614,7 @@ public class AuthService {
         }
     }
 
+    @CorrelationId
     public AuthResponse refreshToken(String refreshToken, HttpServletResponse servletResponse) {
         if (refreshToken == null || refreshToken.isBlank()) {
             return new AuthResponse(null, null, null, null,
@@ -665,6 +671,7 @@ public class AuthService {
     }
 
     @Transactional
+    @CorrelationId
     public void changePassword(Long userId, String currentPassword, String newPassword) {
         log.info("changePassword() : Attempting password change for userId={}", userId);
 

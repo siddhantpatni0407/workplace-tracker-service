@@ -11,6 +11,9 @@ import com.sid.app.repository.LeavePolicyRepository;
 import com.sid.app.repository.UserLeaveRepository;
 import com.sid.app.repository.UserRepository;
 import com.sid.app.service.UserLeaveBalanceService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -23,10 +26,13 @@ import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.util.Optional;
+import com.sid.app.annotation.CorrelationId;
 
 @RestController
 @Slf4j
 @RequiredArgsConstructor
+@Tag(name = "User Leave Balance", description = "View, adjust and recalculate user leave balances")
+@SecurityRequirement(name = "bearerAuth")
 public class UserLeaveBalanceController {
 
     private final UserLeaveBalanceService balanceService;
@@ -40,8 +46,10 @@ public class UserLeaveBalanceController {
     /**
      * GET /user-leave-balance?policyId=..&year=..
      */
+    @Operation(summary = "Get leave balance", description = "Retrieve the authenticated user's leave balance for a given policy and year.")
     @GetMapping(EndpointConstants.USER_LEAVE_BALANCE_ENDPOINT)
     @RequiredRole({UserRole.USER, UserRole.MANAGER, UserRole.ADMIN, UserRole.SUPER_ADMIN})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<UserLeaveBalanceDTO>> getBalance(@RequestParam("policyId") Long policyId,
                                                                        @RequestParam("year") Integer year) {
 
@@ -73,8 +81,10 @@ public class UserLeaveBalanceController {
      * Admin override: Upsert balance manually.
      * Keep this restricted to ADMIN role to avoid accidental edits.
      */
+    @Operation(summary = "Upsert leave balance", description = "Manually create or override a user's leave balance record.")
     @PostMapping(EndpointConstants.USER_LEAVE_BALANCE_ENDPOINT)
     @RequiredRole({UserRole.USER, UserRole.MANAGER, UserRole.ADMIN, UserRole.SUPER_ADMIN})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<UserLeaveBalanceDTO>> upsertBalance(@Valid @RequestBody UserLeaveBalanceDTO req) {
         log.info("upsertBalance() (ADMIN) userId={} policyId={} year={}", req.getUserId(), req.getPolicyId(), req.getYear());
 
@@ -123,8 +133,10 @@ public class UserLeaveBalanceController {
      * <p>
      * This endpoint is useful for adhoc adjustments / testing and should be protected.
      */
+    @Operation(summary = "Adjust leave balance", description = "Apply a positive or negative delta to a user's leave balance for a given policy and year.")
     @PostMapping(EndpointConstants.USER_LEAVE_BALANCE_ADJUST_ENDPOINT)
     @RequiredRole({UserRole.USER, UserRole.MANAGER, UserRole.ADMIN, UserRole.SUPER_ADMIN})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<UserLeaveBalanceDTO>> adjustBalance(@RequestParam("policyId") Long policyId,
                                                                           @RequestParam("year") Integer year,
                                                                           @RequestParam("delta") BigDecimal delta) {
@@ -157,8 +169,10 @@ public class UserLeaveBalanceController {
      * Recalculate balance from user_leave records for a user+policy+year (admin).
      * Useful for reconciliation after a bug or historical import.
      */
+    @Operation(summary = "Recalculate leave balance", description = "Recompute a user's leave balance from actual leave records for reconciliation.")
     @PostMapping(EndpointConstants.USER_LEAVE_BALANCE_RECALCULATE_ENDPOINT)
     @RequiredRole({UserRole.USER, UserRole.MANAGER, UserRole.ADMIN, UserRole.SUPER_ADMIN})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<UserLeaveBalanceDTO>> recalculate(@RequestParam("policyId") Long policyId,
                                                                         @RequestParam("year") Integer year) {
 

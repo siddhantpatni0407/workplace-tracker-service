@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import com.sid.app.annotation.CorrelationId;
 
 /**
  * Service for platform statistics operations
@@ -31,6 +32,7 @@ public class PlatformStatsService {
     /**
      * Get comprehensive platform statistics
      */
+    @CorrelationId
     public PlatformStatsDTO getPlatformStats() {
         log.info("Fetching platform statistics");
 

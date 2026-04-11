@@ -8,6 +8,9 @@ import com.sid.app.enums.UserRole;
 import com.sid.app.model.DailyViewRecordsDTO;
 import com.sid.app.model.ResponseDTO;
 import com.sid.app.service.DailyViewRecordsService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,11 +24,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDate;
 import java.util.List;
+import com.sid.app.annotation.CorrelationId;
 
 @RestController
 @Slf4j
 @RequiredArgsConstructor
 @RequestMapping(EndpointConstants.FETCH_DAILY_VIEW_ENDPOINT)
+@Tag(name = "Daily View Records", description = "Fetch consolidated daily view records")
+@SecurityRequirement(name = "bearerAuth")
 public class DailyViewRecordsController {
 
     private final DailyViewRecordsService service;
@@ -33,8 +39,10 @@ public class DailyViewRecordsController {
     @Autowired
     private JwtAuthenticationContext jwtAuthenticationContext;
 
+    @Operation(summary = "Fetch daily view records", description = "Retrieve consolidated daily view records for the authenticated user, filtered by year/month or an explicit date range.")
     @GetMapping
     @RequiredRole({UserRole.USER, UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.MANAGER})
+    @CorrelationId
     public ResponseEntity<ResponseDTO<List<DailyViewRecordsDTO>>> fetchDailyViewRecords(@RequestParam(value = "year", required = false) Integer year,
                                                                                         @RequestParam(value = "month", required = false) Integer month,
                                                                                         @RequestParam(value = "from", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
