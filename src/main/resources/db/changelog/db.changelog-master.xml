@@ -4,22 +4,22 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
 
-    <changeSet id="1" author="sid">
+    <changeSet id="1" author="Siddhant Patni">
         <sqlFile path="db/scripts/schema.sql"/>
     </changeSet>
-    <changeSet id="2" author="sid">
+    <changeSet id="2" author="Siddhant Patni">
         <sqlFile path="db/scripts/add-holiday-leave-office-visit.sql"/>
     </changeSet>
-    <changeSet id="3" author="sid">
+    <changeSet id="3" author="Siddhant Patni">
         <sqlFile path="db/scripts/add-user-address-user-profile.sql"/>
     </changeSet>
-    <changeSet id="4" author="sid">
+    <changeSet id="4" author="Siddhant Patni">
         <sqlFile path="db/scripts/add-daily-tasks.sql"/>
     </changeSet>
-    <changeSet id="5" author="sid">
+    <changeSet id="5" author="Siddhant Patni">
         <sqlFile path="db/scripts/add-user-notes-table.sql"/>
     </changeSet>
-    <changeSet id="6" author="sid">
+    <changeSet id="6" author="Siddhant Patni">
         <sqlFile path="db/scripts/add-user-tasks-table.sql"/>
     </changeSet>
 </databaseChangeLog>
