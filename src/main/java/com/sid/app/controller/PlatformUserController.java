@@ -24,7 +24,7 @@ public class PlatformUserController {
 
     @PostMapping(EndpointConstants.PLATFORM_AUTH_SIGNUP_ENDPOINT)
     public ResponseEntity<PlatformUserAuthResponse> signup(@Valid @RequestBody PlatformUserSignupRequest request) {
-        log.info("Platform user signup request -> {}", ApplicationUtils.getSecureJSONString(request));
+        log.info("signup() : Platform user signup request -> {}", ApplicationUtils.getSecureJSONString(request));
 
         try {
             PlatformUserAuthResponse response = platformUserService.signup(request);
@@ -35,7 +35,7 @@ public class PlatformUserController {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
             }
         } catch (Exception e) {
-            log.error("Error in platform user signup: {}", e.getMessage(), e);
+            log.error("signup() : Error in platform user signup: {}", e.getMessage(), e);
             PlatformUserAuthResponse errorResponse = PlatformUserAuthResponse.builder()
                     .status(AppConstants.STATUS_FAILED)
                     .message(AppConstants.ERROR_PLATFORM_SIGNUP_FAILED)
@@ -46,7 +46,7 @@ public class PlatformUserController {
 
     @PostMapping(EndpointConstants.PLATFORM_AUTH_LOGIN_ENDPOINT)
     public ResponseEntity<PlatformUserAuthResponse> login(@Valid @RequestBody PlatformUserLoginRequest request) {
-        log.info("Platform user login request -> {}", ApplicationUtils.getSecureJSONString(request));
+        log.info("login() : Platform user login request -> {}", ApplicationUtils.getSecureJSONString(request));
 
         try {
             PlatformUserAuthResponse response = platformUserService.login(request);
@@ -57,7 +57,7 @@ public class PlatformUserController {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
             }
         } catch (Exception e) {
-            log.error("Error in platform user login: {}", e.getMessage(), e);
+            log.error("login() : Error in platform user login: {}", e.getMessage(), e);
             PlatformUserAuthResponse errorResponse = PlatformUserAuthResponse.builder()
                     .status(AppConstants.STATUS_FAILED)
                     .message(AppConstants.ERROR_PLATFORM_LOGIN_FAILED)
@@ -68,7 +68,7 @@ public class PlatformUserController {
 
     @PostMapping(EndpointConstants.PLATFORM_AUTH_REFRESH_ENDPOINT)
     public ResponseEntity<PlatformUserAuthResponse> refreshToken(@RequestBody String refreshToken) {
-        log.info("Platform user token refresh request received");
+        log.info("refreshToken() : Platform user token refresh request received");
 
         try {
             PlatformUserAuthResponse response = platformUserService.refreshToken(refreshToken);
@@ -79,7 +79,7 @@ public class PlatformUserController {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
             }
         } catch (Exception e) {
-            log.error("Error in platform user token refresh: {}", e.getMessage(), e);
+            log.error("refreshToken() : Error in platform user token refresh: {}", e.getMessage(), e);
             PlatformUserAuthResponse errorResponse = PlatformUserAuthResponse.builder()
                     .status(AppConstants.STATUS_FAILED)
                     .message(AppConstants.ERROR_PLATFORM_TOKEN_REFRESH_FAILED)
@@ -90,13 +90,13 @@ public class PlatformUserController {
 
     @GetMapping(EndpointConstants.PLATFORM_AUTH_PROFILE_ENDPOINT)
     public ResponseEntity<PlatformUserResponse> getProfile(@RequestParam Long platformUserId) {
-        log.info("Platform user profile request for ID: {}", platformUserId);
+        log.info("getProfile() : Platform user profile request for ID: {}", platformUserId);
 
         try {
             PlatformUserResponse response = platformUserService.getPlatformUserProfile(platformUserId);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            log.error("Error fetching platform user profile: {}", e.getMessage(), e);
+            log.error("getProfile() : Error fetching platform user profile: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }

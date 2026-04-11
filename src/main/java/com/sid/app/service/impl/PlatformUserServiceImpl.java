@@ -35,7 +35,7 @@ public class PlatformUserServiceImpl implements PlatformUserService {
     @Transactional
     public PlatformUserAuthResponse signup(PlatformUserSignupRequest request) {
         try {
-            log.info("Processing signup request for email: {}", request.getEmail());
+            log.info("signup() : Processing signup request for email: {}", request.getEmail());
 
             // Check if user already exists by email
             if (platformUserRepository.existsByEmail(request.getEmail())) {
@@ -44,7 +44,7 @@ public class PlatformUserServiceImpl implements PlatformUserService {
 
             // Check if user already exists by mobile number
             if (request.getMobileNumber() != null &&
-                platformUserRepository.existsByMobileNumber(request.getMobileNumber())) {
+                    platformUserRepository.existsByMobileNumber(request.getMobileNumber())) {
                 return buildFailureResponse(AppConstants.ERROR_MESSAGE_MOBILE_EXISTS);
             }
 
@@ -84,7 +84,7 @@ public class PlatformUserServiceImpl implements PlatformUserService {
             long refreshTtlMs = 7L * 24L * 60L * 60L * 1000L; // 7 days
             String refreshToken = jwtUtil.generateToken(user.getEmail(), null, refreshTtlMs);
 
-            log.info("Platform user signup successful for email: {}", request.getEmail());
+            log.info("signup() : Platform user signup successful for email: {}", request.getEmail());
 
             return PlatformUserAuthResponse.builder()
                     .token(token)
@@ -101,7 +101,7 @@ public class PlatformUserServiceImpl implements PlatformUserService {
                     .build();
 
         } catch (Exception e) {
-            log.error("Error during platform user signup: {}", e.getMessage(), e);
+            log.error("signup() : Error during platform user signup: {}", e.getMessage(), e);
             return buildFailureResponse(AppConstants.ERROR_MESSAGE_REGISTRATION);
         }
     }
@@ -110,7 +110,7 @@ public class PlatformUserServiceImpl implements PlatformUserService {
     @Transactional
     public PlatformUserAuthResponse login(PlatformUserLoginRequest request) {
         try {
-            log.info("Processing login request for: {}", request.getEmailOrMobile());
+            log.info("login() : Processing login request for: {}", request.getEmailOrMobile());
 
             // Find user by email or mobile
             Optional<PlatformUser> userOpt = platformUserRepository.findByEmail(request.getEmailOrMobile())
@@ -151,7 +151,7 @@ public class PlatformUserServiceImpl implements PlatformUserService {
                     return buildFailureResponse(AppConstants.ERROR_MESSAGE_INVALID_LOGIN);
                 }
             } catch (Exception e) {
-                log.error("Error decrypting password for user {}: {}", request.getEmailOrMobile(), e.getMessage());
+                log.error("login() : Error decrypting password for user {}: {}", request.getEmailOrMobile(), e.getMessage());
                 return buildFailureResponse(AppConstants.ERROR_MESSAGE_LOGIN);
             }
 
@@ -189,7 +189,7 @@ public class PlatformUserServiceImpl implements PlatformUserService {
                     .build();
 
         } catch (Exception e) {
-            log.error("Error during platform user login: {}", e.getMessage(), e);
+            log.error("login() : Error during platform user login: {}", e.getMessage(), e);
             return buildFailureResponse(AppConstants.ERROR_MESSAGE_LOGIN);
         }
     }
@@ -197,7 +197,7 @@ public class PlatformUserServiceImpl implements PlatformUserService {
     @Override
     public PlatformUserAuthResponse refreshToken(String refreshToken) {
         try {
-            log.info("Processing token refresh request");
+            log.info("refreshToken() : Processing token refresh request");
 
             if (refreshToken == null || refreshToken.isBlank()) {
                 return buildFailureResponse("Missing refresh token.");
@@ -250,7 +250,7 @@ public class PlatformUserServiceImpl implements PlatformUserService {
                     .build();
 
         } catch (Exception e) {
-            log.error("Error during platform user token refresh: {}", e.getMessage(), e);
+            log.error("refreshToken() : Error during platform user token refresh: {}", e.getMessage(), e);
             return buildFailureResponse("Token refresh failed: " + e.getMessage());
         }
     }
@@ -258,7 +258,7 @@ public class PlatformUserServiceImpl implements PlatformUserService {
     @Override
     public PlatformUserResponse getPlatformUserProfile(Long platformUserId) {
         try {
-            log.info("Fetching profile for platform user ID: {}", platformUserId);
+            log.info("getPlatformUserProfile() : Fetching profile for platform user ID: {}", platformUserId);
 
             Optional<PlatformUser> userOpt = platformUserRepository.findById(platformUserId);
             if (userOpt.isEmpty()) {
@@ -280,7 +280,7 @@ public class PlatformUserServiceImpl implements PlatformUserService {
                     .build();
 
         } catch (Exception e) {
-            log.error("Error fetching platform user profile: {}", e.getMessage(), e);
+            log.error("getPlatformUserProfile() : Error fetching platform user profile: {}", e.getMessage(), e);
             throw new RuntimeException("Failed to fetch user profile: " + e.getMessage());
         }
     }

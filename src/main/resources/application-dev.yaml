@@ -21,9 +21,9 @@ spring:
 
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://ep-calm-moon-ad6c6glu-pooler.c-2.us-east-1.aws.neon.tech/workplace_tracker_db?sslmode=require&channelBinding=require
-    username: neondb_owner
-    password: npg_9C1qedHXLNEZ
+    url: jdbc:postgresql://localhost:5432/workplace_tracker_db
+    username: postgres
+    password: root
     properties:
       charSet: UTF-8
     hikari:
