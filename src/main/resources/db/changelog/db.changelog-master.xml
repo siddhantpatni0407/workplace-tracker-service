@@ -1,25 +1,31 @@
 <databaseChangeLog
+        logicalFilePath="db.changelog-master.xml"
         xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
 
-    <changeSet id="1" author="Siddhant Patni">
-        <sqlFile path="db/scripts/schema.sql"/>
+    <changeSet id="1" author="Siddhant Patni" labels="baseline" context="init">
+        <sqlFile path="../scripts/schema.sql" relativeToChangelogFile="true" />
     </changeSet>
-    <changeSet id="2" author="Siddhant Patni">
-        <sqlFile path="db/scripts/add-holiday-leave-office-visit.sql"/>
+    <changeSet id="2" author="Siddhant Patni" labels="baseline" context="init">
+        <sqlFile path="../scripts/add-holiday-leave-office-visit.sql" relativeToChangelogFile="true" />
     </changeSet>
-    <changeSet id="3" author="Siddhant Patni">
-        <sqlFile path="db/scripts/add-user-address-user-profile.sql"/>
+    <changeSet id="3" author="Siddhant Patni" labels="baseline" context="init">
+        <sqlFile path="../scripts/add-user-address-user-profile.sql" relativeToChangelogFile="true" />
     </changeSet>
-    <changeSet id="4" author="Siddhant Patni">
-        <sqlFile path="db/scripts/add-daily-tasks.sql"/>
+    <changeSet id="4" author="Siddhant Patni" labels="baseline" context="init">
+        <sqlFile path="../scripts/add-daily-tasks.sql" relativeToChangelogFile="true" />
     </changeSet>
-    <changeSet id="5" author="Siddhant Patni">
-        <sqlFile path="db/scripts/add-user-notes-table.sql"/>
+    <changeSet id="5" author="Siddhant Patni" labels="baseline" context="init">
+        <sqlFile path="../scripts/add-user-notes-table.sql" relativeToChangelogFile="true" />
     </changeSet>
-    <changeSet id="6" author="Siddhant Patni">
-        <sqlFile path="db/scripts/add-user-tasks-table.sql"/>
+    <changeSet id="6" author="Siddhant Patni" labels="baseline" context="init">
+        <sqlFile path="../scripts/add-user-tasks-table.sql" relativeToChangelogFile="true" />
+    </changeSet>
+
+    <!-- Tag the database state after these baseline changes -->
+    <changeSet id="tag-1" author="Siddhant Patni" labels="baseline" context="init">
+        <tagDatabase tag="v1.0" />
     </changeSet>
 </databaseChangeLog>
