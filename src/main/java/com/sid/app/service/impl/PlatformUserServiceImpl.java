@@ -14,6 +14,7 @@ import com.sid.app.service.CodeGenerationService;
 import com.sid.app.utils.AESUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import com.sid.app.annotation.CorrelationId;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,6 +34,7 @@ public class PlatformUserServiceImpl implements PlatformUserService {
 
     @Override
     @Transactional
+    @CorrelationId
     public PlatformUserAuthResponse signup(PlatformUserSignupRequest request) {
         try {
             log.info("signup() : Processing signup request for email: {}", request.getEmail());
@@ -108,6 +110,7 @@ public class PlatformUserServiceImpl implements PlatformUserService {
 
     @Override
     @Transactional
+    @CorrelationId
     public PlatformUserAuthResponse login(PlatformUserLoginRequest request) {
         try {
             log.info("login() : Processing login request for: {}", request.getEmailOrMobile());
@@ -195,6 +198,7 @@ public class PlatformUserServiceImpl implements PlatformUserService {
     }
 
     @Override
+    @CorrelationId
     public PlatformUserAuthResponse refreshToken(String refreshToken) {
         try {
             log.info("refreshToken() : Processing token refresh request");
@@ -256,6 +260,7 @@ public class PlatformUserServiceImpl implements PlatformUserService {
     }
 
     @Override
+    @CorrelationId
     public PlatformUserResponse getPlatformUserProfile(Long platformUserId) {
         try {
             log.info("getPlatformUserProfile() : Fetching profile for platform user ID: {}", platformUserId);

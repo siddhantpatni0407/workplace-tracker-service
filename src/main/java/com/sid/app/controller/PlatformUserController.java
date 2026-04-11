@@ -7,6 +7,7 @@ import com.sid.app.dto.request.PlatformUserSignupRequest;
 import com.sid.app.dto.response.PlatformUserAuthResponse;
 import com.sid.app.dto.response.PlatformUserResponse;
 import com.sid.app.service.PlatformUserService;
+import com.sid.app.annotation.CorrelationId;
 import com.sid.app.utils.ApplicationUtils;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,7 @@ public class PlatformUserController {
     private final PlatformUserService platformUserService;
 
     @PostMapping(EndpointConstants.PLATFORM_AUTH_SIGNUP_ENDPOINT)
+    @CorrelationId
     public ResponseEntity<PlatformUserAuthResponse> signup(@Valid @RequestBody PlatformUserSignupRequest request) {
         log.info("signup() : Platform user signup request -> {}", ApplicationUtils.getSecureJSONString(request));
 
@@ -45,6 +47,7 @@ public class PlatformUserController {
     }
 
     @PostMapping(EndpointConstants.PLATFORM_AUTH_LOGIN_ENDPOINT)
+    @CorrelationId
     public ResponseEntity<PlatformUserAuthResponse> login(@Valid @RequestBody PlatformUserLoginRequest request) {
         log.info("login() : Platform user login request -> {}", ApplicationUtils.getSecureJSONString(request));
 
@@ -67,6 +70,7 @@ public class PlatformUserController {
     }
 
     @PostMapping(EndpointConstants.PLATFORM_AUTH_REFRESH_ENDPOINT)
+    @CorrelationId
     public ResponseEntity<PlatformUserAuthResponse> refreshToken(@RequestBody String refreshToken) {
         log.info("refreshToken() : Platform user token refresh request received");
 
@@ -89,6 +93,7 @@ public class PlatformUserController {
     }
 
     @GetMapping(EndpointConstants.PLATFORM_AUTH_PROFILE_ENDPOINT)
+    @CorrelationId
     public ResponseEntity<PlatformUserResponse> getProfile(@RequestParam Long platformUserId) {
         log.info("getProfile() : Platform user profile request for ID: {}", platformUserId);
 
