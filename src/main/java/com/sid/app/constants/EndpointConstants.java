@@ -119,6 +119,9 @@ public class EndpointConstants {
     public static final String TENANT_UPDATE_ENDPOINT = "/api/v1/workplace-tracker-service/tenant/update";
     public static final String TENANT_SUBSCRIPTION_UPDATE_ENDPOINT = "/api/v1/workplace-tracker-service/tenant/subscription/update";
 
+    // Support endpoints (admin-only)
+    public static final String SUPPORT_DECRYPT_PASSWORD = "/api/v1/workplace-tracker-service/support/decrypt-password";
+
     // Subscription Management endpoints (Platform User only)
     public static final String SUBSCRIPTIONS_ENDPOINT = "/api/v1/workplace-tracker-service/subscriptions";
     public static final String ACTIVE_SUBSCRIPTIONS_ENDPOINT = "/api/v1/workplace-tracker-service/subscriptions/active";
