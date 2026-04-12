@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
+
 import com.sid.app.annotation.CorrelationId;
 
 /**
@@ -99,7 +100,8 @@ public class UserLeaveController {
 
         try {
             UserLeaveDTO dto = userLeaveService.createLeave(req);
-            return ResponseEntity.ok(new ResponseDTO<>(AppConstants.STATUS_SUCCESS, AppConstants.SUCCESS_LEAVE_CREATED, dto));
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(new ResponseDTO<>(AppConstants.STATUS_SUCCESS, AppConstants.SUCCESS_LEAVE_CREATED, dto));
         } catch (IllegalArgumentException ex) {
             log.warn("createLeave() - invalid request: {}", ex.getMessage());
             return ResponseEntity.badRequest().body(new ResponseDTO<>(AppConstants.STATUS_FAILED, ex.getMessage(), null));

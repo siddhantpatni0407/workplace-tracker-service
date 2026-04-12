@@ -56,14 +56,19 @@ public class JwtUtil {
         Date now = new Date();
         Date expiry = new Date(now.getTime() + ttl);
 
-        JwtBuilder builder = Jwts.builder()
-                .setSubject(subject)
-                .setIssuedAt(now)
-                .setExpiration(expiry)
-                .signWith(secretKey, SignatureAlgorithm.HS256);
+        JwtBuilder builder = Jwts.builder();
+
+        // Use explicit claim(...) calls to avoid deprecated ClaimsMutator helpers
+        builder.claim(Claims.SUBJECT, subject);
+        builder.claim(Claims.ISSUED_AT, now);
+        builder.claim(Claims.EXPIRATION, expiry);
+
+        // Use signWith(key) to avoid the deprecated signWith(key, alg) overload
+        builder.signWith(secretKey);
 
         if (extraClaims != null && !extraClaims.isEmpty()) {
-            builder.addClaims(extraClaims);
+            // addClaims(Map) is deprecated — add individual claims instead
+            extraClaims.forEach(builder::claim);
         }
 
         return builder.compact();

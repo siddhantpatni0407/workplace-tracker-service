@@ -232,6 +232,7 @@ public class UserService {
     /*
      * Convert User entity to UserDTO with tenant information
      */
+    @SuppressWarnings("deprecation")
     private UserDTO convertToDTO(User user) {
         UserDTO.UserDTOBuilder builder = UserDTO.builder()
                 .userId(user.getUserId())

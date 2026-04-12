@@ -30,40 +30,54 @@ public class CorrelationIdAspect {
 
     @Around("@annotation(correlationId) || @within(correlationId)")
     public Object around(ProceedingJoinPoint pjp, CorrelationId correlationId) throws Throwable {
-        String cid = null;
+        // If a correlationId already exists in MDC (set by an outer aspect invocation),
+        // reuse it rather than generating a new one. This prevents nested @CorrelationId
+        // annotated methods (e.g. controller -> service) from overriding the correlation id.
+        String existing = MDC.get(MDC_KEY);
+        boolean createdByThis = false;
+        String cid = existing;
 
         RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
-        if (requestAttributes instanceof ServletRequestAttributes) {
-            ServletRequestAttributes sra = (ServletRequestAttributes) requestAttributes;
-            HttpServletRequest request = sra.getRequest();
-            if (request != null) {
-                String header = request.getHeader(HEADER);
-                if (header != null && !header.isBlank()) {
-                    cid = header;
-                }
-            }
-        }
 
         if (cid == null || cid.isBlank()) {
-            cid = UUID.randomUUID().toString();
-        }
+            // try to read from incoming request header
+            if (requestAttributes instanceof ServletRequestAttributes) {
+                ServletRequestAttributes sra = (ServletRequestAttributes) requestAttributes;
+                HttpServletRequest request = sra.getRequest();
+                if (request != null) {
+                    String header = request.getHeader(HEADER);
+                    if (header != null && !header.isBlank()) {
+                        cid = header;
+                    }
+                }
+            }
 
-        // put into MDC
-        MDC.put(MDC_KEY, cid);
+            // generate if still absent
+            if (cid == null || cid.isBlank()) {
+                cid = UUID.randomUUID().toString();
+            }
 
-        // try to set on response header if available
-        if (requestAttributes instanceof ServletRequestAttributes) {
-            ServletRequestAttributes sra = (ServletRequestAttributes) requestAttributes;
-            HttpServletResponse response = sra.getResponse();
-            if (response != null) {
-                response.setHeader(HEADER, cid);
+            // put into MDC and mark that this invocation created it so we can remove it later
+            MDC.put(MDC_KEY, cid);
+            createdByThis = true;
+
+            // write header to response only when we created the id (top-level)
+            if (requestAttributes instanceof ServletRequestAttributes) {
+                ServletRequestAttributes sra = (ServletRequestAttributes) requestAttributes;
+                HttpServletResponse response = sra.getResponse();
+                if (response != null) {
+                    response.setHeader(HEADER, cid);
+                }
             }
         }
 
         try {
             return pjp.proceed();
         } finally {
-            MDC.remove(MDC_KEY);
+            // only remove if we put it here; don't remove an id set by an outer aspect
+            if (createdByThis) {
+                MDC.remove(MDC_KEY);
+            }
         }
     }
 }

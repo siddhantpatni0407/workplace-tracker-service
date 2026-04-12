@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.IsoFields;
@@ -92,7 +93,7 @@ public class AnalyticsService {
                     BigDecimal totalDays = l.getDays() == null ? BigDecimal.valueOf(span) : l.getDays();
 
                     // per-day share
-                    BigDecimal perDay = totalDays.divide(BigDecimal.valueOf(span), DIVIDE_SCALE, BigDecimal.ROUND_HALF_UP);
+                    BigDecimal perDay = totalDays.divide(BigDecimal.valueOf(span), DIVIDE_SCALE, RoundingMode.HALF_UP);
 
                     // We'll add perDay for each overlapped date and tag it with the period key.
                     // This preserves fractional days correctly (and allows a leave spanning months to distribute proportionally).

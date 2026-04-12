@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -239,7 +240,7 @@ public class UserLeaveService {
         long span = ChronoUnit.DAYS.between(start, end) + 1;
         if (span <= 0) return Collections.emptyMap();
 
-        BigDecimal perDay = totalDays.divide(BigDecimal.valueOf(span), 8, BigDecimal.ROUND_HALF_UP);
+        BigDecimal perDay = totalDays.divide(BigDecimal.valueOf(span), 8, RoundingMode.HALF_UP);
         Map<Integer, BigDecimal> map = new LinkedHashMap<>();
 
         for (long i = 0; i < span; i++) {
@@ -252,7 +253,7 @@ public class UserLeaveService {
         return map.entrySet().stream()
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
-                        e -> e.getValue().setScale(6, BigDecimal.ROUND_HALF_UP),
+                        e -> e.getValue().setScale(6, RoundingMode.HALF_UP),
                         (a, b) -> a,
                         LinkedHashMap::new
                 ));
