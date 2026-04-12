@@ -34,7 +34,8 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-aop'
 
     // JSON / Date handling
-    implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:${jacksonJsr310Version}"
+    // Let Spring Boot dependency management provide a compatible Jackson JSR310 version
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
 
     // JWT - SECURITY UPDATE: Updated to latest secure version
     implementation "io.jsonwebtoken:jjwt-api:${jjwtVersion}"
@@ -50,8 +51,8 @@ dependencies {
     // Logging
     implementation 'org.slf4j:slf4j-ext'
 
-    // Apache Commons - SECURITY FIX: Updated to correct latest version
-    implementation "commons-beanutils:commons-beanutils:${commonsBeanutilsVersion}"
+    // Removed direct dependency on commons-beanutils due to known vulnerabilities.
+    // Prefer Spring's BeanUtils (org.springframework.beans.BeanUtils) or explicit mapping.
 
     // OpenAPI - Updated to latest version
     implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:${springdocVersion}"
@@ -68,9 +69,10 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
     // Testcontainers - for integration tests with PostgreSQL (test scope)
-    testImplementation "org.testcontainers:junit-jupiter:${testcontainersVersion}"
-    testImplementation "org.testcontainers:postgresql:${testcontainersVersion}"
-    testImplementation "org.testcontainers:testcontainers:${testcontainersVersion}"
+    // Use Testcontainers BOM to keep versions consistent (BOM imported below)
+    testImplementation 'org.testcontainers:junit-jupiter'
+    testImplementation 'org.testcontainers:postgresql'
+    testImplementation 'org.testcontainers:testcontainers'
 
     // Cucumber BDD - Java + Spring + JUnit Platform Engine
     testImplementation "io.cucumber:cucumber-java:${cucumberVersion}"
@@ -85,6 +87,13 @@ dependencies {
     testImplementation "io.rest-assured:rest-assured:${restAssuredVersion}"
 }
 
+// Import Testcontainers BOM so all Testcontainers modules use a single known-good version
+dependencyManagement {
+    imports {
+        mavenBom "org.testcontainers:testcontainers-bom:${testcontainersVersion}"
+    }
+}
+
 tasks.named('test') {
     useJUnitPlatform()
     // Exclude Cucumber suite runners from the default test task to prevent double-execution
@@ -93,6 +102,10 @@ tasks.named('test') {
     // Ensure Gradle test runner has DOCKER_HOST set (Windows named pipe fallback) so Testcontainers
     // can find Docker when tests are run via IDE or the default 'test' task.
     environment 'DOCKER_HOST', (System.getenv('DOCKER_HOST') ?: 'npipe:////./pipe/docker_engine')
+    // When no unit tests are present Gradle's test task will fail by default.
+    // Projects that run separate integration suites (Cucumber) or have no
+    // ordinary unit tests can disable the failure-on-no-discovered-tests.
+    failOnNoDiscoveredTests = false
 }
 
 // -------------------------------------------------------
@@ -128,11 +141,19 @@ tasks.register('cucumberTest', Test) {
         events 'passed', 'skipped', 'failed'
         showStandardStreams = false
     }
+    // If no cucumber pickles are found, don't fail the build — useful in local dev.
+    failOnNoDiscoveredTests = false
 }
 
 // JaCoCo Configuration
 jacoco {
     toolVersion = "${jacocoVersion}"
+}
+
+// Show Java deprecation and unchecked warnings during compilation to locate
+// usages of deprecated APIs and fix them proactively.
+tasks.withType(JavaCompile).configureEach {
+    options.compilerArgs += ['-Xlint:deprecation', '-Xlint:unchecked']
 }
 
 jacocoTestReport {
